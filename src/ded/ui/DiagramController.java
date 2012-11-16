@@ -48,12 +48,26 @@ public class DiagramController extends JPanel
     /** Primary "mode" of the editing interface, indicating what happens
       * when the left mouse button is clicked or released. */
     private static enum Mode {
-        DCM_SELECT,                    // click to select/move/resize
-        DCM_CREATE_ENTITY,             // click to create an entity
-        DCM_CREATE_RELATION,           // click to create a relation
-        DCM_CREATE_INHERITANCE,        // click to create an inheritance relation
-        DCM_DRAGGING,                  // currently drag-moving something
-        DCM_RECT_LASSO,                // currently drag-lasso selecting
+        DCM_SELECT                     // click to select/move/resize
+            ("Select"),
+        DCM_CREATE_ENTITY              // click to create an entity
+            ("Create entity"),
+        DCM_CREATE_RELATION            // click to create a relation
+            ("Create relation"),
+        DCM_CREATE_INHERITANCE         // click to create an inheritance relation
+            ("Create inheritance"),
+        DCM_DRAGGING                   // currently drag-moving something
+            ("Dragging"),
+        DCM_RECT_LASSO                 // currently drag-lasso selecting
+            ("Rectangle lasso selecting");
+        
+        /** User-visible description of the mode. */
+        public final String description;
+        
+        private Mode(String d) 
+        {
+            this.description = d;
+        }
     }
 
     // ------------- private data ---------------
@@ -76,7 +90,7 @@ public class DiagramController extends JPanel
         
         this.diagram = new Diagram();
         this.controllers = new ArrayList<Controller>();
-        this.mode = Mode.DCM_CREATE_ENTITY;
+        this.mode = Mode.DCM_SELECT;
         
         this.addMouseListener(this);
         this.addKeyListener(this);
@@ -94,7 +108,7 @@ public class DiagramController extends JPanel
     {
         super.paint(g);
 
-        g.drawString("Mode: " + mode, 3, this.getHeight()-4);
+        g.drawString("Mode: " + mode.description, 3, this.getHeight()-4);
         
         for (Controller c : controllers) {
             c.paint(g);
@@ -102,11 +116,12 @@ public class DiagramController extends JPanel
     }
 
     @Override
-    public void mouseClicked(MouseEvent e)
+    public void mousePressed(MouseEvent e)
     {
         switch (mode) {
             case DCM_CREATE_ENTITY: {
                 EntityController.createEntityAt(this, e.getPoint());
+                this.setMode(Mode.DCM_SELECT);
                 break;
             }
             
@@ -116,7 +131,7 @@ public class DiagramController extends JPanel
     }
 
     // MouseListener methods I do not care about.
-    @Override public void mousePressed(MouseEvent e) {}
+    @Override public void mouseClicked(MouseEvent e) {}
     @Override public void mouseReleased(MouseEvent e) {}
     @Override public void mouseEntered(MouseEvent e) {}
     @Override public void mouseExited(MouseEvent e) {}
@@ -143,7 +158,29 @@ public class DiagramController extends JPanel
                 
             case KeyEvent.VK_X:
                 throw new RuntimeException("Test exception/error message.");
+                
+            case KeyEvent.VK_C:
+                this.setMode(Mode.DCM_CREATE_ENTITY);
+                break;
+                
+            case KeyEvent.VK_S:
+                this.setMode(Mode.DCM_SELECT);
+                break;
+                
+            case KeyEvent.VK_A:
+                this.setMode(Mode.DCM_CREATE_RELATION);
+                break;
+                
+            case KeyEvent.VK_I:
+                this.setMode(Mode.DCM_CREATE_INHERITANCE);
+                break;
         }
+    }
+
+    private void setMode(Mode m)
+    {
+        this.mode = m;
+        this.repaint();
     }
 
     // KeyListener methods I do not care about.
