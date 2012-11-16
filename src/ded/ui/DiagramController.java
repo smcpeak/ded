@@ -108,7 +108,9 @@ public class DiagramController extends JPanel
     {
         super.paint(g);
 
-        g.drawString("Mode: " + mode.description, 3, this.getHeight()-4);
+        if (mode != Mode.DCM_SELECT) {
+            g.drawString("Mode: " + mode.description, 3, this.getHeight()-4);
+        }
         
         for (Controller c : controllers) {
             c.paint(g);
