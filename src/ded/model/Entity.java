@@ -18,7 +18,7 @@ public class Entity {
     public Entity()
     {
         this.loc = new Point(0,0);
-        this.size = new Dimension(50, 50);
+        this.size = new Dimension(100, 50);
     }
 }
 

@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import javax.swing.JPanel;
 
 import ded.model.Diagram;
-import ded.model.Entity;
 
 /** Widget to display and edit a diagram. */
 public class DiagramController extends JPanel
@@ -76,11 +75,7 @@ public class DiagramController extends JPanel
     {
         switch (mode) {
             case DCM_CREATE_ENTITY: {
-                Entity ent = new Entity();
-                ent.loc = e.getPoint();
-                this.diagram.entities.add(ent);
-                this.controllers.add(new EntityController(this, ent));
-                this.repaint();
+                EntityController.createEntityAt(this, e.getPoint());
                 break;
             }
             
@@ -94,6 +89,12 @@ public class DiagramController extends JPanel
     @Override public void mouseReleased(MouseEvent e) {}
     @Override public void mouseEntered(MouseEvent e) {}
     @Override public void mouseExited(MouseEvent e) {}
+
+    public void addController(Controller c)
+    {
+        this.controllers.add(c);
+        this.repaint();
+    }
 }
 
 // EOF

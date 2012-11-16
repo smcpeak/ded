@@ -32,6 +32,17 @@ public class EntityController extends Controller {
         g.drawRect(this.entity.loc.x, this.entity.loc.y, 
                    this.entity.size.width-1, this.entity.size.height-1);
     }
+
+    /** Create a new entity at location 'p' in 'dc'.  This corresponds to
+      * the user left-clicking on 'p' while in entity creation mode. */
+    public static void createEntityAt(DiagramController dc, Point p)
+    {
+        Entity ent = new Entity();
+        ent.loc = new Point(p.x - ent.size.width/2,
+                            p.y - ent.size.height/2);
+        dc.getDiagram().entities.add(ent);
+        dc.addController(new EntityController(dc, ent));
+    }
 }
 
 // EOF
