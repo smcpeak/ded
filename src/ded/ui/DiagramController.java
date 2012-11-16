@@ -4,20 +4,45 @@ package ded.ui;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import ded.model.Diagram;
 
 /** Widget to display and edit a diagram. */
 public class DiagramController extends JPanel
-    implements MouseListener
+    implements MouseListener, KeyListener
 {
     // ------------- private static data ---------------
     private static final long serialVersionUID = 1266678840598864303L;
+    
+    private static final String helpMessage =
+        "H - This message\n"+
+        "Q - Quit\n"+
+        "S - Select mode\n"+
+        "C - Create entity mode\n"+
+        "A - Create relation (\"arrow\") mode\n"+
+        "I - Create inheritance mode\n"+
+        "Enter - Edit selected thing\n"+
+        "Insert - Insert relation control point\n"+
+        "Delete - Delete selected thing\n"+
+        "Ctrl+S - Save to file\n"+
+        "Ctrl+O - Load from file\n"+
+        "Left click - select\n"+
+        "Ctrl+Left click - multiselect\n"+
+        "Left click+drag - multiselect rectangle\n"+
+        "Right click - properties\n"+
+        "\n"+
+        "When relation selected, H/V/D to change routing,\n"+
+        "and O to toggle owned/shared.\n"+
+        "When inheritance selected, O to change open/closed.\n";
     
     // ------------- private types ---------------
     /** Primary "mode" of the editing interface, indicating what happens
@@ -35,7 +60,10 @@ public class DiagramController extends JPanel
     /** The diagram we are editing. */
     private Diagram diagram;
     
-    /** Set of controllers for elements of the diagram. */
+    /** Set of controllers for elements of the diagram.  For the moment, the order
+      * is supposed to be the same as the corresponding 'diagram' model elements,
+      * but I'm not sure how I'm going to maintain that invariant or if it is
+      * really what I want. */
     private ArrayList<Controller> controllers;
     
     /** Current primary editing mode. */
@@ -51,6 +79,9 @@ public class DiagramController extends JPanel
         this.mode = Mode.DCM_CREATE_ENTITY;
         
         this.addMouseListener(this);
+        this.addKeyListener(this);
+        
+        this.setFocusable(true);
     }
     
     public Diagram getDiagram()
@@ -95,6 +126,29 @@ public class DiagramController extends JPanel
         this.controllers.add(c);
         this.repaint();
     }
+
+    @Override
+    public void keyPressed(KeyEvent e)
+    {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_H:
+                JOptionPane.showMessageDialog(this, helpMessage, 
+                    "Diagram Editor Keybindings",
+                    JOptionPane.INFORMATION_MESSAGE);
+                break;
+                
+            case KeyEvent.VK_Q:
+                SwingUtilities.getWindowAncestor(this).dispose();
+                break;
+                
+            case KeyEvent.VK_X:
+                throw new RuntimeException("Test exception/error message.");
+        }
+    }
+
+    // KeyListener methods I do not care about.
+    @Override public void keyTyped(KeyEvent e) {}
+    @Override public void keyReleased(KeyEvent e) {}
 }
 
 // EOF

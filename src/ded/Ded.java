@@ -3,6 +3,7 @@
 package ded;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import ded.ui.DiagramController;
@@ -30,6 +31,20 @@ public class Ded extends JFrame {
     
     public static void main(String[] args)
     {
+        // Show exceptions in the UI.
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, final Throwable e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        JOptionPane.showMessageDialog(null, e.getMessage(), "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+            }
+        });
+        
         // Kick off the Swing app.
         SwingUtilities.invokeLater(new Runnable() {
           public void run() {
