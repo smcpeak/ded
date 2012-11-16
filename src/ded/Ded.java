@@ -5,13 +5,15 @@ package ded;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
+import ded.ui.DiagramController;
+
 /** Diagram editor. */
 public class Ded extends JFrame {
     // ---------- private static data -------------
     private static final long serialVersionUID = -7931792812267064160L;
 
     // ---------- private data --------------
-    DiagramController diagramController;
+    private DiagramController diagramController;
     
     // ---------- public methods -------------
     public Ded()
