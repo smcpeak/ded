@@ -325,6 +325,10 @@ public class DiagramController extends JPanel
             case KeyEvent.VK_I:
                 this.setMode(Mode.DCM_CREATE_INHERITANCE);
                 break;
+                
+            case KeyEvent.VK_ENTER:
+                this.editSelected();
+                break;
         }
     }
 
@@ -349,6 +353,35 @@ public class DiagramController extends JPanel
         this.repaint();
     }
 
+    /** If there is exactly one controller selected, return it; otherwise
+      * return null. */
+    public Controller getUniqueSelected()
+    {
+        Controller ret = null;
+        
+        for (Controller c : this.controllers) {
+            if (c.isSelected()) {
+                if (ret != null) {
+                    return null;      // More than one is selected.
+                }
+                ret = c;
+            }
+        }
+        
+        return ret;
+    }
+    
+    /** Edit the selected controller, if any. */
+    public void editSelected()
+    {
+        if (this.mode == Mode.DCM_SELECT) {
+            Controller c = this.getUniqueSelected();
+            if (c != null) {
+                c.edit();
+            }
+        }
+    }
+    
     /** Toggle selection state of one controller. */
     public void toggleSelection(Controller c)
     {

@@ -76,6 +76,14 @@ public class EntityController extends Controller {
         dc.getDiagram().entities.add(ent);
         dc.addController(new EntityController(dc, ent));
     }
+    
+    @Override
+    public void edit()
+    {
+        if (EntityDialog.exec(this.diagramController, this.entity)) {
+            this.diagramController.repaint();
+        }
+    }
 }
 
 // EOF

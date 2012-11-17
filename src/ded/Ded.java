@@ -5,8 +5,12 @@ package ded;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 
+import ded.model.Entity;
 import ded.ui.DiagramController;
+import ded.ui.EntityDialog;
 
 /** Diagram editor. */
 public class Ded extends JFrame {
@@ -31,6 +35,20 @@ public class Ded extends JFrame {
     
     public static void main(String[] args)
     {
+        // Use the Nimbus L+F.
+        try {
+            for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        }
+        catch (Exception e) {
+            System.err.println("Could not use Nimbus look and feel: "+e);
+            System.err.println("Falling back to default L+F.");
+        }
+        
         // Show exceptions in the UI.
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
@@ -55,10 +73,13 @@ public class Ded extends JFrame {
         
         // Kick off the Swing app.
         SwingUtilities.invokeLater(new Runnable() {
-          public void run() {
-            Ded ded = new Ded();
-            ded.setVisible(true);
-          }
+            public void run() {
+                // temporary: just run one dialog
+                //EntityDialog.exec(null, new Entity());
+                
+                Ded ded = new Ded();
+                ded.setVisible(true);
+            }
         });
     }
 }

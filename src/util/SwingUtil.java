@@ -2,9 +2,16 @@
 
 package util;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.event.InputEvent;
+
+import javax.swing.Box;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
 
 /** Miscellaneous Swing-related utililities. */
 public class SwingUtil {
@@ -60,6 +67,72 @@ public class SwingUtil {
     public static Point snapPoint(Point p, int snap)
     {
         return new Point(snapInt(p.x, snap), snapInt(p.y, snap));
+    }
+    
+    /** Make a vertical layout box. */
+    public static Box makeVBox(Container parent)
+    {
+        Box b = Box.createVerticalBox();
+        parent.add(b);
+        return b;
+    }
+    
+    /** Make a horizontal layout box. */
+    public static Box makeHBox(Container parent)
+    {
+        Box b = Box.createHorizontalBox();
+        parent.add(b);
+        return b;
+    }
+    
+    /** Make a vertical layout box with the given margin. */
+    public static Box makeMarginVBox(Container parent, int margin)
+    {
+        Box hb = makeHBox(parent);
+        hb.add(Box.createHorizontalStrut(margin));
+        
+        Box vb = makeVBox(hb);
+        vb.add(Box.createVerticalStrut(margin));
+        
+        Box ret = makeVBox(vb);
+        
+        vb.add(Box.createVerticalStrut(margin));
+        hb.add(Box.createHorizontalStrut(margin));
+
+        return ret;
+    }
+    
+    /** Create a line edit control and associated label. */
+    public static JTextField makeLineEdit(Container parent, String label, char mnemonic,
+                                          String initialValue)
+    {
+        Box hbox = makeHBox(parent);
+        JLabel labelControl = new JLabel(label);
+        labelControl.setDisplayedMnemonic(mnemonic);
+        hbox.add(labelControl);
+        
+        hbox.add(Box.createHorizontalStrut(5));
+        
+        JTextField ret = new JTextField(initialValue);
+        hbox.add(ret);
+        labelControl.setLabelFor(ret);
+
+        disallowVertStretch(hbox);
+        
+        return ret;
+    }
+    
+    /** Set min/max height to preferred height in order to disallow
+      * vertical stretching. */
+    public static void disallowVertStretch(Component c)
+    {
+        Dimension pref = c.getPreferredSize();
+        Dimension max = c.getMaximumSize();
+        Dimension min = c.getMinimumSize();
+        max.height = pref.height;
+        min.height = pref.height;
+        c.setMaximumSize(max);
+        c.setMinimumSize(min);
     }
 }
 

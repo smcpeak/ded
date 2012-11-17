@@ -151,6 +151,9 @@ public abstract class Controller {
     public void dragTo(Point p)
     {}
 
+    /** Edit the attributes of the controlled element using a dialog box. */
+    public void edit()
+    {}
 }
 
 // EOF
