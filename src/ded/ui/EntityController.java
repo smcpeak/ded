@@ -4,6 +4,12 @@ package ded.ui;
 
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.event.MouseEvent;
+import java.util.HashSet;
+import java.util.Set;
+
+import util.SwingUtil;
 
 import ded.model.Entity;
 
@@ -29,10 +35,31 @@ public class EntityController extends Controller {
     @Override
     public void paint(Graphics g)
     {
+        super.paint(g);
         g.drawRect(this.entity.loc.x, this.entity.loc.y, 
-                   this.entity.size.width-1, this.entity.size.height-1);
+                   this.entity.size.width, this.entity.size.height);
     }
 
+    @Override
+    public Set<Polygon> getBounds()
+    {
+        Polygon p = SwingUtil.rectPolygon(
+            this.entity.loc.x,
+            this.entity.loc.y,
+            this.entity.size.width,
+            this.entity.size.height);
+        
+        Set<Polygon> ret = new HashSet<Polygon>();
+        ret.add(p);
+        return ret;
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e)
+    {
+        this.mouseSelect(e, false /*wantDrag*/);
+    }
+    
     /** Create a new entity at location 'p' in 'dc'.  This corresponds to
       * the user left-clicking on 'p' while in entity creation mode. */
     public static void createEntityAt(DiagramController dc, Point p)

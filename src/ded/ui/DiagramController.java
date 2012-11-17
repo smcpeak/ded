@@ -4,6 +4,8 @@ package ded.ui;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -13,6 +15,8 @@ import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+
+import util.SwingUtil;
 
 import ded.model.Diagram;
 
@@ -82,6 +86,19 @@ public class DiagramController extends JPanel
     
     /** Current primary editing mode. */
     private Mode mode;
+
+    /** If DCM_RECT_LASSO, the point where the mouse button was originally pressed. */
+    private Point lassoStart;
+
+    /** If DCM_RECT_LASSO, the current mouse position. */
+    private Point lassoEnd;
+
+    /** If CFM_DRAGGING, this is the controller being moved. */
+    private Controller dragging;
+
+    /** If CFM_DRAGGING, this is the vector from the original mouse click point
+      * to the Controller's original getLoc(). */ 
+    private Point dragOffset;
     
     // ------------- public methods ---------------
     public DiagramController()
@@ -108,11 +125,11 @@ public class DiagramController extends JPanel
     {
         super.paint(g);
 
-        if (mode != Mode.DCM_SELECT) {
-            g.drawString("Mode: " + mode.description, 3, this.getHeight()-4);
+        if (this.mode != Mode.DCM_SELECT) {
+            g.drawString("Mode: " + this.mode.description, 3, this.getHeight()-4);
         }
         
-        for (Controller c : controllers) {
+        for (Controller c : this.controllers) {
             c.paint(g);
         }
     }
@@ -120,16 +137,70 @@ public class DiagramController extends JPanel
     @Override
     public void mousePressed(MouseEvent e)
     {
-        switch (mode) {
+        switch (this.mode) {
+            case DCM_SELECT: {
+                // Clicked a controller?
+                Controller c = this.hitTest(e.getPoint(), null);
+                if (c == null) {
+                    if ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0) {
+                        // Control is pressed.  We missed all controls, so ignore.
+                    }
+                    else {
+                        if (this.deselectAll() > 0) {
+                            this.repaint();
+                        }
+                        
+                        if (false && e.getButton() == MouseEvent.BUTTON1) {
+                            // Enter lasso mode.
+                            setMode(Mode.DCM_RECT_LASSO);
+                            this.lassoStart = this.lassoEnd = e.getPoint();
+                        }
+                    }
+                }
+                else {
+                    c.mousePressed(e);
+                }
+                break;
+            }
+            
             case DCM_CREATE_ENTITY: {
                 EntityController.createEntityAt(this, e.getPoint());
                 this.setMode(Mode.DCM_SELECT);
                 break;
             }
-            
-            default:
-                // TODO: handle other modes
         }
+    }
+
+    /** Deselect all controllers and return the number that were previously selected. */
+    public int deselectAll()
+    {
+        int ct = 0;
+        for (Controller c : this.controllers) {
+            if (c.isSelected()) {
+                c.setSelected(SelectionState.SS_UNSELECTED);
+                ct++;
+            }
+        }
+        return ct;
+    }
+
+    /** Return the top-most Controller that contains 'point' and satisfies 'filter'
+      * (if it is not null), or null if none does. */
+    private Controller hitTest(Point point, ControllerFilter filter)
+    {
+        // Go backwards for top-down order.
+        for (int i = this.controllers.size()-1; i >= 0; i--) {
+            Controller c = this.controllers.get(i);
+            
+            if (filter != null && filter.satisfies(c) == false) {
+                continue;
+            }
+            
+            if (c.boundsContains(point)) {
+                return c;
+            }
+        }
+        return null;
     }
 
     // MouseListener methods I do not care about.
@@ -188,6 +259,62 @@ public class DiagramController extends JPanel
     // KeyListener methods I do not care about.
     @Override public void keyTyped(KeyEvent e) {}
     @Override public void keyReleased(KeyEvent e) {}
+
+    /** Toggle selection state of one controller. */
+    public void toggleSelection(Controller c)
+    {
+        if (c.isSelected()) {
+            c.setSelected(SelectionState.SS_UNSELECTED);
+        }
+        else {
+            c.setSelected(SelectionState.SS_SELECTED);
+        }
+
+        this.normalizeExclusiveSelect();
+        this.repaint();
+    }
+
+    /** If exactly one controller is selected, set its state to
+      * SS_EXCLUSIVE; otherwise, set all selected controllers to
+      * SS_SELECTED. */
+    public void normalizeExclusiveSelect()
+    {
+        // First selected controller found.
+        Controller sel = null;
+
+        for (Controller c : this.controllers) {
+            if (c.isSelected()) {
+                if (sel != null) {
+                    // More than one is selected.
+                    if (sel.getSelState() != SelectionState.SS_SELECTED) {
+                        sel.setSelected(SelectionState.SS_SELECTED);
+                    }
+                    c.setSelected(SelectionState.SS_SELECTED);
+                }
+                else {
+                    // Exactly one selected (so far).
+                    sel = c;
+                    sel.setSelected(SelectionState.SS_EXCLUSIVE);
+                }
+            }
+        }
+    }
+
+    /** Select a single controller. */
+    public void selectOnly(Controller c)
+    {
+        this.deselectAll();
+        c.setSelected(SelectionState.SS_EXCLUSIVE);
+        this.repaint();
+    }
+
+    /** Change mode to DCM_DRAGGING, dragging 'c' from 'pt'. */
+    public void beginDragging(Controller c, Point pt)
+    {
+        this.dragging = c;
+        this.dragOffset = SwingUtil.subtract(pt, c.getLoc());
+        this.setMode(Mode.DCM_DRAGGING);
+    }
 }
 
 // EOF
