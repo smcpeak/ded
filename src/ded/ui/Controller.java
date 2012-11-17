@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.Set;
@@ -92,6 +93,18 @@ public abstract class Controller {
         Set<Polygon> bounds = getBounds();
         for (Polygon p : bounds) {
             if (p.contains(point)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /** Return true if 'rect' intersects the click boundary. */
+    public boolean boundsIntersects(Rectangle rect)
+    {
+        Set<Polygon> bounds = getBounds();
+        for (Polygon p : bounds) {
+            if (p.intersects(rect)) {
                 return true;
             }
         }

@@ -5,6 +5,7 @@ package ded.ui;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -129,50 +130,21 @@ public class DiagramController extends JPanel
     {
         super.paint(g);
 
+        // Controllers.
+        for (Controller c : this.controllers) {
+            c.paint(g);
+        }
+
+        // Lasso rectangle.
+        if (this.mode == Mode.DCM_RECT_LASSO) {
+            Rectangle r = this.getLassoRect();
+            g.drawRect(r.x, r.y, r.width, r.height);
+        }
+        
         if (this.mode != Mode.DCM_SELECT) {
             g.drawString("Mode: " + this.mode.description, 3, this.getHeight()-4);
         }
         
-        for (Controller c : this.controllers) {
-            c.paint(g);
-        }
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e)
-    {
-        switch (this.mode) {
-            case DCM_SELECT: {
-                // Clicked a controller?
-                Controller c = this.hitTest(e.getPoint(), null);
-                if (c == null) {
-                    if (SwingUtil.controlPressed(e)) {
-                        // Control is pressed.  We missed all controls, so ignore.
-                    }
-                    else {
-                        if (this.deselectAll() > 0) {
-                            this.repaint();
-                        }
-                        
-                        if (false && e.getButton() == MouseEvent.BUTTON1) {
-                            // Enter lasso mode.
-                            setMode(Mode.DCM_RECT_LASSO);
-                            this.lassoStart = this.lassoEnd = e.getPoint();
-                        }
-                    }
-                }
-                else {
-                    c.mousePressed(e);
-                }
-                break;
-            }
-            
-            case DCM_CREATE_ENTITY: {
-                EntityController.createEntityAt(this, e.getPoint());
-                this.setMode(Mode.DCM_SELECT);
-                break;
-            }
-        }
     }
 
     /** Deselect all controllers and return the number that were previously selected. */
@@ -208,6 +180,43 @@ public class DiagramController extends JPanel
     }
 
     @Override
+    public void mousePressed(MouseEvent e)
+    {
+        switch (this.mode) {
+            case DCM_SELECT: {
+                // Clicked a controller?
+                Controller c = this.hitTest(e.getPoint(), null);
+                if (c == null) {
+                    if (SwingUtil.controlPressed(e)) {
+                        // Control is pressed.  We missed all controls, so ignore.
+                    }
+                    else {
+                        if (this.deselectAll() > 0) {
+                            this.repaint();
+                        }
+                        
+                        if (SwingUtilities.isLeftMouseButton(e)) {
+                            // Enter lasso mode.
+                            setMode(Mode.DCM_RECT_LASSO);
+                            this.lassoStart = this.lassoEnd = e.getPoint();
+                        }
+                    }
+                }
+                else {
+                    c.mousePressed(e);
+                }
+                break;
+            }
+            
+            case DCM_CREATE_ENTITY: {
+                EntityController.createEntityAt(this, e.getPoint());
+                this.setMode(Mode.DCM_SELECT);
+                break;
+            }
+        }
+    }
+
+    @Override
     public void mouseDragged(MouseEvent e)
     {
         if (this.mode == Mode.DCM_DRAGGING) {
@@ -240,6 +249,12 @@ public class DiagramController extends JPanel
                 this.dragging.dragTo(destLoc);
             }
             
+            this.repaint();
+        }
+        
+        if (this.mode == Mode.DCM_RECT_LASSO) {
+            this.lassoEnd = e.getPoint();
+            this.selectAccordingToLasso();
             this.repaint();
         }
     }
@@ -320,6 +335,17 @@ public class DiagramController extends JPanel
     public void setMode(Mode m)
     {
         this.mode = m;
+        
+        if (m != Mode.DCM_DRAGGING) {
+            this.dragging = null;
+            this.dragOffset = new Point(0,0);
+        }
+        
+        if (m != Mode.DCM_RECT_LASSO) {
+            this.lassoStart = this.lassoEnd = new Point(0,0);
+        }
+        
+        this.selfCheck();
         this.repaint();
     }
 
@@ -393,6 +419,41 @@ public class DiagramController extends JPanel
             c.globalSelfCheck(this.diagram);
         }
     }
+    
+    /** Return the current lasso rectangle. */
+    protected Rectangle getLassoRect()
+    {
+        return new Rectangle(
+            Math.min(this.lassoStart.x, this.lassoEnd.x),
+            Math.min(this.lassoStart.y, this.lassoEnd.y),
+            Math.abs(this.lassoEnd.x - this.lassoStart.x),
+            Math.abs(this.lassoEnd.y - this.lassoStart.y));
+    }
+    
+    /** Set the set of selected controllers according to the lasso. */
+    protected void selectAccordingToLasso()
+    {
+        Rectangle lasso = this.getLassoRect();
+        
+        Controller last = null;
+        int count = 0;
+        for (Controller c : this.controllers) {
+            if (c.boundsIntersects(lasso)) {
+                c.setSelected(SelectionState.SS_SELECTED);
+                last = c;
+                count++;
+            }
+            else {
+                c.setSelected(SelectionState.SS_UNSELECTED);
+            }
+        }
+        
+        // Enable resize handles for a single selection.
+        if (count == 1) {
+            last.setSelected(SelectionState.SS_EXCLUSIVE);
+        }
+    }
+
 }
 
 // EOF

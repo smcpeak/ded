@@ -5,7 +5,6 @@ package util;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 
 /** Miscellaneous Swing-related utililities. */
 public class SwingUtil {
