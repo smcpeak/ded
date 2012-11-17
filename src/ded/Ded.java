@@ -38,7 +38,15 @@ public class Ded extends JFrame {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        JOptionPane.showMessageDialog(null, e.getMessage(), "Error",
+                        String msg = e.getClass().getSimpleName();
+                        
+                        String m = e.getMessage();
+                        if (m != null) {
+                            msg += ": " + m;
+                        }
+                        
+                        JOptionPane.showMessageDialog(null, 
+                            msg, "Error",
                             JOptionPane.ERROR_MESSAGE);
                     }
                 });

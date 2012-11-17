@@ -31,6 +31,12 @@ public class EntityController extends Controller {
     {
         return this.entity.loc;
     }
+
+    @Override
+    public void dragTo(Point p)
+    {
+        this.entity.loc = p;
+    }
     
     @Override
     public void paint(Graphics g)
@@ -57,7 +63,7 @@ public class EntityController extends Controller {
     @Override
     public void mousePressed(MouseEvent e)
     {
-        this.mouseSelect(e, false /*wantDrag*/);
+        this.mouseSelect(e, true /*wantDrag*/);
     }
     
     /** Create a new entity at location 'p' in 'dc'.  This corresponds to

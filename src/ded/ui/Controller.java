@@ -6,10 +6,13 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Polygon;
-import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.Set;
+
+import ded.model.Diagram;
+
+import util.SwingUtil;
 
 
 /** Generic UI object that can be interacted with to edit some part of the diagram. */
@@ -100,7 +103,7 @@ public abstract class Controller {
     public void mouseSelect(MouseEvent e, boolean wantDrag)
     {
         if (e.getButton() == MouseEvent.BUTTON1) {
-            if ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0) {
+            if (SwingUtil.controlPressed(e)) {
                 // Toggle selection state
                 this.diagramController.toggleSelection(this);
             }
@@ -119,6 +122,21 @@ public abstract class Controller {
     
     // Input handlers.
     public void mousePressed(MouseEvent e) {}
+
+    /** Assert invariants. */
+    public void selfCheck()
+    {}
+    
+    /** Assert invariants against diagram too. */
+    public void globalSelfCheck(Diagram diagram)
+    {
+        this.selfCheck();
+    }
+
+    /** Move the 'getLoc()' point to 'p'.  Default implementation is no-op. */
+    // Should this be renamed to 'setLoc'?
+    public void dragTo(Point p)
+    {}
 
 }
 

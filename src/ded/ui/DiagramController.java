@@ -5,11 +5,11 @@ package ded.ui;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
@@ -22,7 +22,7 @@ import ded.model.Diagram;
 
 /** Widget to display and edit a diagram. */
 public class DiagramController extends JPanel
-    implements MouseListener, KeyListener
+    implements MouseListener, MouseMotionListener, KeyListener
 {
     // ------------- private static data ---------------
     private static final long serialVersionUID = 1266678840598864303L;
@@ -47,6 +47,9 @@ public class DiagramController extends JPanel
         "When relation selected, H/V/D to change routing,\n"+
         "and O to toggle owned/shared.\n"+
         "When inheritance selected, O to change open/closed.\n";
+
+    /** Granularity of drag/move snap action. */
+    private static final int SNAP_DIST = 5;
     
     // ------------- private types ---------------
     /** Primary "mode" of the editing interface, indicating what happens
@@ -110,6 +113,7 @@ public class DiagramController extends JPanel
         this.mode = Mode.DCM_SELECT;
         
         this.addMouseListener(this);
+        this.addMouseMotionListener(this);
         this.addKeyListener(this);
         
         this.setFocusable(true);
@@ -142,7 +146,7 @@ public class DiagramController extends JPanel
                 // Clicked a controller?
                 Controller c = this.hitTest(e.getPoint(), null);
                 if (c == null) {
-                    if ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0) {
+                    if (SwingUtil.controlPressed(e)) {
                         // Control is pressed.  We missed all controls, so ignore.
                     }
                     else {
@@ -203,12 +207,65 @@ public class DiagramController extends JPanel
         return null;
     }
 
+    @Override
+    public void mouseDragged(MouseEvent e)
+    {
+        if (this.mode == Mode.DCM_DRAGGING) {
+            this.selfCheck();
+            
+            // Where are we going to move the dragged object's main point?
+            Point destLoc = SwingUtil.subtract(e.getPoint(), this.dragOffset);
+            
+            if (this.dragging.isSelected()) {
+                // Snap if moving an entity and Shift not held.
+                if (this.dragging instanceof EntityController &&
+                    !SwingUtil.shiftPressed(e)) 
+                {
+                    destLoc = SwingUtil.snapPoint(destLoc, SNAP_DIST);
+                }
+                
+                // How far are we going to move the dragged object?
+                Point delta = SwingUtil.subtract(destLoc, this.dragging.getLoc());
+                
+                // Move all selected controls by that amount.
+                for (Controller c : this.controllers) {
+                    if (!c.isSelected()) { continue; }
+                    
+                    Point cur = c.getLoc();
+                    c.dragTo(SwingUtil.add(cur, delta));
+                }
+            }
+            else {
+                // Dragging item is not selected; must be a resize handle.
+                this.dragging.dragTo(destLoc);
+            }
+            
+            this.repaint();
+        }
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) 
+    {
+        // Click+drag should only be initiated with left mouse button, so ignore
+        // release of others.
+        if (!SwingUtilities.isLeftMouseButton(e)) {
+            return;
+        }
+        
+        if (this.mode == Mode.DCM_DRAGGING || this.mode == Mode.DCM_RECT_LASSO) {
+            this.setMode(Mode.DCM_SELECT);
+        }
+    }
+    
     // MouseListener methods I do not care about.
     @Override public void mouseClicked(MouseEvent e) {}
-    @Override public void mouseReleased(MouseEvent e) {}
     @Override public void mouseEntered(MouseEvent e) {}
     @Override public void mouseExited(MouseEvent e) {}
 
+    // MouseMotionListener events I do not care about.
+    @Override public void mouseMoved(MouseEvent e) {}
+    
     public void addController(Controller c)
     {
         this.controllers.add(c);
@@ -230,7 +287,13 @@ public class DiagramController extends JPanel
                 break;
                 
             case KeyEvent.VK_X:
-                throw new RuntimeException("Test exception/error message.");
+                if (SwingUtil.shiftPressed(e)) {
+                    assert(false);     // Make sure assertions are enabled.
+                }
+                else {
+                    throw new RuntimeException("Test exception/error message.");
+                }
+                break;
                 
             case KeyEvent.VK_C:
                 this.setMode(Mode.DCM_CREATE_ENTITY);
@@ -250,15 +313,15 @@ public class DiagramController extends JPanel
         }
     }
 
-    private void setMode(Mode m)
+    // KeyListener methods I do not care about.
+    @Override public void keyTyped(KeyEvent e) {}
+    @Override public void keyReleased(KeyEvent e) {}
+
+    public void setMode(Mode m)
     {
         this.mode = m;
         this.repaint();
     }
-
-    // KeyListener methods I do not care about.
-    @Override public void keyTyped(KeyEvent e) {}
-    @Override public void keyReleased(KeyEvent e) {}
 
     /** Toggle selection state of one controller. */
     public void toggleSelection(Controller c)
@@ -314,6 +377,21 @@ public class DiagramController extends JPanel
         this.dragging = c;
         this.dragOffset = SwingUtil.subtract(pt, c.getLoc());
         this.setMode(Mode.DCM_DRAGGING);
+    }
+
+    /** Check internal invariants, throw assertion failure if violated. */
+    public void selfCheck()
+    {
+        if (this.mode == Mode.DCM_DRAGGING) {
+            assert(this.dragging != null);
+        }
+        else {
+            assert(this.dragging == null);
+        }
+        
+        for (Controller c : this.controllers) {
+            c.globalSelfCheck(this.diagram);
+        }
     }
 }
 
