@@ -4,6 +4,7 @@ package ded.model;
 
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Rectangle;
 
 import util.StringUtil;
 
@@ -33,6 +34,11 @@ public class Entity {
         this.shape = EntityShape.ES_RECTANGLE;
         this.name = "";
         this.attributes = "";
+    }
+
+    public Rectangle getRect()
+    {
+        return new Rectangle(this.loc, this.size);
     }
     
     public String toString()

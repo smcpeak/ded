@@ -35,7 +35,7 @@ public class DiagramController extends JPanel
         "C - Create entity mode\n"+
         "A - Create relation (\"arrow\") mode\n"+
         "I - Create inheritance mode\n"+
-        "Enter - Edit selected thing\n"+
+        "Enter or Double click - Edit selected thing\n"+
         "Insert - Insert relation control point\n"+
         "Delete - Delete selected thing\n"+
         "Ctrl+S - Save to file\n"+
@@ -49,8 +49,9 @@ public class DiagramController extends JPanel
         "and O to toggle owned/shared.\n"+
         "When inheritance selected, O to change open/closed.\n";
 
+    // ------------- public static data ---------------
     /** Granularity of drag/move snap action. */
-    private static final int SNAP_DIST = 5;
+    public static final int SNAP_DIST = 5;
     
     // ------------- private types ---------------
     /** Primary "mode" of the editing interface, indicating what happens
@@ -273,8 +274,19 @@ public class DiagramController extends JPanel
         }
     }
     
+    @Override
+    public void mouseClicked(MouseEvent e) 
+    {
+        // Double-click on control to edit it.
+        if (SwingUtilities.isLeftMouseButton(e) && (e.getClickCount() == 2)) {
+            Controller c = this.hitTest(e.getPoint(), null);
+            if (c != null) {
+                c.edit();
+            }
+        }
+    }
+    
     // MouseListener methods I do not care about.
-    @Override public void mouseClicked(MouseEvent e) {}
     @Override public void mouseEntered(MouseEvent e) {}
     @Override public void mouseExited(MouseEvent e) {}
 

@@ -5,14 +5,19 @@ package util;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
-
+import java.awt.font.LineMetrics;
 import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.JComponent;
@@ -21,6 +26,7 @@ import javax.swing.JLabel;
 import javax.swing.JRootPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 
 /** Miscellaneous Swing-related utililities. */
 public class SwingUtil {
@@ -122,10 +128,37 @@ public class SwingUtil {
         
         hbox.add(Box.createHorizontalStrut(5));
         
-        JTextField ret = new JTextField(initialValue);
+        final JTextField ret = new JTextField(initialValue);
         hbox.add(ret);
         labelControl.setLabelFor(ret);
 
+        // Arrange to select all the text when the box receives focus.
+        // http://stackoverflow.com/questions/1178312/how-to-select-all-text-in-a-jformattedtextfield-when-it-gets-focus
+        ret.addFocusListener(new FocusAdapter() {
+            public void focusGained(FocusEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        ret.selectAll();
+                    }
+                });
+            }
+            
+            // This refinement removes focus when we leave.  The Swing
+            // text controls draw the selected text with the selection
+            // background even when the control does not have the focus,
+            // which is different from how Qt does it and looks dumb
+            // since tabbing from text control to text control then
+            // works differently from tabbing from text control to some
+            // other kind of control (like a dropdown or button).
+            public void focusLost(FocusEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        ret.select(0,0);
+                    }
+                });
+            }
+        });
+        
         disallowVertStretch(hbox);
         
         return ret;
@@ -185,6 +218,45 @@ public class SwingUtil {
             new WindowCloseAction(dialog),
             KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
             JComponent.WHEN_IN_FOCUSED_WINDOW);
+    }
+
+    /** Draw 'str' centered in 'r'. */
+    public static void drawCenteredText(Graphics g, Rectangle r, String str)
+    {
+        FontMetrics fm = g.getFontMetrics();
+        LineMetrics lm = fm.getLineMetrics(str, g);
+
+        // Go to center of 'r', then add (a+d)/2 to get to the bottom
+        // of the text, then subtract d; then simplify algebraically.
+        int baseY = r.y + r.height/2 +
+                    (int)((lm.getAscent() - lm.getDescent())/2);
+
+        int baseX = r.x + r.width/2 - fm.stringWidth(str)/2;
+        
+        g.drawString(str, baseX, baseY);
+    }
+
+    /** Draw 'str' at the given location, but process newlines by moving
+      * to a new line. */
+    public static void drawTextWithNewlines(Graphics g, String str, int x, int y)
+    {
+        String lines[] = str.split("\n");
+        int lineHeight = g.getFontMetrics().getHeight();
+        for (String s : lines) {
+            g.drawString(s, x, y);
+            y += lineHeight;
+        }
+    }
+    
+    /** Return a new rectangle that exceeds 'r' by 'd' pixels on all
+      * sides, keeping the center the same.  * If 'd' is negative,
+      * the new rectangle is smaller. */  
+    public static Rectangle growRectangle(Rectangle r, int d)
+    {
+        return new Rectangle(r.x - d,
+                             r.y - d,
+                             r.width + d*2,
+                             r.height + d*2);
     }
 }
 
