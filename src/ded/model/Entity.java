@@ -39,7 +39,7 @@ public class Entity {
     {
         return "{loc:["+this.loc.x+","+this.loc.y+"]"+
                ",size:["+this.size.width+","+this.size.height+"]"+
-               ",shape:\""+this.shape+"\""+
+               ",shape:\""+this.shape.name()+"\""+
                ",name:"+StringUtil.quoteAsJSONASCII(this.name)+
                ",attributes:"+StringUtil.quoteAsJSONASCII(this.attributes)+
                "}";

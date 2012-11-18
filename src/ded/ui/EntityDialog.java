@@ -9,9 +9,12 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.EnumSet;
+import java.util.Vector;
 
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -19,12 +22,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 
 import util.SwingUtil;
 
 import ded.model.Entity;
+import ded.model.EntityShape;
 
 /** Dialog box to edit an Entity. */
 public class EntityDialog extends JDialog {
@@ -37,7 +40,7 @@ public class EntityDialog extends JDialog {
     // Controls.
     private JTextField nameText;
     private JTextArea attributeText;
-    // TODO: shape
+    private JComboBox shapeChooser;
     private JTextField xText, yText, wText, hText;
     
     // -------------- public data --------------
@@ -92,6 +95,29 @@ public class EntityDialog extends JDialog {
             vb.add(Box.createVerticalStrut(5));
         }
 
+        // Shape
+        {
+            Box shapeHBox = SwingUtil.makeHBox(vb);
+            
+            JLabel lbl = new JLabel("Shape:");
+            lbl.setDisplayedMnemonic('s');
+            shapeHBox.add(lbl);
+            shapeHBox.add(Box.createHorizontalStrut(5));
+            
+            // Put all shapes into a vector.
+            EnumSet<EntityShape> esSet = EnumSet.allOf(EntityShape.class);
+            Vector<EntityShape> esVector = new Vector<EntityShape>();
+            esVector.addAll(esSet);
+            
+            this.shapeChooser = new JComboBox(esVector);
+            this.shapeChooser.setSelectedItem(this.entity.shape);
+            lbl.setLabelFor(this.shapeChooser);
+            shapeHBox.add(this.shapeChooser);
+            
+            vb.add(Box.createVerticalStrut(5));
+            SwingUtil.disallowVertStretch(shapeHBox);
+        }
+        
         // x, y
         {
             Box locBox = SwingUtil.makeHBox(vb);
@@ -162,6 +188,7 @@ public class EntityDialog extends JDialog {
         // Update the entity.
         this.entity.name = this.nameText.getText();
         this.entity.attributes = this.attributeText.getText();
+        this.entity.shape = (EntityShape)this.shapeChooser.getSelectedItem();
         this.entity.loc.x = x;
         this.entity.loc.y = y;
         this.entity.size.width = w;
