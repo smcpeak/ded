@@ -74,11 +74,27 @@ public class Ded extends JFrame {
         // Kick off the Swing app.
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                // temporary: just run one dialog
-                //EntityDialog.exec(null, new Entity());
-                
-                Ded ded = new Ded();
-                ded.setVisible(true);
+                // for testing during development: just run one dialog
+                if (false) {
+                    Entity e = new Entity();
+                    e.name = "name";
+                    e.attributes = "attr1\nattr2\nattr3\n";
+                    e.loc.x = 10;
+                    e.loc.y = 20;
+                    e.size.width = 30;
+                    e.size.height = 40;
+                    System.out.println("e: "+e);
+                    
+                    boolean okPressed = EntityDialog.exec(null, e);
+                    
+                    System.out.println("okPressed: "+okPressed);
+                    System.out.println("e: "+e);
+                }
+
+                else {
+                    Ded ded = new Ded();
+                    ded.setVisible(true);
+                }
             }
         });
     }

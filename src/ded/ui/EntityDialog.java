@@ -7,12 +7,15 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -33,19 +36,33 @@ public class EntityDialog extends JDialog {
     
     // Controls.
     private JTextField nameText;
+    private JTextArea attributeText;
+    // TODO: shape
+    private JTextField xText, yText, wText, hText;
     
+    // -------------- public data --------------
+    /** Initially false, this is set to true if the dialog is closed
+     * by pressing the OK button. */
+    public boolean okWasPressed;
+   
     // -------------- methods ---------------
     public EntityDialog(Window documentParent, Entity entity)
     {
         super(documentParent, "Edit Entity", Dialog.ModalityType.DOCUMENT_MODAL);
         
         this.entity = entity;
+        this.okWasPressed = false;
         
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
+        // NOTE: This dialog is not laid out well.  I have not yet figured out
+        // a good way to do dialog layout well with Swing (whereas it is easy
+        // with Qt).  So the code here should not be treated as a good example
+        // on which to base other dialog implementations.
+        
         Box vb = SwingUtil.makeMarginVBox(this, 11);
       
-        this.nameText = SwingUtil.makeLineEdit(vb, "Name:", 'n', "initial name");
+        this.nameText = SwingUtil.makeLineEdit(vb, "Name:", 'n', this.entity.name);
         vb.add(Box.createVerticalStrut(5));
         
         // attributes
@@ -57,15 +74,15 @@ public class EntityDialog extends JDialog {
             attrBox.add(lbl);
             attrBox.add(Box.createHorizontalGlue());
             
-            JTextArea ta = new JTextArea("initial attribute1\ninitial attribute2\ninitial attribute3\n");
-            lbl.setLabelFor(ta);
+            this.attributeText = new JTextArea(this.entity.attributes);
+            lbl.setLabelFor(this.attributeText);
 
             // Tab and shift-tab should move the focus, not insert characters.
             // http://stackoverflow.com/questions/5042429/how-can-i-modify-the-behavior-of-the-tab-key-in-a-jtextarea
-            ta.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
-            ta.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
+            this.attributeText.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+            this.attributeText.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
             
-            JScrollPane scroll = new JScrollPane(ta);
+            JScrollPane scroll = new JScrollPane(this.attributeText);
             
             // This is what establishes the initial size of the dialog, as the
             // scroll pane is the main resizable thing.
@@ -78,9 +95,9 @@ public class EntityDialog extends JDialog {
         // x, y
         {
             Box locBox = SwingUtil.makeHBox(vb);
-            SwingUtil.makeLineEdit(locBox, "X:", 'x', "50");
+            this.xText = SwingUtil.makeLineEdit(locBox, "X:", 'x', String.valueOf(this.entity.loc.x));
             locBox.add(Box.createHorizontalStrut(5));
-            SwingUtil.makeLineEdit(locBox, "Y:", 'y', "60");
+            this.yText = SwingUtil.makeLineEdit(locBox, "Y:", 'y', String.valueOf(this.entity.loc.y));
             vb.add(Box.createVerticalStrut(5));
             SwingUtil.disallowVertStretch(locBox);
         }
@@ -88,9 +105,9 @@ public class EntityDialog extends JDialog {
         // w, h
         {
             Box sizeBox = SwingUtil.makeHBox(vb);
-            SwingUtil.makeLineEdit(sizeBox, "W:", 'w', "70");
+            this.wText = SwingUtil.makeLineEdit(sizeBox, "W:", 'w', String.valueOf(this.entity.size.width));
             sizeBox.add(Box.createHorizontalStrut(5));
-            SwingUtil.makeLineEdit(sizeBox, "H:", 'h', "80");
+            this.hText = SwingUtil.makeLineEdit(sizeBox, "H:", 'h', String.valueOf(this.entity.size.height));
             vb.add(Box.createVerticalStrut(5));
             SwingUtil.disallowVertStretch(sizeBox);
         }
@@ -99,15 +116,62 @@ public class EntityDialog extends JDialog {
         {
             Box btnBox = SwingUtil.makeHBox(vb);
             btnBox.add(Box.createHorizontalGlue());
-            btnBox.add(new JButton("Cancel"));
+            
+            JButton cancelButton = new JButton("Cancel");
+            cancelButton.addActionListener(new SwingUtil.WindowCloseAction(this));
+            btnBox.add(cancelButton);
+            
             btnBox.add(Box.createHorizontalStrut(5));
-            btnBox.add(new JButton("OK"));
+            
+            JButton okButton = new JButton("OK");
+            okButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    EntityDialog.this.okPressed();
+                }
+            });
+            btnBox.add(okButton);
+            this.getRootPane().setDefaultButton(okButton);
+            
             SwingUtil.disallowVertStretch(btnBox);
         }
 
+        SwingUtil.installEscapeCloseOperation(this);
+        
         this.pack();
     }
 
+    /** React to the OK button being pressed. */
+    public void okPressed()
+    {
+        // Parse/validate all the integers first.
+        int x, y, w, h;
+        try {
+            x = Integer.valueOf(this.xText.getText());
+            y = Integer.valueOf(this.yText.getText());
+            w = Integer.valueOf(this.wText.getText());
+            h = Integer.valueOf(this.hText.getText());
+        }
+        catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, 
+                "At least one of x/y/w/h is not a valid integer.",
+                "Input Validation Error",
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        // Update the entity.
+        this.entity.name = this.nameText.getText();
+        this.entity.attributes = this.attributeText.getText();
+        this.entity.loc.x = x;
+        this.entity.loc.y = y;
+        this.entity.size.width = w;
+        this.entity.size.height = h;
+
+        // Close dialog, signaling that a change was made.
+        this.okWasPressed = true;
+        SwingUtil.closeWindow(this);
+    }
+    
     /** Print component sizes for debugging. */
     public static void printSizes(String label, Component c)
     {
@@ -126,10 +190,9 @@ public class EntityDialog extends JDialog {
             documentParent!=null?
                 SwingUtilities.getWindowAncestor(documentParent) : null;
         EntityDialog dialog = new EntityDialog(parentWindow, entity);
-        //dialog.pack();
         dialog.setVisible(true);        // Blocks until dialog is closed!
         
-        return false;
+        return dialog.okWasPressed;
     }
 }
 
