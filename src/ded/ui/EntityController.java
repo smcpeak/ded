@@ -159,11 +159,7 @@ public class EntityController extends Controller {
     /** Return the rectangle describing this controller's bounds. */
     public Rectangle getRect()
     {
-        return new Rectangle(
-            this.entity.loc.x,
-            this.entity.loc.y,
-            this.entity.size.width,
-            this.entity.size.height);
+        return this.entity.getRect();
     }
     
     @Override
