@@ -1,0 +1,22 @@
+#!/bin/sh
+# launch Diagram Editor
+
+# resolve symlinks
+me="$0"
+resolved=`readlink "$me"`
+while [ $? -eq 0 -a x"$me" != x"$resolved" ]; do
+  me="$resolved"
+  resolved=`readlink "$me"`
+done
+
+instdir=`dirname "$me"`
+classpath="$instdir/bin"
+
+if [ -d "$classpath" ]; then
+  exec java -classpath "$classpath" ded.Ded "$@"
+else
+  echo "Missing directory: $classpath"
+  echo "Maybe the sources are not compiled?"
+fi
+
+# EOF
