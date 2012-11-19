@@ -14,8 +14,11 @@ import ded.ui.EntityDialog;
 
 /** Diagram editor. */
 public class Ded extends JFrame {
-    // ---------- private static data -------------
+    // ---------- constants -------------
     private static final long serialVersionUID = -7931792812267064160L;
+    
+    /** Window title when there is no file name, or prefix of it when there is. */
+    public static final String windowTitle = "Diagram Editor";
 
     // ---------- private data --------------
     private DiagramController diagramController;
@@ -23,17 +26,17 @@ public class Ded extends JFrame {
     // ---------- public methods -------------
     public Ded()
     {
-        super("Diagram editor");
+        super(windowTitle);
         
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.setSize(800,600);
         
-        this.diagramController = new DiagramController();
+        this.diagramController = new DiagramController(this);
         this.diagramController.setOpaque(true);
         this.setContentPane(this.diagramController);
     }
     
-    public static void main(String[] args)
+    public static void main(final String[] args)
     {
         // Use the Nimbus L+F.
         try {
@@ -98,6 +101,11 @@ public class Ded extends JFrame {
                 else {
                     Ded ded = new Ded();
                     ded.setVisible(true);
+                    
+                    // Open specified file if any.
+                    if (args.length >= 1) {
+                        ded.diagramController.loadFromNamedFile(args[0]);
+                    }
                 }
             }
         });

@@ -6,11 +6,19 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -18,15 +26,20 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
 import util.SwingUtil;
 
+import ded.Ded;
 import ded.model.Diagram;
+import ded.model.Entity;
 
 /** Widget to display and edit a diagram. */
 public class DiagramController extends JPanel
-    implements MouseListener, MouseMotionListener, KeyListener
+    implements MouseListener, MouseMotionListener, KeyListener, ComponentListener
 {
-    // ------------- private static data ---------------
+    // ------------- constants ---------------
     private static final long serialVersionUID = 1266678840598864303L;
     
     private static final String helpMessage =
@@ -50,7 +63,7 @@ public class DiagramController extends JPanel
         "and O to toggle owned/shared.\n"+
         "When inheritance selected, O to change open/closed.\n";
 
-    // ------------- public static data ---------------
+    // ------------- static data ---------------
     /** Granularity of drag/move snap action. */
     public static final int SNAP_DIST = 5;
     
@@ -80,7 +93,10 @@ public class DiagramController extends JPanel
         }
     }
 
-    // ------------- private data ---------------
+    // ------------- instance data ---------------
+    /** Parent diagram editor window. */
+    private Ded dedWindow;
+    
     /** The diagram we are editing. */
     private Diagram diagram;
     
@@ -106,18 +122,24 @@ public class DiagramController extends JPanel
       * to the Controller's original getLoc(). */ 
     private Point dragOffset;
     
+    /** Most recently used file name. */
+    private String fileName;
+    
     // ------------- public methods ---------------
-    public DiagramController()
+    public DiagramController(Ded dedWindow)
     {
         this.setBackground(Color.WHITE);
         
+        this.dedWindow = dedWindow;
         this.diagram = new Diagram();
         this.controllers = new ArrayList<Controller>();
         this.mode = Mode.DCM_SELECT;
+        this.fileName = "";
         
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
         this.addKeyListener(this);
+        this.addComponentListener(this);
         
         this.setFocusable(true);
     }
@@ -301,6 +323,19 @@ public class DiagramController extends JPanel
     @Override
     public void keyPressed(KeyEvent e)
     {
+        if (SwingUtil.controlPressed(e)) {
+            switch (e.getKeyCode()) {
+                case KeyEvent.VK_S:
+                    this.saveToFile();
+                    break;
+                        
+                case KeyEvent.VK_O:
+                    this.loadFromFile();
+                    break;
+            }
+            return;
+        }
+        
         switch (e.getKeyCode()) {
             case KeyEvent.VK_H:
                 JOptionPane.showMessageDialog(this, helpMessage, 
@@ -341,6 +376,96 @@ public class DiagramController extends JPanel
                 this.editSelected();
                 break;
         }
+    }
+
+    /** Prompt for a file name to load, then replace the current diagram with it. */
+    private void loadFromFile()
+    {
+        String result =
+            JOptionPane.showInputDialog(this, "File name to load from:", this.fileName);
+        if (result != null) {
+            loadFromNamedFile(result);
+        }
+    }
+    
+    /** Load from the given file, replacing the current diagram. */
+    public void loadFromNamedFile(String name)
+    {
+        try {
+            // Read the file.
+            Reader r = new BufferedReader(new FileReader(name));
+            JSONObject obj = new JSONObject(new JSONTokener(r));
+            r.close();
+            Diagram d = new Diagram();
+            d.fromJSON(obj);
+            
+            // Success, update stuff.
+            this.setFileName(name);
+            this.dedWindow.setSize(d.windowSize);
+            
+            this.diagram = d;
+            
+            this.rebuildControllers();
+            this.repaint();
+        }
+        catch (Exception e) {
+            JOptionPane.showMessageDialog(
+                this,
+                "Error while reading \""+name+"\": "+
+                    e.getClass().getSimpleName()+": "+e.getMessage(),
+                "Error while reading",
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    /** Rebuild all the controllers from 'diagram'. */
+    private void rebuildControllers()
+    {
+        this.controllers.clear();
+        
+        for (Entity e : this.diagram.entities) {
+            this.add(new EntityController(this, e));
+        }
+        
+        this.setMode(Mode.DCM_SELECT);
+    }
+
+    /** Prompt user for file name and save to it. */
+    private void saveToFile()
+    {
+        String result = 
+            JOptionPane.showInputDialog(this, "File name to save to:", this.fileName);
+        if (result != null) {
+            try {
+                JSONObject serialized = this.diagram.toJSON();
+                Writer w = new BufferedWriter(new FileWriter(result));
+                serialized.write(w, 2, 0);
+                w.append('\n');
+                w.close();
+                
+                // If it worked, remember the new name.
+                this.setFileName(result);
+            }
+            catch (Exception e) {
+                // Java error messages are really bad.  Maybe I will fix this
+                // at some point.
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Error while writing to \""+result+"\": "+
+                        e.getClass().getSimpleName()+": "+e.getMessage(),
+                    "Error while writing",
+                    JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    /** Change the recent file name to 'name', updating window title too. */
+    private void setFileName(String name)
+    {
+        this.fileName = name;
+        
+        // Update window title.
+        this.dedWindow.setTitle(Ded.windowTitle+": "+name);
     }
 
     // KeyListener methods I do not care about.
@@ -553,6 +678,16 @@ public class DiagramController extends JPanel
         return this.controllers.contains(c);
     }
 
+    @Override
+    public void componentResized(ComponentEvent e)
+    {
+        this.diagram.windowSize = this.dedWindow.getSize();
+    }
+
+    // ComponentListener events I do not care about.
+    @Override public void componentMoved(ComponentEvent e) {}
+    @Override public void componentShown(ComponentEvent e) {}
+    @Override public void componentHidden(ComponentEvent e) {}
 }
 
 // EOF
