@@ -12,6 +12,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -151,14 +152,20 @@ public class DiagramController extends JPanel
     /** Deselect all controllers and return the number that were previously selected. */
     public int deselectAll()
     {
-        int ct = 0;
+        // Change state after iterating.
+        HashSet<Controller> toDeselect = new HashSet<Controller>();
+        
         for (Controller c : this.controllers) {
             if (c.isSelected()) {
-                c.setSelected(SelectionState.SS_UNSELECTED);
-                ct++;
+                toDeselect.add(c);
             }
         }
-        return ct;
+        
+        for (Controller c : toDeselect) {
+            c.setSelected(SelectionState.SS_UNSELECTED);
+        }
+        
+        return toDeselect.size();
     }
 
     /** Return the top-most Controller that contains 'point' and satisfies 'filter'
@@ -226,14 +233,12 @@ public class DiagramController extends JPanel
             // Where are we going to move the dragged object's main point?
             Point destLoc = SwingUtil.subtract(e.getPoint(), this.dragOffset);
             
+            // Snap if Shift not held.
+            if (!SwingUtil.shiftPressed(e)) {
+                destLoc = SwingUtil.snapPoint(destLoc, SNAP_DIST);
+            }
+            
             if (this.dragging.isSelected()) {
-                // Snap if moving an entity and Shift not held.
-                if (this.dragging instanceof EntityController &&
-                    !SwingUtil.shiftPressed(e)) 
-                {
-                    destLoc = SwingUtil.snapPoint(destLoc, SNAP_DIST);
-                }
-                
                 // How far are we going to move the dragged object?
                 Point delta = SwingUtil.subtract(destLoc, this.dragging.getLoc());
                 
@@ -293,12 +298,6 @@ public class DiagramController extends JPanel
     // MouseMotionListener events I do not care about.
     @Override public void mouseMoved(MouseEvent e) {}
     
-    public void addController(Controller c)
-    {
-        this.controllers.add(c);
-        this.repaint();
-    }
-
     @Override
     public void keyPressed(KeyEvent e)
     {
@@ -480,23 +479,78 @@ public class DiagramController extends JPanel
     {
         Rectangle lasso = this.getLassoRect();
         
-        Controller last = null;
-        int count = 0;
+        // During the loop, merely collect the sets of controllers
+        // to select and deselect, then set the selection state afterward;
+        // otherwise, we risk trying to modify the set of controllers
+        // while it is being iterated over, since changing the selection
+        // state of a controller can add or remove resize handles.
+        HashSet<Controller> toSelect = new HashSet<Controller>();
+        HashSet<Controller> toDeselect = new HashSet<Controller>();
+        
         for (Controller c : this.controllers) {
+            if (!c.wantLassoSelection()) {
+                // Do not consider resize handles, mainly because doing so
+                // causes them to flicker: lassoing a single control adds
+                // resize handles, making the lasso no longer enclose just
+                // one control, which turns off resize handles, etc.
+                //
+                // I'm actually not sure how the C++ ered tool avoids this
+                // effect.  I do not see any avoidance in the code...
+                continue;
+            }
+            
             if (c.boundsIntersects(lasso)) {
-                c.setSelected(SelectionState.SS_SELECTED);
-                last = c;
-                count++;
+                toSelect.add(c);
+            }
+            else if (c.isSelected()) {
+                toDeselect.add(c);
             }
             else {
-                c.setSelected(SelectionState.SS_UNSELECTED);
+                // 'c' is not selected and should not be; just leave
+                // it alone.
             }
         }
-        
-        // Enable resize handles for a single selection.
-        if (count == 1) {
-            last.setSelected(SelectionState.SS_EXCLUSIVE);
+
+        // Deselect everything that should not be selected but
+        // previously was.
+        for (Controller c : toDeselect) {
+            c.setSelected(SelectionState.SS_UNSELECTED);
         }
+        
+        if (toSelect.size() == 1) {
+            // Exclusively select the one lasso'd controller.  (Using
+            // a 'for' loop is merely syntactically convenient.)
+            for (Controller c : toSelect) {
+                // This will show resize controls.
+                c.setSelected(SelectionState.SS_EXCLUSIVE);
+            }
+        }
+        else {
+            // Set state of all selected controls.
+            for (Controller c : toSelect) {
+                c.setSelected(SelectionState.SS_SELECTED);
+            }
+        }
+    }
+
+    /** Add an active controller. */
+    public void add(Controller c)
+    {
+        this.controllers.add(c);
+        this.repaint();
+    }
+    
+    /** Remove an active controller. */
+    public void remove(Controller c)
+    {
+        this.controllers.remove(c);
+        this.repaint();
+    }
+
+    /** Return true if 'c' is among the active controllers for this diagram. */
+    public boolean contains(Controller c)
+    {
+        return this.controllers.contains(c);
     }
 
 }

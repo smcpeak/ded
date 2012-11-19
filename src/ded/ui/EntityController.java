@@ -8,6 +8,7 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,17 +18,22 @@ import ded.model.Entity;
 
 /** Controller for Entity. */
 public class EntityController extends Controller {
-    // ----------- private static data -------------
-    private static final Color entityFillColor = new Color(192, 192, 192);
-    private static final Color entityOutlineColor = new Color(0, 0, 0);
+    // ----------- static data -------------
+    public static final Color entityFillColor = new Color(192, 192, 192);
+    public static final Color entityOutlineColor = new Color(0, 0, 0);
     
-    private static final int entityNameHeight = 20;
-    private static final int entityAttributeMargin = 5;
-    //private static final int minimumEntitySize = 20;       // 20x20
+    public static final int entityNameHeight = 20;
+    public static final int entityAttributeMargin = 5;
+    public static final int minimumEntitySize = 20;       // 20x20
     
-    // ----------- public data -------------
+    // ----------- instance data -------------
     /** The thing being controlled. */
     public Entity entity;
+    
+    /** If 'selState' is SS_EXCLUSIVE, then this is an array of
+      * ResizeHandle.NUM_RESIZE_HANDLES resize handles.  Otherwise,
+      * it is null. */
+    public EntityResizeController[] handle;
     
     // ----------- public methods -----------
     public EntityController(DiagramController dc, Entity e)
@@ -42,6 +48,41 @@ public class EntityController extends Controller {
         return this.entity.loc;
     }
 
+    public int getLeft() { return this.entity.loc.x; }
+    public int getTop() { return this.entity.loc.y; }
+    public int getRight() { return this.entity.loc.x + this.entity.size.width; }
+    public int getBottom() { return this.entity.loc.y + this.entity.size.height; }
+    
+    /** Set left edge w/o changing other locations. */
+    public void setLeft(int v)
+    {
+        int diff = v - this.getLeft();
+        this.entity.loc.x += diff;
+        this.entity.size.width -= diff;
+    }
+    
+    /** Set top edge w/o changing other locations. */
+    public void setTop(int v)
+    {
+        int diff = v - this.getTop();
+        this.entity.loc.y += diff;
+        this.entity.size.height -= diff;
+    }
+    
+    /** Set right edge w/o changing other locations. */
+    public void setRight(int v)
+    {
+        int diff = v - this.getRight();
+        this.entity.size.width += diff;
+    }
+    
+    /** Set bottom edge w/o changing other locations. */
+    public void setBottom(int v)
+    {
+        int diff = v - this.getBottom();
+        this.entity.size.height += diff;
+    }
+    
     @Override
     public void dragTo(Point p)
     {
@@ -115,15 +156,20 @@ public class EntityController extends Controller {
         }
     }
 
-    @Override
-    public Set<Polygon> getBounds()
+    /** Return the rectangle describing this controller's bounds. */
+    public Rectangle getRect()
     {
-        Polygon p = SwingUtil.rectPolygon(
+        return new Rectangle(
             this.entity.loc.x,
             this.entity.loc.y,
             this.entity.size.width,
             this.entity.size.height);
-        
+    }
+    
+    @Override
+    public Set<Polygon> getBounds()
+    {
+        Polygon p = SwingUtil.rectPolygon(this.getRect());
         Set<Polygon> ret = new HashSet<Polygon>();
         ret.add(p);
         return ret;
@@ -146,8 +192,56 @@ public class EntityController extends Controller {
         dc.getDiagram().entities.add(ent);
         
         EntityController ec = new EntityController(dc, ent);
-        dc.addController(ec);
+        dc.add(ec);
         dc.selectOnly(ec);
+    }
+    
+    @Override
+    public void setSelected(SelectionState ss)
+    {
+        this.selfCheck();
+        
+        // When 'exclusive' transitions off, destroy handles.
+        if (this.selState == SelectionState.SS_EXCLUSIVE && 
+            ss != SelectionState.SS_EXCLUSIVE)
+        {
+            for (EntityResizeController erc : this.handle) {
+                this.diagramController.remove(erc);
+            }
+            this.handle = null;
+        }
+        
+        // When 'exclusive' transitions on, create handles.
+        if (this.selState != SelectionState.SS_EXCLUSIVE &&
+            ss == SelectionState.SS_EXCLUSIVE)
+        {
+            this.handle = new EntityResizeController[ResizeHandle.NUM_RESIZE_HANDLES];
+            for (ResizeHandle h : EnumSet.allOf(ResizeHandle.class)) {
+                EntityResizeController erc =
+                    new EntityResizeController(this.diagramController, this, h);
+                this.handle[h.ordinal()] = erc;
+                this.diagramController.add(erc);
+            }
+        }
+        
+        super.setSelected(ss);
+    }
+    
+    @Override
+    public void selfCheck()
+    {
+        super.selfCheck();
+        
+        if (this.selState == SelectionState.SS_EXCLUSIVE) {
+            assert(this.handle != null);
+            assert(this.handle.length == ResizeHandle.NUM_RESIZE_HANDLES);
+            for (EntityResizeController erc : this.handle) {
+                assert(this.diagramController.contains(erc));
+            }
+        }
+        else {
+            assert(this.handle == null);
+        }
     }
     
     @Override

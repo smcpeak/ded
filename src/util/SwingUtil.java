@@ -57,6 +57,12 @@ public class SwingUtil {
         
         return new Polygon(px, py, 4);
     }
+    
+    /** Return a Polygon for a Rectangle. */
+    public static Polygon rectPolygon(Rectangle r)
+    {
+        return rectPolygon(r.x, r.y, r.width, r.height);
+    }
 
     /** Return true if the Control button was held when 'e' was generated. */
     public static boolean controlPressed(InputEvent e)

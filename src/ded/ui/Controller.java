@@ -18,9 +18,11 @@ import util.SwingUtil;
 
 /** Generic UI object that can be interacted with to edit some part of the diagram. */
 public abstract class Controller {
-    // ----------- private static data -------------
-    private static final Color selectedColor = new Color(135, 193, 255);
-    //private static final Color resizeHandleColor = Color.BLACK;
+    // ----------- static data -------------
+    public static final Color selectedColor = new Color(135, 193, 255);
+    public static final Color resizeHandleColor = Color.BLACK;
+    
+    public static final int resizeHandleSize = 10;         // 10x10 
 
     // ----------- protected data ------------
     /** When the controller is selected, it can be manipulated with keyboard
@@ -154,6 +156,13 @@ public abstract class Controller {
     /** Edit the attributes of the controlled element using a dialog box. */
     public void edit()
     {}
+    
+    /** Return true if this controller should be subject to selection
+      * using the lasso.  The default is true. */
+    public boolean wantLassoSelection()
+    {
+        return true;
+    }
 }
 
 // EOF
