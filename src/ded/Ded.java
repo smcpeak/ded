@@ -53,6 +53,10 @@ public class Ded extends JFrame {
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread t, final Throwable e) {
+                // For the moment, I'm going to say that any exception
+                // that gets here is a bug, so dump a trace to the console.
+                e.printStackTrace();
+                
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
