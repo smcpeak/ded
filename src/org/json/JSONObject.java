@@ -1548,15 +1548,19 @@ public class JSONObject {
     }
 
     /**
-     * Write the contents of the JSONObject as JSON text to a writer. For
-     * compactness, no whitespace is added.
+     * Write the contents of the JSONObject as JSON text to a writer with
+     * optional indentation.
+     * 
      * <p>
      * Warning: This method assumes that the data structure is acyclical.
      *
+     * @param writer        Destination stream.
+     * @param indentFactor  How much to indent at each level; 0 for no indentation.
+     * @param indent        Initial indentation.
      * @return The writer.
      * @throws JSONException
      */
-    Writer write(Writer writer, int indentFactor, int indent)
+    public Writer write(Writer writer, int indentFactor, int indent)
             throws JSONException {
         try {
             boolean commanate = false;
