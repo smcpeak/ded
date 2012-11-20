@@ -14,7 +14,16 @@ public class SerializationTests {
     public static void main(String args[]) throws Exception
     {
         SerializationTests t = new SerializationTests();
-        t.test1();
+
+        // Run unit tests when run w/o arguments.
+        if (args.length == 0) {
+            t.test1();
+        }
+        
+        // Parse inputs specified on command line.
+        for (String a : args) {
+            t.testParseFile(a);
+        }
     }
     
     public void test1() throws Exception
@@ -39,14 +48,40 @@ public class SerializationTests {
         e2.attributes = "funny\"characters\\in\'this,string!";
         d.entities.add(e2);
         
+        // Relation from e1 to e2 with two control points.
+        Relation r1 = new Relation(new RelationEndpoint(e1),
+                                   new RelationEndpoint(e2));
+        r1.controlPts.add(new Point(71,72));
+        r1.controlPts.add(new Point(73,74));
+        r1.routingAlg = RoutingAlgorithm.RA_DIRECT;
+        r1.label = "r1";
+        r1.owning = true;
+        d.relations.add(r1);
+        
+        // Relation between two points.
+        Relation r2 = new Relation(new RelationEndpoint(new Point(81,82)),
+                                   new RelationEndpoint(new Point(83,84)));
+        d.relations.add(r2);
+        
+        // Make e2 inherit from e1.
+        Inheritance i1 = new Inheritance(e1, true /*open*/, new Point(31,32));
+        d.inheritances.add(i1);
+        Relation r3 = new Relation(new RelationEndpoint(e2),
+                                   new RelationEndpoint(i1));
+        r3.routingAlg = RoutingAlgorithm.RA_MANHATTAN_VERT;
+        d.relations.add(r3);
+        
+        // Make sure it is all consistent.
+        d.selfCheck();
+            
         // Serialize it.
         String serialized = d.toJSON().toString(2);
         System.out.println(serialized);
         
         // Parse it.
         JSONObject o = new JSONObject(new JSONTokener(serialized));
-        Diagram d2 = new Diagram();
-        d2.fromJSON(o);
+        Diagram d2 = new Diagram(o);
+        d2.selfCheck();
         
         // Check for structural equality.
         assert(d2.equals(d));
@@ -54,6 +89,29 @@ public class SerializationTests {
         // Serialize and check that for equality too.
         String ser2 = d2.toJSON().toString(2);
         assert(ser2.equals(serialized));
+    }
+    
+    private void testParseFile(String fname) throws Exception
+    {
+        System.out.println("testing: "+fname);
+        
+        // Parse the file, checking that we can.
+        Diagram d = Diagram.readFromFile(fname);
+        d.selfCheck();
+        
+        // Put it through a serialization cycle.
+        String serialized = d.toJSON().toString(2);
+        Diagram d2 = new Diagram(new JSONObject(new JSONTokener(serialized)));
+        d2.selfCheck();
+        
+        // The deserialized objects should be equal.
+        assert(d.equals(d2));
+        
+        // The serialized string form might be different from what was
+        // in the file if we loaded an older version.  But if we serialize
+        // again, *that* should match 'serialized'.
+        String ser2 = d2.toJSON().toString(2);
+        assert(serialized.equals(ser2));
     }
 }
 

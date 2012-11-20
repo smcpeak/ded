@@ -1,0 +1,36 @@
+{
+  "windowSize": {
+    "w": 200,
+    "h": 170
+  },
+  "type": "Diagram Editor Diagram",
+  "entities": [
+    {
+      "name": "e1",
+      "loc": {
+        "y": 15,
+        "x": 30
+      },
+      "attributes": "attr1",
+      "shape": "ES_RECTANGLE",
+      "size": {
+        "w": 100,
+        "h": 50
+      }
+    },
+    {
+      "name": "e2",
+      "loc": {
+        "y": 120,
+        "x": 100
+      },
+      "attributes": "",
+      "shape": "ES_RECTANGLE",
+      "size": {
+        "w": 100,
+        "h": 50
+      }
+    }
+  ],
+  "version": 1
+}

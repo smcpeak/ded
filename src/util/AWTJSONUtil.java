@@ -18,7 +18,7 @@ public class AWTJSONUtil {
             o.put("x", p.x);
             o.put("y", p.y);
         }
-        catch (JSONException e) {/*impossible*/}
+        catch (JSONException e) { assert(false); }
         return o;
     }
 
@@ -39,7 +39,7 @@ public class AWTJSONUtil {
             o.put("w", d.width);
             o.put("h", d.height);
         }
-        catch (JSONException e) {/*impossible*/}
+        catch (JSONException e) { assert(false); }
         return o;
     }
 

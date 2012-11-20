@@ -13,21 +13,12 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashSet;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import util.SwingUtil;
 
@@ -238,6 +229,24 @@ public class DiagramController extends JPanel
                 break;
             }
             
+/*            
+            case DCM_CREATE_RELATION: {
+                // Make a Relation that starts and ends at the current location.
+                RelationEndpoint endpt = this.getRelationEndpoint(e.getPoint());
+                Relation r = new Relation(endpt, new RelationEndpoint(endpt));
+                this.diagram.relations.add(r);
+                
+                // Build a controller and select it.
+                RelationController rc = this.buildRelationController(r);
+                this.selectOnly(rc);
+                
+                // Drag the end point while the mouse button is held.
+                this.beginDragging(rc.getEndHandle(), ev.getPoint());
+                
+                this.repaint();
+            }
+*/
+            
             case DCM_CREATE_ENTITY: {
                 EntityController.createEntityAt(this, e.getPoint());
                 this.setMode(Mode.DCM_SELECT);
@@ -393,11 +402,7 @@ public class DiagramController extends JPanel
     {
         try {
             // Read the file.
-            Reader r = new BufferedReader(new FileReader(name));
-            JSONObject obj = new JSONObject(new JSONTokener(r));
-            r.close();
-            Diagram d = new Diagram();
-            d.fromJSON(obj);
+            Diagram d = Diagram.readFromFile(name);
             
             // Success.  First, update file name.
             this.setFileName(name);
@@ -443,11 +448,7 @@ public class DiagramController extends JPanel
             JOptionPane.showInputDialog(this, "File name to save to:", this.fileName);
         if (result != null) {
             try {
-                JSONObject serialized = this.diagram.toJSON();
-                Writer w = new BufferedWriter(new FileWriter(result));
-                serialized.write(w, 2, 0);
-                w.append('\n');
-                w.close();
+                this.diagram.saveToFile(result);
                 
                 // If it worked, remember the new name.
                 this.setFileName(result);

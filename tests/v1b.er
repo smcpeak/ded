@@ -1,0 +1,49 @@
+{
+  "windowSize": {
+    "w": 800,
+    "h": 800
+  },
+  "type": "Diagram Editor Diagram",
+  "entities": [
+    {
+      "name": "e1",
+      "loc": {
+        "y": 55,
+        "x": 160
+      },
+      "attributes": "attr1",
+      "shape": "ES_RECTANGLE",
+      "size": {
+        "w": 100,
+        "h": 50
+      }
+    },
+    {
+      "name": "e2",
+      "loc": {
+        "y": 210,
+        "x": 305
+      },
+      "attributes": "",
+      "shape": "ES_RECTANGLE",
+      "size": {
+        "w": 100,
+        "h": 50
+      }
+    },
+    {
+      "name": "e3",
+      "loc": {
+        "y": 380,
+        "x": 125
+      },
+      "attributes": "",
+      "shape": "ES_RECTANGLE",
+      "size": {
+        "w": 100,
+        "h": 50
+      }
+    }
+  ],
+  "version": 1
+}
