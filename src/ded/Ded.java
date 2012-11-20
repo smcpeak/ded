@@ -36,6 +36,21 @@ public class Ded extends JFrame {
         this.setContentPane(this.diagramController);
     }
     
+    @Override
+    public void dispose()
+    {
+        super.dispose();
+
+        // Unfortunately, there is a 1-2 second delay between when I
+        // hit 'q' or the X button and when the process exits unless
+        // I manually shut down the JVM.  I hate that delay, so I do
+        // this even though it is considered bad form in Java.
+        //
+        // If/when I add support for editing multiple documents in
+        // one process, I'll have to make the logic here smarter.
+        System.exit(0);
+    }
+    
     public static void main(final String[] args)
     {
         // Use the Nimbus L+F.
