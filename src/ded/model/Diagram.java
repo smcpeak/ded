@@ -22,9 +22,9 @@ public class Diagram implements JSONable {
     /** Size of window to display diagram.  Some elements might not fit
       * in the current size.
       * 
-      * Currently, this is the size of the top-level window, not the
-      * content area.  The problem with the content area is I do not
-      * know how to set its size when first starting up. */
+      * Currently, this is the size of the visible content area.  The
+      * surrounding window is generally larger, but that depends on
+      * the window system. */
     public Dimension windowSize;
     
     /** Entities, in display order.  The last entity will appear on top

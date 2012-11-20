@@ -344,7 +344,7 @@ public class DiagramController extends JPanel
                 break;
                 
             case KeyEvent.VK_Q:
-                SwingUtilities.getWindowAncestor(this).dispose();
+                this.dedWindow.dispose();
                 break;
                 
             case KeyEvent.VK_X:
@@ -399,13 +399,19 @@ public class DiagramController extends JPanel
             Diagram d = new Diagram();
             d.fromJSON(obj);
             
-            // Success, update stuff.
+            // Success.  First, update file name.
             this.setFileName(name);
-            this.dedWindow.setSize(d.windowSize);
             
+            // Sizing is achieved by specifying a preferred size for
+            // the content pane, then packing other controls and the
+            // window border stuff around it.
+            this.setPreferredSize(d.windowSize);
+            this.dedWindow.pack();
+
+            // Swap in the new diagram and rebuild the UI for it.
             this.diagram = d;
-            
             this.rebuildControllers();
+
             this.repaint();
         }
         catch (Exception e) {
@@ -681,7 +687,7 @@ public class DiagramController extends JPanel
     @Override
     public void componentResized(ComponentEvent e)
     {
-        this.diagram.windowSize = this.dedWindow.getSize();
+        this.diagram.windowSize = this.getSize();
     }
 
     // ComponentListener events I do not care about.

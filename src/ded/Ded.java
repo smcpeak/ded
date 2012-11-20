@@ -100,12 +100,13 @@ public class Ded extends JFrame {
 
                 else {
                     Ded ded = new Ded();
-                    ded.setVisible(true);
                     
                     // Open specified file if any.
                     if (args.length >= 1) {
                         ded.diagramController.loadFromNamedFile(args[0]);
                     }
+
+                    ded.setVisible(true);
                 }
             }
         });
