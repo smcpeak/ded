@@ -1,0 +1,104 @@
+{
+  "relations": [
+    {
+      "start": {"entityRef": 1},
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "label": "",
+      "controlPts": [],
+      "end": {"entityRef": 0}
+    },
+    {
+      "start": {"entityRef": 0},
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "label": "",
+      "controlPts": [],
+      "end": {"entityRef": 2}
+    },
+    {
+      "start": {"entityRef": 1},
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "label": "",
+      "controlPts": [],
+      "end": {"pt": {
+        "y": 195,
+        "x": 130
+      }}
+    },
+    {
+      "start": {"pt": {
+        "y": 275,
+        "x": 215
+      }},
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "label": "",
+      "controlPts": [],
+      "end": {"entityRef": 2}
+    },
+    {
+      "start": {"pt": {
+        "y": 80,
+        "x": 443
+      }},
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "label": "",
+      "controlPts": [],
+      "end": {"pt": {
+        "y": 80,
+        "x": 443
+      }}
+    }
+  ],
+  "windowSize": {
+    "w": 532,
+    "h": 421
+  },
+  "type": "Diagram Editor Diagram",
+  "entities": [
+    {
+      "name": "B",
+      "loc": {
+        "y": 165,
+        "x": 200
+      },
+      "attributes": "",
+      "shape": "ES_RECTANGLE",
+      "size": {
+        "w": 100,
+        "h": 50
+      }
+    },
+    {
+      "name": "A",
+      "loc": {
+        "y": 80,
+        "x": 95
+      },
+      "attributes": "",
+      "shape": "ES_RECTANGLE",
+      "size": {
+        "w": 100,
+        "h": 50
+      }
+    },
+    {
+      "name": "C",
+      "loc": {
+        "y": 255,
+        "x": 325
+      },
+      "attributes": "",
+      "shape": "ES_RECTANGLE",
+      "size": {
+        "w": 100,
+        "h": 50
+      }
+    }
+  ],
+  "inheritances": [],
+  "version": 2
+}
