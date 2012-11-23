@@ -7,6 +7,7 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.Set;
@@ -137,6 +138,7 @@ public abstract class Controller {
     
     // Input handlers.
     public void mousePressed(MouseEvent e) {}
+    public void keyPressed(KeyEvent e) {}
 
     /** Assert invariants. */
     public void selfCheck()

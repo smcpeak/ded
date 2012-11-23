@@ -18,6 +18,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.font.LineMetrics;
+
 import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.JComponent;
@@ -74,6 +75,13 @@ public class SwingUtil {
     public static boolean shiftPressed(InputEvent e)
     {
         return (e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0;
+    }
+
+    /** Return true if no keyboard modifiers or mouse buttons were held
+      * when 'e' was generated. */
+    public static boolean noModifiers(KeyEvent e)
+    {
+        return e.getModifiersEx() == 0;
     }
     
     /** Return the nearest multiple of 'snap'. */
@@ -175,6 +183,13 @@ public class SwingUtil {
     public static void disallowVertStretch(Component c)
     {
         Dimension pref = c.getPreferredSize();
+        if (pref == null) {
+            // Coverity analysis claims this might return null.  The
+            // documentation is not clear.  I guess if it does return
+            // null I'll just skip trying to disable vertical stretch.
+            return;
+        }
+        
         Dimension max = c.getMaximumSize();
         Dimension min = c.getMinimumSize();
         max.height = pref.height;
@@ -226,22 +241,32 @@ public class SwingUtil {
             JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
 
-    /** Draw 'str' centered in 'r'. */
-    public static void drawCenteredText(Graphics g, Rectangle r, String str)
+    /** Get the center of 'r'. */
+    public static Point getCenter(Rectangle r)
+    {
+        return new Point(r.x + r.width/2, r.y + r.height/2);
+    }
+    
+    /** Draw 'str' centered at 'p'. */
+    public static void drawCenteredText(Graphics g, Point p, String str)
     {
         FontMetrics fm = g.getFontMetrics();
         LineMetrics lm = fm.getLineMetrics(str, g);
 
-        // Go to center of 'r', then add (a+d)/2 to get to the bottom
+        // Go to 'p', then add (a+d)/2 to get to the bottom
         // of the text, then subtract d; then simplify algebraically.
-        int baseY = r.y + r.height/2 +
-                    (int)((lm.getAscent() - lm.getDescent())/2);
-
-        int baseX = r.x + r.width/2 - fm.stringWidth(str)/2;
+        int baseY = p.y + (int)((lm.getAscent() - lm.getDescent())/2);
+        int baseX = p.x - fm.stringWidth(str)/2;
         
         g.drawString(str, baseX, baseY);
     }
 
+    /** Return the midpoint of a line segment from 'p' to 'q'. */
+    public static Point midPoint(Point p, Point q)
+    {
+        return new Point(Util.avg(p.x, q.x), Util.avg(p.y, q.y));
+    }
+    
     /** Draw 'str' at the given location, but process newlines by moving
       * to a new line. */
     public static void drawTextWithNewlines(Graphics g, String str, int x, int y)
@@ -263,6 +288,20 @@ public class SwingUtil {
                              r.y - d,
                              r.width + d*2,
                              r.height + d*2);
+    }
+
+    /** Return the range of integer values encompassed by 'rect'
+      * in the 'hv' dimension. */
+    public static IntRange getRectRange(HorizOrVert hv, Rectangle rect)
+    {
+        if (hv.isHoriz()) {
+            // The -1 is because, when drawn, the number of pixels equals
+            // 'width', not width+1.
+            return new IntRange(rect.x, Math.max(rect.x, rect.x + rect.width - 1));
+        }
+        else {
+            return new IntRange(rect.y, Math.max(rect.y, rect.y + rect.height - 1));
+        }
     }
 }
 

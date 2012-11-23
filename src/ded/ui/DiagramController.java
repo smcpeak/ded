@@ -25,6 +25,8 @@ import util.SwingUtil;
 import ded.Ded;
 import ded.model.Diagram;
 import ded.model.Entity;
+import ded.model.Relation;
+import ded.model.RelationEndpoint;
 
 /** Widget to display and edit a diagram. */
 public class DiagramController extends JPanel
@@ -200,6 +202,28 @@ public class DiagramController extends JPanel
         return null;
     }
 
+    /** Hit test restricted to Entities. */
+    private EntityController hitTestEntity(Point pt)
+    {
+        return (EntityController)hitTest(pt, new ControllerFilter() {
+            public boolean satisfies(Controller c) {
+                return c instanceof EntityController;
+            }
+        });
+    }
+    
+    /** Hit test restricted to Inheritances. */
+/*
+    private EntityController hitTestInheritance(Point pt)
+    {
+        return (InheritanceController)hitTest(pt, new ControllerFilter() {
+            public boolean satisfies(Controller c) {
+                return c instanceof InheritanceController;
+            }
+        });
+    }
+*/
+
     @Override
     public void mousePressed(MouseEvent e)
     {
@@ -229,7 +253,6 @@ public class DiagramController extends JPanel
                 break;
             }
             
-/*            
             case DCM_CREATE_RELATION: {
                 // Make a Relation that starts and ends at the current location.
                 RelationEndpoint endpt = this.getRelationEndpoint(e.getPoint());
@@ -241,11 +264,11 @@ public class DiagramController extends JPanel
                 this.selectOnly(rc);
                 
                 // Drag the end point while the mouse button is held.
-                this.beginDragging(rc.getEndHandle(), ev.getPoint());
+                this.beginDragging(rc.getEndHandle(), e.getPoint());
                 
                 this.repaint();
+                break;
             }
-*/
             
             case DCM_CREATE_ENTITY: {
                 EntityController.createEntityAt(this, e.getPoint());
@@ -479,6 +502,7 @@ public class DiagramController extends JPanel
     @Override public void keyTyped(KeyEvent e) {}
     @Override public void keyReleased(KeyEvent e) {}
 
+    /** Change the UI mode to 'm', maintaining a few invariants in the process. */
     public void setMode(Mode m)
     {
         this.mode = m;
@@ -496,6 +520,14 @@ public class DiagramController extends JPanel
         this.repaint();
     }
 
+    /** Construct a controller for 'r' and add it to 'this'. */
+    private RelationController buildRelationController(Relation r)
+    {
+        RelationController rc = new RelationController(this, r);
+        this.add(rc);
+        return rc;
+    }
+    
     /** If there is exactly one controller selected, return it; otherwise
       * return null. */
     public Controller getUniqueSelected()
@@ -685,6 +717,26 @@ public class DiagramController extends JPanel
         return this.controllers.contains(c);
     }
 
+    /** Map a Point to a RelationEndpoint: either an Entity or Inheritance
+      * that contains the Point, or else just the point itself. */
+    public RelationEndpoint getRelationEndpoint(Point pt)
+    {
+        // Entity?
+        EntityController ec = this.hitTestEntity(pt);
+        if (ec != null) {
+            return new RelationEndpoint(ec.entity);
+        }
+/*        
+        // Inheritance?
+        InheritanceController ic = this.hitTestInheritance(pt);
+        if (ic != null) {
+            return new RelationEndpoint(ic.inheritance);
+        }
+*/
+        // No suitable intersecting controller, use the point itself.
+        return new RelationEndpoint(pt);
+    }
+    
     @Override
     public void componentResized(ComponentEvent e)
     {
@@ -695,6 +747,17 @@ public class DiagramController extends JPanel
     @Override public void componentMoved(ComponentEvent e) {}
     @Override public void componentShown(ComponentEvent e) {}
     @Override public void componentHidden(ComponentEvent e) {}
+
+    /** Pop up a menu at 'where', with menu title 'title', and menu
+      * choices 'items'.  If the user chooses one, return its index
+      * in 'items'.  Otherwise, return -1.  This blocks until the
+      * user chooses something. */
+    public int popupMenu(Point where, String title, String[] items)
+    {
+        // TODO: Code this.
+        JOptionPane.showMessageDialog(this, "TODO: popupMenu");
+        return -1;      // Nothing chosen.
+    }
 }
 
 // EOF

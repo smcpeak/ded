@@ -178,18 +178,33 @@ public class Diagram implements JSONable {
     public void saveToFile(String fname) throws Exception
     {
         JSONObject serialized = this.toJSON();
-        Writer w = new BufferedWriter(new FileWriter(fname));
-        serialized.write(w, 2, 0);
-        w.append('\n');
-        w.close();
+        Writer w = null;
+        try {
+            w = new BufferedWriter(new FileWriter(fname));
+            serialized.write(w, 2, 0);
+            w.append('\n');
+        }
+        finally {
+            if (w != null) {
+                w.close();
+            }
+        }
     }
 
     /** Read a diagram from a file and return the new Diagram object. */
     public static Diagram readFromFile(String fname) throws Exception
     {
-        Reader r = new BufferedReader(new FileReader(fname));
-        JSONObject obj = new JSONObject(new JSONTokener(r));
-        r.close();
+        Reader r = null;
+        JSONObject obj;
+        try {
+            r = new BufferedReader(new FileReader(fname));
+            obj = new JSONObject(new JSONTokener(r));
+        }
+        finally {
+            if (r != null) {
+                r.close();
+            }
+        }
         return new Diagram(obj);
     }
     

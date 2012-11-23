@@ -100,6 +100,23 @@ public class RelationEndpoint {
     }
 
     // -------------------- data object boilerplate ------------------------
+    public RelationEndpoint(RelationEndpoint re)
+    {
+        this.setTo(re);
+    }
+    
+    public void setTo(RelationEndpoint re)
+    {
+        this.entity = re.entity;
+        this.inheritance = re.inheritance;
+        if (re.pt == null) {
+            this.pt = null;
+        }
+        else {
+            this.pt = new Point(re.pt);
+        }
+    }
+    
     @Override
     public boolean equals(Object obj)
     {

@@ -130,13 +130,13 @@ public class EntityController extends Controller {
         
         if (this.entity.attributes.isEmpty()) {
             // Name is vertically and horizontally centered in the space.
-            SwingUtil.drawCenteredText(g, r, this.entity.name);
+            SwingUtil.drawCenteredText(g, SwingUtil.getCenter(r), this.entity.name);
         }
         else {
             // Name.
             Rectangle nameRect = new Rectangle(r);
             nameRect.height = entityNameHeight;
-            SwingUtil.drawCenteredText(g, nameRect, this.entity.name);
+            SwingUtil.drawCenteredText(g, SwingUtil.getCenter(nameRect), this.entity.name);
             
             // Divider between name and attributes.
             g.drawLine(nameRect.x, nameRect.y+nameRect.height,
