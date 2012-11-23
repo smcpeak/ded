@@ -2,6 +2,9 @@
 
 package ded;
 
+import java.awt.Image;
+
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -20,6 +23,10 @@ public class Ded extends JFrame {
     /** Window title when there is no file name, or prefix of it when there is. */
     public static final String windowTitle = "Diagram Editor";
 
+    // ---------- static data ----------------
+    /** Window icon. */
+    public static Image iconImage;
+    
     // ---------- private data --------------
     private DiagramController diagramController;
     
@@ -30,6 +37,27 @@ public class Ded extends JFrame {
         
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.setSize(800,600);
+        
+        // Load the Window icon if we haven't already.
+        synchronized (Ded.class) {
+            if (iconImage == null) {
+                // For now, this requires that I'm running it out of
+                // the build tree.  My plan is to add the ability to
+                // package everything in a JAR.
+                try {
+                    iconImage = new ImageIcon("src/ded/ui/boxarrow.png").getImage();
+                }
+                catch (Exception e) {
+                    // This is never called; it seems that ImageIcon just
+                    // silently does nothing when it can't load the file.
+                    System.out.println("could not load icon: "+e.getMessage());
+                }
+            }
+        }
+        
+        if (iconImage != null) {
+            this.setIconImage(iconImage);
+        }
         
         this.diagramController = new DiagramController(this);
         this.diagramController.setOpaque(true);
