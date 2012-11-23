@@ -623,6 +623,7 @@ public class RelationController extends Controller {
     }
 
     /** Remove this relation and its controller. */
+    @Override
     public void deleteSelfAndData(Diagram diagram)
     {
         this.selfCheck();
@@ -638,7 +639,8 @@ public class RelationController extends Controller {
     }
 
     /** Insert a new control point. */
-    private void insertControlPoint()
+    @Override
+    public void insertControlPoint()
     {
         // Temporarily become unselected so handles will be rebuilt
         // if needed.

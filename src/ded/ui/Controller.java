@@ -158,6 +158,14 @@ public abstract class Controller {
     /** Edit the attributes of the controlled element using a dialog box. */
     public void edit()
     {}
+
+    /** Insert a control point if possible. */
+    public void insertControlPoint()
+    {}
+    
+    /** Delete this control and its data. */
+    public void deleteSelfAndData(Diagram diagram)
+    {}
     
     /** Return true if this controller should be subject to selection
       * using the lasso.  The default is true. */

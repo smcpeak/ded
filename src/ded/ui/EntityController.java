@@ -14,6 +14,7 @@ import java.util.Set;
 
 import util.SwingUtil;
 
+import ded.model.Diagram;
 import ded.model.Entity;
 
 /** Controller for Entity. */
@@ -246,6 +247,41 @@ public class EntityController extends Controller {
         if (EntityDialog.exec(this.diagramController, this.entity)) {
             this.diagramController.repaint();
         }
+    }
+    
+    @Override
+    public void deleteSelfAndData(Diagram diagram)
+    {
+        // Unselect myself so resize controllers are gone.
+        this.setSelected(SelectionState.SS_UNSELECTED);
+        
+        this.selfCheck();
+        
+        final Entity thisEntity = this.entity;
+        
+        // Delete any relations or inheritances that involve this entity.
+        this.diagramController.deleteControllers(new ControllerFilter() {
+            public boolean satisfies(Controller c) 
+            {
+                if (c instanceof RelationController) {
+                    RelationController rc = (RelationController)c;
+                    return rc.relation.involvesEntity(thisEntity);
+                }
+                /*
+                if (c instanceof InheritanceController) {
+                    InheritanceController ic = (InheritanceController)c;
+                    return ic.inheritance.parent == thisEntity;
+                }
+                */
+                return false;
+            }
+        });
+        
+        // Remove the entity and this controller.
+        diagram.entities.remove(this.entity);
+        this.diagramController.remove(this);
+        
+        this.diagramController.selfCheck();
     }
 }
 

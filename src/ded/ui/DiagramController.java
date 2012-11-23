@@ -15,6 +15,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -54,7 +55,8 @@ public class DiagramController extends JPanel
         "\n"+
         "When relation selected, H/V/D to change routing,\n"+
         "and O to toggle owned/shared.\n"+
-        "When inheritance selected, O to change open/closed.\n";
+        "When inheritance selected, O to change open/closed.\n"+
+        "When dragging, hold Shift to turn off 5-pixel snap.\n";
 
     // ------------- static data ---------------
     /** Granularity of drag/move snap action. */
@@ -407,6 +409,14 @@ public class DiagramController extends JPanel
             case KeyEvent.VK_ENTER:
                 this.editSelected();
                 break;
+                
+            case KeyEvent.VK_INSERT:
+                this.insertControlPoint();
+                break;
+                
+            case KeyEvent.VK_DELETE:
+                this.deleteSelected();
+                break;
         }
     }
 
@@ -459,6 +469,10 @@ public class DiagramController extends JPanel
         
         for (Entity e : this.diagram.entities) {
             this.add(new EntityController(this, e));
+        }
+        
+        for (Relation r : this.diagram.relations) {
+            this.add(new RelationController(this, r));
         }
         
         this.setMode(Mode.DCM_SELECT);
@@ -546,13 +560,54 @@ public class DiagramController extends JPanel
         return ret;
     }
     
-    /** Edit the selected controller, if any. */
+    /** Get all selected controllers. */
+    public Set<Controller> getAllSelected()
+    {
+        return this.findControllers(new ControllerFilter() {
+            public boolean satisfies(Controller c) {
+                return c.isSelected();
+            }
+        });
+    }
+    
+    /** Edit the selected controller and associated entity, if any. */
     public void editSelected()
     {
         if (this.mode == Mode.DCM_SELECT) {
             Controller c = this.getUniqueSelected();
             if (c != null) {
                 c.edit();
+            }
+        }
+    }
+    
+    /** Delete the selected controllers and associated entities, if any. */
+    private void deleteSelected()
+    {
+        if (this.mode == Mode.DCM_SELECT) {
+            Set<Controller> sel = this.getAllSelected();
+            int n = sel.size();
+            if (n > 1) {
+                int choice = JOptionPane.showConfirmDialog(this, 
+                    "Delete "+n+" elements?", "Confirm Deletion", 
+                    JOptionPane.OK_CANCEL_OPTION);
+                if (choice != JOptionPane.OK_OPTION) {
+                    return;
+                }
+            }
+
+            this.deleteControllers(sel);
+        }
+    }
+    
+    /** Insert a new control point into the selected controller and
+      * associated entity, if any and applicable. */
+    private void insertControlPoint()
+    {
+        if (this.mode == Mode.DCM_SELECT) {
+            Controller c = this.getUniqueSelected();
+            if (c != null) {
+                c.insertControlPoint();
             }
         }
     }
@@ -717,6 +772,41 @@ public class DiagramController extends JPanel
         return this.controllers.contains(c);
     }
 
+    /** Return set of matching controllers. */
+    private Set<Controller> findControllers(ControllerFilter filter)
+    {
+        HashSet<Controller> ret = new HashSet<Controller>();
+        for (Controller c : this.controllers) {
+            if (filter.satisfies(c)) {
+                ret.add(c);
+            }
+        }
+        return ret;
+    }
+    
+    /** Delete matching controllers. */
+    public void deleteControllers(ControllerFilter filter)
+    {
+        // Get the set of matching controllers first; we cannot remove
+        // them while searching due to iterator invalidation issues.
+        Set<Controller> ctls = this.findControllers(filter);
+        
+        this.deleteControllers(ctls);
+    }
+    
+    /** Delete specified controllers. */
+    public void deleteControllers(Set<Controller> ctls)
+    {
+        for (Controller c : ctls) {
+            // This is inefficient, but oh well: before deleting, check
+            // if it is still in 'controllers'.  It might have been removed
+            // due to deletion of another controller in 'ctls'.
+            if (this.controllers.contains(c)) {
+                c.deleteSelfAndData(this.diagram);
+            }
+        }
+    }
+    
     /** Map a Point to a RelationEndpoint: either an Entity or Inheritance
       * that contains the Point, or else just the point itself. */
     public RelationEndpoint getRelationEndpoint(Point pt)
