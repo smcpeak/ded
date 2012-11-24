@@ -12,7 +12,7 @@ import java.util.Set;
 
 import javax.swing.SwingUtilities;
 
-import util.SwingUtil;
+import util.swing.SwingUtil;
 
 /** Functionality common to resize handles. */
 public abstract class ResizeController extends Controller {

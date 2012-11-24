@@ -17,8 +17,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import util.AWTJSONUtil;
 import util.Util;
+import util.awt.AWTJSONUtil;
 import util.json.JSONable;
 
 /** Complete diagram. */

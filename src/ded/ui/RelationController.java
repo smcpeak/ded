@@ -22,11 +22,11 @@ import java.util.Set;
 
 import javax.swing.SwingUtilities;
 
-import util.GeomUtil;
-import util.HorizOrVert;
 import util.IntRange;
-import util.SwingUtil;
 import util.Util;
+import util.awt.GeomUtil;
+import util.awt.HorizOrVert;
+import util.swing.SwingUtil;
 
 import ded.model.Diagram;
 import ded.model.Entity;

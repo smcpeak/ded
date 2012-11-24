@@ -14,7 +14,7 @@ import java.util.Set;
 
 import ded.model.Diagram;
 
-import util.SwingUtil;
+import util.swing.SwingUtil;
 
 
 /** Generic UI object that can be interacted with to edit some part of the diagram. */

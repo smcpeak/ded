@@ -12,7 +12,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
-import util.SwingUtil;
+import util.swing.SwingUtil;
 
 import ded.model.Diagram;
 import ded.model.Entity;

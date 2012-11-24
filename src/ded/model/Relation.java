@@ -10,8 +10,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import util.AWTJSONUtil;
 import util.Util;
+import util.awt.AWTJSONUtil;
 
 /** Arrow, sometimes between Entities (boxes). */
 public class Relation {

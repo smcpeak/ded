@@ -1,6 +1,6 @@
 // SwingUtil.java
 
-package util;
+package util.swing;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -28,6 +28,10 @@ import javax.swing.JRootPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+
+import util.IntRange;
+import util.Util;
+import util.awt.HorizOrVert;
 
 /** Miscellaneous Swing-related utililities. */
 public class SwingUtil {

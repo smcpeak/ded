@@ -21,7 +21,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import util.SwingUtil;
+import util.swing.SwingUtil;
 
 import ded.Ded;
 import ded.model.Diagram;

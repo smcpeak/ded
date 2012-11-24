@@ -1,10 +1,12 @@
 // GeomUtil.java
 
-package util;
+package util.awt;
 
 import java.awt.Point;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+
+import util.Util;
 
 /** Utilities related to the java.awt.geom classes, particularly
   * various kinds of vector manipulations, where Point2D.Double

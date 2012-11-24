@@ -1,8 +1,6 @@
 // HorizOrVert.java
 
-// TODO: Move this and a few other classes into util.swing or util.awt.
-
-package util;
+package util.awt;
 
 import java.awt.Point;
 import java.util.EnumSet;

@@ -9,7 +9,7 @@ import java.util.HashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import util.AWTJSONUtil;
+import util.awt.AWTJSONUtil;
 
 /** Node that indicates an inheritance relationship; it directly points
   * at the parent Entity, and the children are then attached via

@@ -9,7 +9,7 @@ import java.util.HashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import util.AWTJSONUtil;
+import util.awt.AWTJSONUtil;
 
 /** Start or end point of a relation (arrow). */
 public class RelationEndpoint {

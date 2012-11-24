@@ -1,6 +1,6 @@
 // AWTJSONUtil.java
 
-package util;
+package util.awt;
 
 import java.awt.Dimension;
 import java.awt.Point;

@@ -24,7 +24,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import util.SwingUtil;
+import util.swing.SwingUtil;
 
 import ded.model.Entity;
 import ded.model.EntityShape;

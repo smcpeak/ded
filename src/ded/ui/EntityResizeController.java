@@ -5,7 +5,7 @@ package ded.ui;
 import java.awt.Point;
 import java.awt.Rectangle;
 
-import util.SwingUtil;
+import util.swing.SwingUtil;
 
 /** Controller to allow resizing an entity. */
 public class EntityResizeController extends ResizeController {

@@ -11,7 +11,7 @@ import java.util.HashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import util.AWTJSONUtil;
+import util.awt.AWTJSONUtil;
 import util.json.JSONable;
 
 /** An ER entity, represented as a box with a label and text contents. */
