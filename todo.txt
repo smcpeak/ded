@@ -1,6 +1,29 @@
 TODOs for Diagram Editor
 ------------------------
 
-(empty for moment)
+Small:
+- copy+paste for sets of selected entities
+- entity grouping
+- write the JSON in canonical order to avoid spurious conflicts
+- better self-loop rendering
+- two or zero arrowheads for relations
+- choose colors for entities and relations
+- choose relation line thickness
+- dashed lines for relations
+- specify initial size (etc.?) for new relations
+- clip the relation title to its box
+- option to automatically expand entities to contain their title and attributes
+- relation dialog should include owner checkbox
+- automatically put the file name as a label in upper left; option to hide?
+
+Medium:
+- load the C++ file format
+- export to SVG
+- control over which entities are on top
+- smarter relation routing
+- undo/redo
+
+Big:
+- add entity shapes to allow mocking UIs
 
 EOF
