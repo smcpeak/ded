@@ -36,6 +36,28 @@ public class IntRange {
     {
         return Util.avg(this.low, this.high);
     }
+
+    /** Return the endpoint closer to 'p'.  Returns 'low' if
+      * they are equidistant. */
+    public int closerEnd(int p)
+    {
+        if (p <= this.low) {
+            return this.low;
+        }
+        else if (p >= this.high) {
+            return this.high;
+        }
+        else {
+            int dlow = p - this.low;
+            int dhigh = this.high - p;
+            if (dlow <= dhigh) {
+                return this.low;
+            }
+            else {
+                return this.high;
+            }
+        }
+    }
 }
 
 // EOF

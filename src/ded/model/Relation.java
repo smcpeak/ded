@@ -50,6 +50,13 @@ public class Relation {
                this.end.isSpecificEntity(e);
     }
     
+    /** True if either endpoint is referentially equal to 'inh'. */
+    public boolean involvesInheritance(Inheritance inh)
+    {
+        return this.start.isSpecificInheritance(inh) ||
+               this.end.isSpecificInheritance(inh);
+    }
+    
     public void globalSelfCheck(Diagram d)
     {
         this.start.globalSelfCheck(d);

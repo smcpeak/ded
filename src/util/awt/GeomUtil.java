@@ -3,9 +3,14 @@
 package util.awt;
 
 import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.List;
 
+import util.IntRange;
 import util.Util;
 
 /** Utilities related to the java.awt.geom classes, particularly
@@ -110,9 +115,10 @@ public class GeomUtil {
         Point2D.Double q = getLineStart(qwline);
         Point2D.Double w = getLineVector(qwline);
         
-        // Sanity check.
-        assert(nonzero2DVector(v));
-        assert(nonzero2DVector(w));
+        // If either segment is 0 length, bail.
+        if (!( nonzero2DVector(v) && nonzero2DVector(w) )) {
+            return Double.NaN;
+        }
 
         // Solve for t, the multiplier considered to apply to 'qwline',
         // at the intersection point (this formula was worked out on paper).
@@ -154,6 +160,145 @@ public class GeomUtil {
         
         assert(!Util.isSpecialDouble(t));
         return t;
+    }
+
+    /** Return the range of integer values encompassed by 'rect'
+      * in the 'hv' dimension. */
+    public static IntRange getRectRange(HorizOrVert hv, Rectangle rect)
+    {
+        if (hv.isHoriz()) {
+            // The -1 is because, when drawn, the number of pixels equals
+            // 'width', not width+1.
+            return new IntRange(rect.x, Math.max(rect.x, rect.x + rect.width - 1));
+        }
+        else {
+            return new IntRange(rect.y, Math.max(rect.y, rect.y + rect.height - 1));
+        }
+    }
+
+    /** Return a new rectangle that exceeds 'r' by 'd' pixels on all
+      * sides, keeping the center the same.  * If 'd' is negative,
+      * the new rectangle is smaller. */  
+    public static Rectangle growRectangle(Rectangle r, int d)
+    {
+        return new Rectangle(r.x - d,
+                             r.y - d,
+                             r.width + d*2,
+                             r.height + d*2);
+    }
+
+    /** Return the midpoint of a line segment from 'p' to 'q'. */
+    public static Point midPoint(Point p, Point q)
+    {
+        return new Point(Util.avg(p.x, q.x), Util.avg(p.y, q.y));
+    }
+
+    /** Get the center of 'r'. */
+    public static Point getCenter(Rectangle r)
+    {
+        return new Point(r.x + r.width/2, r.y + r.height/2);
+    }
+
+    /** Return a new point whose coordinates are the nearest multiples of 'snap'. */
+    public static Point snapPoint(Point p, int snap)
+    {
+        return new Point(GeomUtil.snapInt(p.x, snap), GeomUtil.snapInt(p.y, snap));
+    }
+
+    /** Return the nearest multiple of 'snap'. */
+    public static int snapInt(int x, int snap)
+    {
+        x += snap/2;
+        x -= x % snap;
+        return x;
+    }
+
+    /** Return a Polygon for a Rectangle. */
+    public static Polygon rectPolygon(Rectangle r)
+    {
+        return GeomUtil.rectPolygon(r.x, r.y, r.width, r.height);
+    }
+
+    /** Return a Polygon for the rectangle with UL at (x,y) and
+      * 'width' and 'height'. */
+    public static Polygon rectPolygon(int x, int y, int w, int h)
+    {
+        int[] px = new int[4];
+        int[] py = new int[4];
+        
+        // Counterclockwise starting at upper left.
+        px[0] = x;           py[0] = y;
+        px[1] = x;           py[1] = y+h;
+        px[2] = x+w;         py[2] = y+h;
+        px[3] = x+w;         py[3] = y;
+        
+        return new Polygon(px, py, 4);
+    }
+
+    /** Return 'a' + 'b'. */
+    public static Point add(Point a, Point b)
+    {
+        return new Point(a.x + b.x, a.y + b.y);
+    }
+
+    /** Return 'a' - 'b'. */
+    public static Point subtract(Point a, Point b)
+    {
+        return new Point(a.x - b.x, a.y - b.y);
+    }
+
+    /** Return 'v' * 's'. */
+    public static Point mult(Point v, int s)
+    {
+        return new Point(v.x * s, v.y * s);
+    }
+    
+    /** Rotate 'p' 90 degrees clockwise in Cartesian coordinates. */
+    public static Point row90cw(Point p)
+    {
+        return new Point(-p.y, p.x);
+    }
+    
+    /** Rotate 'p' 90 degrees counterclockwise in Cartesian coordinates. */
+    public static Point row90ccw(Point p)
+    {
+        return new Point(p.y, -p.x);
+    }
+
+    /** Return the smallest Rectangle that contains all in 'pts'. */ 
+    public static Rectangle boundingBox(ArrayList<Point> pts)
+    {
+        assert(!pts.isEmpty());
+        Rectangle r = new Rectangle(pts.get(0).x, pts.get(0).y, 1,1);
+        
+        for (Point p : pts) {
+            if (p.x < r.x) {
+                r.width += r.x - p.x;
+                r.x = p.x;
+            }
+            if (p.y < r.y) {
+                r.height += r.y - p.y;
+                r.y = p.y;
+            }
+            if (p.x >= r.x + r.width) {
+                r.width = p.x - r.x + 1;
+            }
+            if (p.y >= r.y + r.height) {
+                r.height = p.y - r.y + 1;
+            }
+        }
+        
+        return r;
+    }
+
+    /** Create a polygon from a list of points. */
+    public static Polygon makePolygon(List<Point> trianglePoints)
+    {
+        Polygon ret = new Polygon();
+        for (Point p : trianglePoints) {
+            ret.addPoint(p.x, p.y);
+        }
+        return ret;
     }
 }
 

@@ -12,6 +12,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
+import util.awt.GeomUtil;
 import util.swing.SwingUtil;
 
 import ded.model.Diagram;
@@ -131,13 +132,13 @@ public class EntityController extends Controller {
         
         if (this.entity.attributes.isEmpty()) {
             // Name is vertically and horizontally centered in the space.
-            SwingUtil.drawCenteredText(g, SwingUtil.getCenter(r), this.entity.name);
+            SwingUtil.drawCenteredText(g, GeomUtil.getCenter(r), this.entity.name);
         }
         else {
             // Name.
             Rectangle nameRect = new Rectangle(r);
             nameRect.height = entityNameHeight;
-            SwingUtil.drawCenteredText(g, SwingUtil.getCenter(nameRect), this.entity.name);
+            SwingUtil.drawCenteredText(g, GeomUtil.getCenter(nameRect), this.entity.name);
             
             // Divider between name and attributes.
             g.drawLine(nameRect.x, nameRect.y+nameRect.height,
@@ -147,7 +148,7 @@ public class EntityController extends Controller {
             Rectangle attributeRect = new Rectangle(r);
             attributeRect.y += nameRect.height;
             attributeRect.height -= nameRect.height;
-            attributeRect = SwingUtil.growRectangle(attributeRect, -entityAttributeMargin);
+            attributeRect = GeomUtil.growRectangle(attributeRect, -entityAttributeMargin);
             g.clipRect(attributeRect.x, attributeRect.y,
                        attributeRect.width, attributeRect.height);
             SwingUtil.drawTextWithNewlines(g,
@@ -166,7 +167,7 @@ public class EntityController extends Controller {
     @Override
     public Set<Polygon> getBounds()
     {
-        Polygon p = SwingUtil.rectPolygon(this.getRect());
+        Polygon p = GeomUtil.rectPolygon(this.getRect());
         Set<Polygon> ret = new HashSet<Polygon>();
         ret.add(p);
         return ret;
@@ -183,7 +184,7 @@ public class EntityController extends Controller {
     public static void createEntityAt(DiagramController dc, Point p)
     {
         Entity ent = new Entity();
-        ent.loc = SwingUtil.snapPoint(new Point(p.x - ent.size.width/2,
+        ent.loc = GeomUtil.snapPoint(new Point(p.x - ent.size.width/2,
                                                 p.y - ent.size.height/2),
                                       DiagramController.SNAP_DIST);
         dc.getDiagram().entities.add(ent);

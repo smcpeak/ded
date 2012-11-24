@@ -183,7 +183,7 @@ public class RelationController extends Controller {
     public Point getLoc()
     {
         // Midway between endpoints.
-        return SwingUtil.midPoint(this.relation.start.getCenter(),
+        return GeomUtil.midPoint(this.relation.start.getCenter(),
                                   this.relation.end.getCenter());
     }
     
@@ -191,21 +191,21 @@ public class RelationController extends Controller {
     public void dragTo(Point pt)
     {
         // Convert to a delta relative to 'getLoc()'.
-        Point delta = SwingUtil.subtract(pt, this.getLoc());
+        Point delta = GeomUtil.subtract(pt, this.getLoc());
         
         // Apply the delta to the endpoints if they are specified as
         // points rather than Entities or Inheritances.
         if (this.relation.start.isPoint()) {
-            this.relation.start.pt = SwingUtil.add(this.relation.start.pt, delta);
+            this.relation.start.pt = GeomUtil.add(this.relation.start.pt, delta);
         }
         if (this.relation.end.isPoint()) {
-            this.relation.end.pt = SwingUtil.add(this.relation.end.pt, delta);
+            this.relation.end.pt = GeomUtil.add(this.relation.end.pt, delta);
         }
         
         // Apply the delta to all control points.
         for (int i=0; i < this.relation.controlPts.size(); i++) {
             Point cp = this.relation.controlPts.get(i);
-            this.relation.controlPts.set(i, SwingUtil.add(cp, delta));
+            this.relation.controlPts.set(i, GeomUtil.add(cp, delta));
         }
     }
     
@@ -299,8 +299,8 @@ public class RelationController extends Controller {
             //                                       X           .
 
             // Vertices of the arrowhead that are not on the main line.
-            Point upPoint = SwingUtil.add(end, GeomUtil.toPoint(up));
-            Point downPoint = SwingUtil.add(end, GeomUtil.toPoint(down));
+            Point upPoint = GeomUtil.add(end, GeomUtil.toPoint(up));
+            Point downPoint = GeomUtil.add(end, GeomUtil.toPoint(down));
             
             // Draw a filled polygon connecting the end and the two
             // rotated points.
@@ -325,8 +325,8 @@ public class RelationController extends Controller {
             //                                 X     X           .
 
             // Arrowhead nearest 'end'.
-            Point upPoint = SwingUtil.add(end, GeomUtil.toPoint(up));
-            Point downPoint = SwingUtil.add(end, GeomUtil.toPoint(down));
+            Point upPoint = GeomUtil.add(end, GeomUtil.toPoint(up));
+            Point downPoint = GeomUtil.add(end, GeomUtil.toPoint(down));
             g.drawLine(end.x, end.y, upPoint.x, upPoint.y);
             g.drawLine(end.x, end.y, downPoint.x, downPoint.y);
             
@@ -336,8 +336,8 @@ public class RelationController extends Controller {
             // aesthestics of the painted result.
             Point end2 = new Point(end.x + (int)(body.x * 2/3),
                                    end.y + (int)(body.y * 2/3));
-            upPoint = SwingUtil.add(end2, GeomUtil.toPoint(up));
-            downPoint = SwingUtil.add(end2, GeomUtil.toPoint(down));
+            upPoint = GeomUtil.add(end2, GeomUtil.toPoint(up));
+            downPoint = GeomUtil.add(end2, GeomUtil.toPoint(down));
             g.drawLine(end2.x, end2.y, upPoint.x, upPoint.y);
             g.drawLine(end2.x, end2.y, downPoint.x, downPoint.y);
         }
@@ -358,7 +358,10 @@ public class RelationController extends Controller {
         
         // Special lines for inheritacne.
         if (this.relation.end.isInheritance()) {
-            g.setStroke(new BasicStroke(InheritanceController.inheritLineWidth));
+            g.setStroke(new BasicStroke(
+                InheritanceController.inheritLineWidth, 
+                BasicStroke.CAP_BUTT, 
+                BasicStroke.JOIN_MITER));
             g.setColor(InheritanceController.inheritLineColor);
         }
         
@@ -485,7 +488,7 @@ public class RelationController extends Controller {
         }
         
         // Midpoint of PQ.
-        Point m = SwingUtil.midPoint(p, q);
+        Point m = GeomUtil.midPoint(p, q);
         
         // Vertical segment?
         if (p.x == q.x) {
@@ -512,7 +515,7 @@ public class RelationController extends Controller {
         
         // Compute an angle that points from the ellipse center to the
         // point on its edge tangent to PQ.
-        double theta = ellipseTangentAngle(a, b, SwingUtil.subtract(q, p));
+        double theta = ellipseTangentAngle(a, b, GeomUtil.subtract(q, p));
         
         // Compute the vector from the ellipse center to the tangent point.
         Point2D.Double edge = computeEllipsePointFromAngle(a, b, theta);
@@ -651,7 +654,7 @@ public class RelationController extends Controller {
         this.setSelected(SelectionState.SS_UNSELECTED);
         
         this.relation.controlPts.add(0, new Point(
-            SwingUtil.midPoint(this.relation.start.getCenter(),
+            GeomUtil.midPoint(this.relation.start.getCenter(),
                                this.relation.end.getCenter())));
         
         this.setSelected(oldSel);
@@ -783,7 +786,7 @@ public class RelationController extends Controller {
         // Square that encloses the circle.
         int r = selfRelationRadius + arrowHeadLength/2;
         HashSet<Polygon> ret = new HashSet<Polygon>();
-        ret.add(SwingUtil.rectPolygon(pt.x-r, pt.y-r, r*2, r*2));
+        ret.add(GeomUtil.rectPolygon(pt.x-r, pt.y-r, r*2, r*2));
         return ret;
     }
 
@@ -812,13 +815,13 @@ public class RelationController extends Controller {
                   45, 315);
         
         // Put an arrowhead at the 0 degree position.
-        drawArrow(g, SwingUtil.add(pt, new Point(radius, 0)),
-                     SwingUtil.add(pt, new Point(radius, -1)),
+        drawArrow(g, GeomUtil.add(pt, new Point(radius, 0)),
+                     GeomUtil.add(pt, new Point(radius, -1)),
                      this.relation.owning);
                   
         // Label above the circle.
         int arrowLabelOffset = 20;
-        Point labelPt = SwingUtil.add(pt, new Point(0, -radius - arrowLabelOffset));
+        Point labelPt = GeomUtil.add(pt, new Point(0, -radius - arrowLabelOffset));
         SwingUtil.drawCenteredText(g, labelPt, this.relation.label);
     }
     
@@ -858,8 +861,7 @@ public class RelationController extends Controller {
         // Construct the line segment.
         Line2D.Double line = new Line2D.Double(
             GeomUtil.toPoint2D_Double(entity.getCenter()),
-            GeomUtil.toPoint2D_Double(
-                SwingUtil.subtract(p, entity.getCenter())));
+            GeomUtil.toPoint2D_Double(p));
         
         // Intersect this segment with the entity borders.
         Point2D.Double ret = intersectEntityWithSegment(entity, line);
@@ -927,7 +929,7 @@ public class RelationController extends Controller {
     private static IntRange getRange(HorizOrVert hv, RelationEndpoint re)
     {
         if (re.isEntity()) {
-            return SwingUtil.getRectRange(hv, re.entity.getRect());
+            return GeomUtil.getRectRange(hv, re.entity.getRect());
         }
         else {
             return IntRange.singleton(hv.get(re.getCenter()));
@@ -953,7 +955,7 @@ public class RelationController extends Controller {
     /** Extend 'points' to go through 'target', heading along 'currentHV'
       * first when a corner must be turned.  Return the new value to use
       * in place of 'currentHV' by the caller. */
-    private static HorizOrVert manhattan_hitNextControlPoint(
+    public static HorizOrVert manhattan_hitNextControlPoint(
         ArrayList<Point> /*INOUT*/ points,
         HorizOrVert currentHV,
         Point target)
@@ -993,7 +995,7 @@ public class RelationController extends Controller {
       * straight line, return a point that is in the proper line.  When
       * there is a choice, prefer an exit path that will go along
       * 'preferredHV' first. */
-    private static Point manhattan_getEndpointEmergence(
+    public static Point manhattan_getEndpointEmergence(
         RelationEndpoint start,
         HorizOrVert preferredHV,
         Point target)

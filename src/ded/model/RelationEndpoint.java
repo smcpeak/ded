@@ -64,6 +64,12 @@ public class RelationEndpoint {
         return this.inheritance != null;
     }
     
+    /** True if the endpoint is a specific inheritance. */
+    public boolean isSpecificInheritance(Inheritance inh)
+    {
+        return this.inheritance == inh;
+    }
+    
     /** True if the endpoint is an arbitrary point. */
     public boolean isPoint()
     {

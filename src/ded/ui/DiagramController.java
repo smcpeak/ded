@@ -21,11 +21,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import util.awt.GeomUtil;
 import util.swing.SwingUtil;
 
 import ded.Ded;
 import ded.model.Diagram;
 import ded.model.Entity;
+import ded.model.Inheritance;
 import ded.model.Relation;
 import ded.model.RelationEndpoint;
 
@@ -215,8 +217,7 @@ public class DiagramController extends JPanel
     }
     
     /** Hit test restricted to Inheritances. */
-/*
-    private EntityController hitTestInheritance(Point pt)
+    private InheritanceController hitTestInheritance(Point pt)
     {
         return (InheritanceController)hitTest(pt, new ControllerFilter() {
             public boolean satisfies(Controller c) {
@@ -224,7 +225,6 @@ public class DiagramController extends JPanel
             }
         });
     }
-*/
 
     @Override
     public void mousePressed(MouseEvent e)
@@ -277,6 +277,13 @@ public class DiagramController extends JPanel
                 this.setMode(Mode.DCM_SELECT);
                 break;
             }
+            
+            case DCM_CREATE_INHERITANCE: {
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    this.createInheritanceAt(e.getPoint());
+                }
+                break;
+            }
         }
     }
 
@@ -287,23 +294,23 @@ public class DiagramController extends JPanel
             this.selfCheck();
             
             // Where are we going to move the dragged object's main point?
-            Point destLoc = SwingUtil.subtract(e.getPoint(), this.dragOffset);
+            Point destLoc = GeomUtil.subtract(e.getPoint(), this.dragOffset);
             
             // Snap if Shift not held.
             if (!SwingUtil.shiftPressed(e)) {
-                destLoc = SwingUtil.snapPoint(destLoc, SNAP_DIST);
+                destLoc = GeomUtil.snapPoint(destLoc, SNAP_DIST);
             }
             
             if (this.dragging.isSelected()) {
                 // How far are we going to move the dragged object?
-                Point delta = SwingUtil.subtract(destLoc, this.dragging.getLoc());
+                Point delta = GeomUtil.subtract(destLoc, this.dragging.getLoc());
                 
                 // Move all selected controls by that amount.
                 for (Controller c : this.controllers) {
                     if (!c.isSelected()) { continue; }
                     
                     Point cur = c.getLoc();
-                    c.dragTo(SwingUtil.add(cur, delta));
+                    c.dragTo(GeomUtil.add(cur, delta));
                 }
             }
             else {
@@ -461,12 +468,9 @@ public class DiagramController extends JPanel
             this.repaint();
         }
         catch (Exception e) {
-            JOptionPane.showMessageDialog(
-                this,
+            this.errorMessageBox(
                 "Error while reading \""+name+"\": "+
-                    e.getClass().getSimpleName()+": "+e.getMessage(),
-                "Error while reading",
-                JOptionPane.ERROR_MESSAGE);
+                e.getClass().getSimpleName()+": "+e.getMessage());
         }
     }
     
@@ -480,7 +484,11 @@ public class DiagramController extends JPanel
         }
         
         for (Relation r : this.diagram.relations) {
-            this.add(new RelationController(this, r));
+            buildRelationController(r);
+        }
+        
+        for (Inheritance inh : this.diagram.inheritances) {
+            buildInheritanceController(inh);
         }
         
         this.setMode(Mode.DCM_SELECT);
@@ -501,12 +509,9 @@ public class DiagramController extends JPanel
             catch (Exception e) {
                 // Java error messages are really bad.  Maybe I will fix this
                 // at some point.
-                JOptionPane.showMessageDialog(
-                    this,
+                this.errorMessageBox(
                     "Error while writing to \""+result+"\": "+
-                        e.getClass().getSimpleName()+": "+e.getMessage(),
-                    "Error while writing",
-                    JOptionPane.ERROR_MESSAGE);
+                    e.getClass().getSimpleName()+": "+e.getMessage());
             }
         }
     }
@@ -548,6 +553,14 @@ public class DiagramController extends JPanel
         RelationController rc = new RelationController(this, r);
         this.add(rc);
         return rc;
+    }
+    
+    /** Construct a controller for 'inh' and add it to 'this'. */
+    private InheritanceController buildInheritanceController(Inheritance inh)
+    {
+        InheritanceController ic = new InheritanceController(this, inh);
+        this.add(ic);
+        return ic;
     }
     
     /** If there is exactly one controller selected, return it; otherwise
@@ -658,7 +671,7 @@ public class DiagramController extends JPanel
     public void beginDragging(Controller c, Point pt)
     {
         this.dragging = c;
-        this.dragOffset = SwingUtil.subtract(pt, c.getLoc());
+        this.dragOffset = GeomUtil.subtract(pt, c.getLoc());
         this.setMode(Mode.DCM_DRAGGING);
     }
 
@@ -821,17 +834,50 @@ public class DiagramController extends JPanel
         if (ec != null) {
             return new RelationEndpoint(ec.entity);
         }
-/*        
+        
         // Inheritance?
         InheritanceController ic = this.hitTestInheritance(pt);
         if (ic != null) {
             return new RelationEndpoint(ic.inheritance);
         }
-*/
+
         // No suitable intersecting controller, use the point itself.
         return new RelationEndpoint(pt);
     }
     
+    /** Create an inheritance based on the user's click on 'point'. */
+    private void createInheritanceAt(Point point)
+    {
+        // Must be clicking on an entity.
+        EntityController parent = this.hitTestEntity(point);
+        if (parent == null) {
+            this.errorMessageBox(
+                "To create an inheritance, start by clicking "+
+                "and dragging on the parent Entity.");
+            return;
+        }
+        
+        // Make an Inheritance connected to 'parent' and
+        // current location.
+        Inheritance inh = new Inheritance(parent.entity, false /*open*/, point);
+        this.diagram.inheritances.add(inh);
+        
+        // Build and select a controller.
+        InheritanceController ic = buildInheritanceController(inh);
+        this.selectOnly(ic);
+        
+        // Drag it while the mouse button is pressed.
+        this.beginDragging(ic, point);
+        
+        this.repaint();
+    }
+
+    /** Show an error message dialog box with 'message'. */
+    public void errorMessageBox(String message)
+    {
+        JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
     @Override
     public void componentResized(ComponentEvent e)
     {

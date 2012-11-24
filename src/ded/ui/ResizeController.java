@@ -12,7 +12,7 @@ import java.util.Set;
 
 import javax.swing.SwingUtilities;
 
-import util.swing.SwingUtil;
+import util.awt.GeomUtil;
 
 /** Functionality common to resize handles. */
 public abstract class ResizeController extends Controller {
@@ -33,7 +33,7 @@ public abstract class ResizeController extends Controller {
     public Set<Polygon> getBounds()
     {
         HashSet<Polygon> ret = new HashSet<Polygon>();
-        ret.add(SwingUtil.rectPolygon(getResizeHandleRect(this.getLoc())));
+        ret.add(GeomUtil.rectPolygon(getResizeHandleRect(this.getLoc())));
         return ret;
     }
 

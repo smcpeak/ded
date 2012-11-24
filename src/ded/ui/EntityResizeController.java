@@ -5,7 +5,7 @@ package ded.ui;
 import java.awt.Point;
 import java.awt.Rectangle;
 
-import util.swing.SwingUtil;
+import util.awt.GeomUtil;
 
 /** Controller to allow resizing an entity. */
 public class EntityResizeController extends ResizeController {
@@ -46,7 +46,7 @@ public class EntityResizeController extends ResizeController {
         this.selfCheck();
         
         // How far do we want to move the handle?
-        Point delta = SwingUtil.subtract(pt, this.getLoc());
+        Point delta = GeomUtil.subtract(pt, this.getLoc());
         
         int minSize = EntityController.minimumEntitySize;
         
