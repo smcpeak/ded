@@ -14,6 +14,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.font.LineMetrics;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -257,7 +258,7 @@ public class RelationController extends Controller {
     private static void drawArrow(Graphics g0, Point start, Point end, boolean owning)
     {
         // Copy the Graphics object so settings changes are not persistent.
-        Graphics g = g0.create();
+        Graphics2D g = (Graphics2D)g0.create();
         
         // Draw the line segment.
         g.drawLine(start.x, start.y, end.x, end.y);
@@ -276,11 +277,6 @@ public class RelationController extends Controller {
         Point2D.Double up = GeomUtil.rot2DVectorAngle(body, Math.PI / 6.0);
         Point2D.Double down = GeomUtil.rot2DVectorAngle(body, - Math.PI / 6.0);
 
-        // TODO: Right now, the drawn arrowheads look bad.  I need to
-        // somehow tweak the drawing routine to fix them.  My current
-        // best idea is to use Graphics2D doubles so I can make very
-        // slight adjustments to the shape.
-        
         //                                       ^           .
         //                                        \ up       .
         //                                         \         .
@@ -303,18 +299,23 @@ public class RelationController extends Controller {
             //                                       XX          .
             //                                       X           .
 
-            // Vertices of the arrowhead that are not on the main line.
-            Point upPoint = GeomUtil.add(end, GeomUtil.toPoint(up));
-            Point downPoint = GeomUtil.add(end, GeomUtil.toPoint(down));
+            // I do this using floating-point coordinates and Graphics2D
+            // because if I use the integer API, the arrowhead has a
+            // very unaesthetic asymmetry.  (That was not the case with Qt.)
             
-            // Draw a filled polygon connecting the end and the two
-            // rotated points.
+            // Vertices of the arrowhead that are not on the main line.
+            Point2D.Double endFloat = GeomUtil.toPoint2D_Double(end);
+            Point2D.Double upPoint = GeomUtil.add(endFloat, up);
+            Point2D.Double downPoint = GeomUtil.add(endFloat, down);
+
+            // Fill the arrowhead.
             g.setColor(arrowFillColor);
-            Polygon pts = new Polygon();
-            pts.addPoint(end.x, end.y);
-            pts.addPoint(upPoint.x, upPoint.y);
-            pts.addPoint(downPoint.x, downPoint.y);
-            g.fillPolygon(pts);
+            GeneralPath pts = new GeneralPath();
+            pts.moveTo(endFloat.x, endFloat.y);
+            pts.lineTo(upPoint.x, upPoint.y);
+            pts.lineTo(downPoint.x, downPoint.y);
+            pts.closePath();
+            g.fill(pts);
         }
         
         else {
@@ -329,6 +330,8 @@ public class RelationController extends Controller {
             //                                  X     X          .
             //                                 X     X           .
 
+            // For this code, the integer API seems adequate.
+            
             // Arrowhead nearest 'end'.
             Point upPoint = GeomUtil.add(end, GeomUtil.toPoint(up));
             Point downPoint = GeomUtil.add(end, GeomUtil.toPoint(down));
