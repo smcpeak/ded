@@ -210,6 +210,8 @@ public class RelationController extends Controller {
             Point cp = this.relation.controlPts.get(i);
             this.relation.controlPts.set(i, GeomUtil.add(cp, delta));
         }
+        
+        this.diagramController.setDirty();
     }
     
     @Override
@@ -627,7 +629,7 @@ public class RelationController extends Controller {
     {
         if (RelationDialog.exec(this.diagramController, this.relation)) {
             // User pressed OK.
-            this.diagramController.repaint();
+            this.diagramController.diagramChanged();
         }
     }
 
@@ -645,6 +647,8 @@ public class RelationController extends Controller {
         
         // Remove myself as a controller.
         this.diagramController.remove(this);
+
+        this.diagramController.setDirty();
     }
 
     /** Insert a new control point in a default location. */
@@ -670,7 +674,7 @@ public class RelationController extends Controller {
         
         this.setSelected(oldSel);
         
-        this.diagramController.repaint();
+        this.diagramController.diagramChanged();
     }
     
     /** Insert a new control point at the specified location, putting
@@ -729,7 +733,7 @@ public class RelationController extends Controller {
         
         this.setSelected(oldSel);
         
-        this.diagramController.repaint();
+        this.diagramController.diagramChanged();
     }
     
     @SuppressWarnings("serial")
@@ -779,7 +783,7 @@ public class RelationController extends Controller {
                     return false;
             }
             
-            this.diagramController.repaint();
+            this.diagramController.diagramChanged();
             return true;
         }
         

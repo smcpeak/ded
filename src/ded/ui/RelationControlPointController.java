@@ -44,6 +44,7 @@ public class RelationControlPointController extends ResizeController {
     public void dragTo(Point pt)
     {
         this.rcontroller.relation.controlPts.set(this.which, pt);
+        this.diagramController.setDirty();
     }
 
     @Override
@@ -89,7 +90,7 @@ public class RelationControlPointController extends ResizeController {
         if ((new RelationControlPointDialog(this.diagramController, 
                                             this.rcontroller.relation, 
                                             this.which)).exec()) {
-            this.diagramController.repaint();
+            this.diagramController.diagramChanged();
         }
     }
     

@@ -3,6 +3,8 @@
 package ded;
 
 import java.awt.Image;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -16,7 +18,7 @@ import ded.ui.DiagramController;
 import ded.ui.EntityDialog;
 
 /** Diagram editor. */
-public class Ded extends JFrame {
+public class Ded extends JFrame implements WindowListener {
     // ---------- constants -------------
     private static final long serialVersionUID = -7931792812267064160L;
     
@@ -35,7 +37,9 @@ public class Ded extends JFrame {
     {
         super(windowTitle);
         
-        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        this.addWindowListener(this);
+        
         this.setSize(800,600);
         
         // Load the Window icon if we haven't already.
@@ -78,6 +82,34 @@ public class Ded extends JFrame {
         // one process, I'll have to make the logic here smarter.
         System.exit(0);
     }
+    
+    /** Close the window; but prompt if dirty. */
+    public void tryCloseWindow()
+    {
+        if (this.diagramController.isDirty()) {
+            int res = JOptionPane.showConfirmDialog(this, 
+                "There are unsaved changes.  Quit anyway?",
+                "Quit Confirmation", JOptionPane.YES_NO_OPTION);
+            if (res != JOptionPane.YES_OPTION) {
+                return;
+            }
+        }
+        this.dispose();
+    }
+
+    @Override
+    public void windowClosing(WindowEvent e)
+    {
+        this.tryCloseWindow();
+    }
+
+    // WindowListener events I do not care about.
+    @Override public void windowOpened(WindowEvent e) {}
+    @Override public void windowClosed(WindowEvent e) {}
+    @Override public void windowIconified(WindowEvent e) {}
+    @Override public void windowDeiconified(WindowEvent e) {}
+    @Override public void windowActivated(WindowEvent e) {}
+    @Override public void windowDeactivated(WindowEvent e) {}
     
     public static void main(final String[] args)
     {

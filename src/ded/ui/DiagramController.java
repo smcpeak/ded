@@ -122,6 +122,10 @@ public class DiagramController extends JPanel
     /** Most recently used file name. */
     private String fileName;
     
+    /** When true, the in-memory Diagram has been modified since the
+      * last time it was saved. */
+    private boolean dirty;
+    
     // ------------- public methods ---------------
     public DiagramController(Ded dedWindow)
     {
@@ -132,6 +136,7 @@ public class DiagramController extends JPanel
         this.controllers = new ArrayList<Controller>();
         this.mode = Mode.DCM_SELECT;
         this.fileName = "";
+        this.dirty = false;
         
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
@@ -260,6 +265,7 @@ public class DiagramController extends JPanel
                 RelationEndpoint endpt = this.getRelationEndpoint(e.getPoint());
                 Relation r = new Relation(endpt, new RelationEndpoint(endpt));
                 this.diagram.relations.add(r);
+                this.setDirty();
                 
                 // Build a controller and select it.
                 RelationController rc = this.buildRelationController(r);
@@ -275,12 +281,14 @@ public class DiagramController extends JPanel
             case DCM_CREATE_ENTITY: {
                 EntityController.createEntityAt(this, e.getPoint());
                 this.setMode(Mode.DCM_SELECT);
+                this.setDirty();
                 break;
             }
             
             case DCM_CREATE_INHERITANCE: {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     this.createInheritanceAt(e.getPoint());
+                    this.setDirty();
                 }
                 break;
             }
@@ -393,7 +401,7 @@ public class DiagramController extends JPanel
                 break;
                 
             case KeyEvent.VK_Q:
-                this.dedWindow.dispose();
+                this.dedWindow.tryCloseWindow();
                 break;
                 
             case KeyEvent.VK_X:
@@ -438,6 +446,15 @@ public class DiagramController extends JPanel
     /** Prompt for a file name to load, then replace the current diagram with it. */
     private void loadFromFile()
     {
+        if (this.isDirty()) {
+            int res = JOptionPane.showConfirmDialog(this, 
+                "There are unsaved changes.  Load new diagram anyway?",
+                "Load Confirmation", JOptionPane.YES_NO_OPTION);
+            if (res != JOptionPane.YES_OPTION) {
+                return;
+            }
+        }
+        
         String result =
             JOptionPane.showInputDialog(this, "File name to load from:", this.fileName);
         if (result != null) {
@@ -453,6 +470,7 @@ public class DiagramController extends JPanel
             Diagram d = Diagram.readFromFile(name);
             
             // Success.  First, update file name.
+            this.dirty = false;
             this.setFileName(name);
             
             // Sizing is achieved by specifying a preferred size for
@@ -504,6 +522,7 @@ public class DiagramController extends JPanel
                 this.diagram.saveToFile(result);
                 
                 // If it worked, remember the new name.
+                this.dirty = false;
                 this.setFileName(result);
             }
             catch (Exception e) {
@@ -520,9 +539,55 @@ public class DiagramController extends JPanel
     private void setFileName(String name)
     {
         this.fileName = name;
+        this.updateWindowTitle();
+    }
+    
+    /** Called when the diagram has been changed.  This does a repaint
+      * and sets the dirty bit. */
+    public void diagramChanged()
+    {
+        this.setDirty();
+        this.repaint();
+    }
+    
+    /** Set 'dirty' to true. */
+    public void setDirty()
+    {
+        if (!this.dirty) {
+            this.dirty = true;
+            this.updateWindowTitle();
+        }
+    }
+    
+    /** Clear the dirty bit. */
+    public void clearDirty()
+    {
+        if (this.dirty) {
+            this.dirty = false;
+            this.updateWindowTitle();
+        }
+    }
+    
+    /** Return true if 'dirty'. */
+    public boolean isDirty()
+    {
+        return this.dirty;
+    }
+    
+    /** Set the window title to match current state. */
+    private void updateWindowTitle()
+    {
+        String title = Ded.windowTitle;
         
-        // Update window title.
-        this.dedWindow.setTitle(Ded.windowTitle+": "+name);
+        if (!this.fileName.isEmpty()) {
+            title += ": " + this.fileName;
+        }
+        
+        if (this.dirty) {
+            title += "*";
+        }
+        
+        this.dedWindow.setTitle(title);
     }
 
     // KeyListener methods I do not care about.
@@ -822,6 +887,7 @@ public class DiagramController extends JPanel
             if (this.controllers.contains(c)) {
                 c.deleteSelfAndData(this.diagram);
             }
+            this.setDirty();
         }
     }
     
@@ -861,6 +927,7 @@ public class DiagramController extends JPanel
         // current location.
         Inheritance inh = new Inheritance(parent.entity, false /*open*/, point);
         this.diagram.inheritances.add(inh);
+        this.setDirty();
         
         // Build and select a controller.
         InheritanceController ic = buildInheritanceController(inh);
@@ -882,6 +949,10 @@ public class DiagramController extends JPanel
     public void componentResized(ComponentEvent e)
     {
         this.diagram.windowSize = this.getSize();
+        
+        // I do not set the dirty bit here because resizing is not a
+        // very important action, and I'm having some trouble avoiding
+        // making things dirty on startup.
     }
 
     // ComponentListener events I do not care about.

@@ -89,6 +89,7 @@ public class EntityController extends Controller {
     public void dragTo(Point p)
     {
         this.entity.loc = p;
+        this.diagramController.setDirty();
     }
     
     @Override
@@ -246,7 +247,7 @@ public class EntityController extends Controller {
     public void edit()
     {
         if (EntityDialog.exec(this.diagramController, this.entity)) {
-            this.diagramController.repaint();
+            this.diagramController.diagramChanged();
         }
     }
     
