@@ -10,13 +10,19 @@ while [ $? -eq 0 -a x"$me" != x"$resolved" ]; do
 done
 
 instdir=`dirname "$me"`
-classpath="$instdir/bin"
 
+# Use the JAR file if is there.
+jarfile="$instdir/dist/ded.jar"
+if [ -f "$jarfile" ]; then
+  exec java -ea -jar "$jarfile" "$@"
+fi
+
+classpath="$instdir/bin"
 if [ -d "$classpath" ]; then
   exec java -classpath "$classpath" -ea ded.Ded "$@"
 else
-  echo "Missing directory: $classpath"
-  echo "Maybe the sources are not compiled?"
+  echo "Missing: $classpath or $jarfile"
+  echo "Maybe the sources are not compiled?  Try running 'make'."
 fi
 
 # EOF

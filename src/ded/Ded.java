@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.net.URL;
 import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
@@ -56,8 +57,23 @@ public class Ded extends JFrame implements WindowListener {
                 // the build tree.  My plan is to add the ability to
                 // package everything in a JAR.
                 try {
-                    windowIcon16 = new ImageIcon("src/ded/ui/boxarrow16.png");
-                    windowIcon32 = new ImageIcon("src/ded/ui/boxarrow32.png");
+                    URL url = Ded.class.getResource("/ded/ui/boxarrow16.png");
+                    if (url != null) {
+                        windowIcon16 = new ImageIcon(url);
+                    }
+                    else {
+                        // Try loading from the file system, which is
+                        // needed when running from Eclipse.
+                        windowIcon16 = new ImageIcon("src/ded/ui/boxarrow16.png");
+                    }
+                    
+                    url = Ded.class.getResource("/ded/ui/boxarrow32.png");
+                    if (url != null) {
+                        windowIcon32 = new ImageIcon(url);
+                    }
+                    else {
+                        windowIcon32 = new ImageIcon("src/ded/ui/boxarrow32.png");
+                    }
                 }
                 catch (Exception e) {
                     // This is never called; it seems that ImageIcon just
