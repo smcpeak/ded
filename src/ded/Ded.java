@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -32,8 +33,8 @@ public class Ded extends JFrame implements WindowListener {
     public static final String windowTitle = "Diagram Editor";
 
     // ---------- static data ----------------
-    /** Window icon. */
-    public static Image iconImage;
+    /** Window icons. */
+    public static ImageIcon windowIcon16, windowIcon32;
     
     // ---------- private data --------------
     private DiagramController diagramController;
@@ -50,12 +51,13 @@ public class Ded extends JFrame implements WindowListener {
         
         // Load the Window icon if we haven't already.
         synchronized (Ded.class) {
-            if (iconImage == null) {
+            if (windowIcon16 == null) {
                 // For now, this requires that I'm running it out of
                 // the build tree.  My plan is to add the ability to
                 // package everything in a JAR.
                 try {
-                    iconImage = new ImageIcon("src/ded/ui/boxarrow.png").getImage();
+                    windowIcon16 = new ImageIcon("src/ded/ui/boxarrow16.png");
+                    windowIcon32 = new ImageIcon("src/ded/ui/boxarrow32.png");
                 }
                 catch (Exception e) {
                     // This is never called; it seems that ImageIcon just
@@ -65,8 +67,11 @@ public class Ded extends JFrame implements WindowListener {
             }
         }
         
-        if (iconImage != null) {
-            this.setIconImage(iconImage);
+        if (windowIcon16 != null) {
+            ArrayList<Image> icons = new ArrayList<Image>();
+            icons.add(windowIcon16.getImage());
+            icons.add(windowIcon32.getImage());
+            this.setIconImages(icons);
         }
         
         this.diagramController = new DiagramController(this);
@@ -218,7 +223,8 @@ public class Ded extends JFrame implements WindowListener {
             "Diagram Editor (DED)\n"+
                 "Copyright 2012 Scott McPeak",
             "About Diagram Editor",
-            JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.INFORMATION_MESSAGE,
+            windowIcon32);
     }
     
     @Override
