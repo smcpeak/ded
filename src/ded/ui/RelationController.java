@@ -42,7 +42,7 @@ public class RelationController extends Controller {
     public static final int selfRelationRadius = 20;
     public static final int arrowHeadLength = 10;
     public static final int relationBoundsSlop = 10;
-    public static final int relationLabelOffset = 3;
+    public static final int relationLabelOffset = 4;
     
     // -------------------- instance data -----------------------
     /** The Relation we are controlling. */
@@ -500,6 +500,7 @@ public class RelationController extends Controller {
                 m.x -= relationLabelOffset + (int)a;
             }
             SwingUtil.drawCenteredText(g, m, label);
+            return;
         }
         
         // I'm having a hard time working out the following code in the
@@ -507,6 +508,7 @@ public class RelationController extends Controller {
         // so I can work in the usual cartesian coord system.
         p.y = -p.y;
         q.y = -q.y;
+        m.y = -m.y;
         
         // Compute an angle that points from the ellipse center to the
         // point on its edge tangent to PQ.
@@ -522,10 +524,10 @@ public class RelationController extends Controller {
         v = GeomUtil.rot2DVector90(v);
         v = GeomUtil.scale2DVectorTo(v, relationLabelOffset);
         
-        // Compute destired center of ellipse.
+        // Compute desired center of ellipse: midpt + v - edge
         Point2D.Double center = GeomUtil.toPoint2D_Double(m);
         center = GeomUtil.add(center, v);
-        center = GeomUtil.add(center, edge);
+        center = GeomUtil.subtract(center, edge);
         
         // Return to usual AWT coordinate system.
         Point printSpot = GeomUtil.toPoint(center);

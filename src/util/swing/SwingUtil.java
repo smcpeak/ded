@@ -2,9 +2,6 @@
 
 package util.swing;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -12,22 +9,12 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.font.LineMetrics;
 
 import javax.swing.AbstractAction;
-import javax.swing.Box;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JRootPane;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 
 import util.IntRange;
 import util.Util;
@@ -102,106 +89,6 @@ public class SwingUtil {
         return new Point(snapInt(p.x, snap), snapInt(p.y, snap));
     }
     
-    /** Make a vertical layout box. */
-    public static Box makeVBox(Container parent)
-    {
-        Box b = Box.createVerticalBox();
-        parent.add(b);
-        return b;
-    }
-    
-    /** Make a horizontal layout box. */
-    public static Box makeHBox(Container parent)
-    {
-        Box b = Box.createHorizontalBox();
-        parent.add(b);
-        return b;
-    }
-    
-    /** Make a vertical layout box with the given margin. */
-    public static Box makeMarginVBox(Container parent, int margin)
-    {
-        Box hb = makeHBox(parent);
-        hb.add(Box.createHorizontalStrut(margin));
-        
-        Box vb = makeVBox(hb);
-        vb.add(Box.createVerticalStrut(margin));
-        
-        Box ret = makeVBox(vb);
-        
-        vb.add(Box.createVerticalStrut(margin));
-        hb.add(Box.createHorizontalStrut(margin));
-
-        return ret;
-    }
-    
-    /** Create a line edit control and associated label. */
-    public static JTextField makeLineEdit(Container parent, String label, char mnemonic,
-                                          String initialValue)
-    {
-        Box hbox = makeHBox(parent);
-        JLabel labelControl = new JLabel(label);
-        labelControl.setDisplayedMnemonic(mnemonic);
-        hbox.add(labelControl);
-        
-        hbox.add(Box.createHorizontalStrut(5));
-        
-        final JTextField ret = new JTextField(initialValue);
-        hbox.add(ret);
-        labelControl.setLabelFor(ret);
-
-        // Arrange to select all the text when the box receives focus.
-        // http://stackoverflow.com/questions/1178312/how-to-select-all-text-in-a-jformattedtextfield-when-it-gets-focus
-        ret.addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        ret.selectAll();
-                    }
-                });
-            }
-            
-            // This refinement removes focus when we leave.  The Swing
-            // text controls draw the selected text with the selection
-            // background even when the control does not have the focus,
-            // which is different from how Qt does it and looks dumb
-            // since tabbing from text control to text control then
-            // works differently from tabbing from text control to some
-            // other kind of control (like a dropdown or button).
-            public void focusLost(FocusEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        ret.select(0,0);
-                    }
-                });
-            }
-        });
-        
-        disallowVertStretch(hbox);
-        
-        return ret;
-    }
-    
-    /** Set min/max height to preferred height in order to disallow
-      * vertical stretching. */
-    public static void disallowVertStretch(Component c)
-    {
-        Dimension pref = c.getPreferredSize();
-        if (pref == null) {
-            // Coverity analysis claims this might return null.  The
-            // documentation is not clear.  I guess if it does return
-            // null I'll just skip trying to disable vertical stretch.
-            return;
-        }
-        
-        Dimension max = c.getMaximumSize();
-        Dimension min = c.getMinimumSize();
-        max.height = pref.height;
-        min.height = pref.height;
-        c.setMaximumSize(max);
-        c.setMinimumSize(min);
-    }
-
     /** Send a message to close a window.
       *
       * I do not really understand whether or why this is better than
@@ -231,20 +118,6 @@ public class SwingUtil {
         }
     }
     
-    /** Arrange to close a dialog when Escape is pressed.
-      *
-      * Based on code from:
-      *  http://stackoverflow.com/questions/642925/swing-how-do-i-close-a-dialog-when-the-esc-key-is-pressed
-      */
-    public static void installEscapeCloseOperation(final JDialog dialog)
-    {
-        JRootPane rootPane = dialog.getRootPane();
-        rootPane.registerKeyboardAction(
-            new WindowCloseAction(dialog),
-            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-            JComponent.WHEN_IN_FOCUSED_WINDOW);
-    }
-
     /** Get the center of 'r'. */
     public static Point getCenter(Rectangle r)
     {

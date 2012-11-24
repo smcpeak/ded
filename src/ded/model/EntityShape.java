@@ -20,6 +20,7 @@ public enum EntityShape {
     }
 
     /** This is what JComboBox uses when it draws the items. */
+    @Override
     public String toString()
     {
         return this.displayName;
