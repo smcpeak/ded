@@ -888,17 +888,6 @@ public class DiagramController extends JPanel
     @Override public void componentMoved(ComponentEvent e) {}
     @Override public void componentShown(ComponentEvent e) {}
     @Override public void componentHidden(ComponentEvent e) {}
-
-    /** Pop up a menu at 'where', with menu title 'title', and menu
-      * choices 'items'.  If the user chooses one, return its index
-      * in 'items'.  Otherwise, return -1.  This blocks until the
-      * user chooses something. */
-    public int popupMenu(Point where, String title, String[] items)
-    {
-        // TODO: Code this.
-        JOptionPane.showMessageDialog(this, "TODO: popupMenu");
-        return -1;      // Nothing chosen.
-    }
 }
 
 // EOF

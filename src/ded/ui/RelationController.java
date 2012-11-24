@@ -10,6 +10,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.font.LineMetrics;
@@ -20,12 +21,14 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
 import util.IntRange;
 import util.Util;
 import util.awt.GeomUtil;
 import util.awt.HorizOrVert;
+import util.swing.MenuAction;
 import util.swing.SwingUtil;
 
 import ded.model.Diagram;
@@ -655,7 +658,7 @@ public class RelationController extends Controller {
         
         this.relation.controlPts.add(0, new Point(
             GeomUtil.midPoint(this.relation.start.getCenter(),
-                               this.relation.end.getCenter())));
+                              this.relation.end.getCenter())));
         
         this.setSelected(oldSel);
         
@@ -677,20 +680,22 @@ public class RelationController extends Controller {
         this.diagramController.repaint();
     }
     
+    @SuppressWarnings("serial")
     @Override
     public void mousePressed(MouseEvent ev)
     {
         if (SwingUtilities.isRightMouseButton(ev)) {
-            // Context menu choices.
-            String items[] = { "&Insert control point" };
+            final RelationController thisController = this;
             
-            // Launch menu.
-            switch (this.diagramController.popupMenu(ev.getPoint(), "Relation", items)) {
-                case 0:
-                    this.insertControlPoint();
-                    break;
-            }
+            JPopupMenu menu = new JPopupMenu("Relation");
             
+            menu.add(new MenuAction("Insert control point", KeyEvent.VK_I) {
+                public void actionPerformed(ActionEvent e) {
+                    thisController.insertControlPoint();
+                }
+            });
+            
+            menu.show(this.diagramController, ev.getPoint().x, ev.getPoint().y);
             return;
         }
         
