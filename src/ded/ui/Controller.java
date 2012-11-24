@@ -162,13 +162,21 @@ public abstract class Controller {
     public void dragTo(Point p)
     {}
 
-    /** Edit the attributes of the controlled element using a dialog box. */
+    /** Edit the attributes of the controlled element using a dialog box,
+      * or show an error dialog if that is not possible. */
     public void edit()
-    {}
+    {
+        this.diagramController.errorMessageBox(
+            "This kind of element cannot be edited.");
+    }
 
-    /** Insert a control point if possible. */
+    /** Insert a control point, or show an error dialog if that is not
+      * possible. */
     public void insertControlPoint()
-    {}
+    {
+        this.diagramController.errorMessageBox(
+            "This kind of element cannot have control points inserted.");
+    }
     
     /** Delete this control and its data. */
     public void deleteSelfAndData(Diagram diagram)

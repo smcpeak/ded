@@ -61,7 +61,9 @@ public class DiagramController extends JPanel
         "When relation selected, H/V/D to change routing,\n"+
         "and O to toggle owned/shared.\n"+
         "When inheritance selected, O to change open/closed.\n"+
-        "When dragging, hold Shift to turn off 5-pixel snap.\n";
+        "When dragging, hold Shift to turn off 5-pixel snap.\n"+
+        "\n"+
+        "See menu bar for commands without keybindings.";
 
     // ------------- static data ---------------
     /** Granularity of drag/move snap action. */
@@ -70,7 +72,7 @@ public class DiagramController extends JPanel
     // ------------- private types ---------------
     /** Primary "mode" of the editing interface, indicating what happens
       * when the left mouse button is clicked or released. */
-    private static enum Mode {
+    public static enum Mode {
         DCM_SELECT                     // click to select/move/resize
             ("Select"),
         DCM_CREATE_ENTITY              // click to create an entity
@@ -395,12 +397,6 @@ public class DiagramController extends JPanel
         }
         
         switch (e.getKeyCode()) {
-            case KeyEvent.VK_H:
-                JOptionPane.showMessageDialog(this, helpMessage, 
-                    "Diagram Editor Keybindings",
-                    JOptionPane.INFORMATION_MESSAGE);
-                break;
-                
             case KeyEvent.VK_X:
                 if (SwingUtil.shiftPressed(e)) {
                     assert(false);     // Make sure assertions are enabled.
@@ -409,37 +405,40 @@ public class DiagramController extends JPanel
                     throw new RuntimeException("Test exception/error message.");
                 }
                 break;
-                
-            case KeyEvent.VK_C:
-                this.setMode(Mode.DCM_CREATE_ENTITY);
-                break;
-                
-            case KeyEvent.VK_S:
-                this.setMode(Mode.DCM_SELECT);
-                break;
-                
-            case KeyEvent.VK_A:
-                this.setMode(Mode.DCM_CREATE_RELATION);
-                break;
-                
-            case KeyEvent.VK_I:
-                this.setMode(Mode.DCM_CREATE_INHERITANCE);
-                break;
-                
-            case KeyEvent.VK_ENTER:
-                this.editSelected();
-                break;
-                
-            case KeyEvent.VK_INSERT:
-                this.insertControlPoint();
-                break;
-                
-            case KeyEvent.VK_DELETE:
-                this.deleteSelected();
-                break;
         }
     }
 
+    /** Show the box with the key bindings. */
+    public void showHelpBox()
+    {
+        JOptionPane.showMessageDialog(this, helpMessage, 
+            "Diagram Editor Keybindings",
+            JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    /** Clear the current diagram. */
+    public void newFile()
+    {
+        if (this.isDirty()) {
+            int res = JOptionPane.showConfirmDialog(this, 
+                "There are unsaved changes.  Create new diagram anyway?",
+                "New Diagram Confirmation", JOptionPane.YES_NO_OPTION);
+            if (res != JOptionPane.YES_OPTION) {
+                return;
+            }
+        }
+        
+        // Reset file status.
+        this.dirty = false;
+        this.setFileName("");
+        
+        // Clear the diagram.
+        this.diagram = new Diagram();
+        this.rebuildControllers();
+        
+        this.repaint();
+    }
+    
     /** Prompt for a file name to load, then replace the current diagram with it. */
     public void loadFromFile()
     {
@@ -709,11 +708,15 @@ public class DiagramController extends JPanel
             if (c != null) {
                 c.edit();
             }
+            else {
+                this.errorMessageBox(
+                    "There must be exactly one thing selected to edit it.");
+            }
         }
     }
     
     /** Delete the selected controllers and associated entities, if any. */
-    private void deleteSelected()
+    public void deleteSelected()
     {
         if (this.mode == Mode.DCM_SELECT) {
             Set<Controller> sel = this.getAllSelected();
@@ -733,12 +736,16 @@ public class DiagramController extends JPanel
     
     /** Insert a new control point into the selected controller and
       * associated entity, if any and applicable. */
-    private void insertControlPoint()
+    public void insertControlPoint()
     {
         if (this.mode == Mode.DCM_SELECT) {
             Controller c = this.getUniqueSelected();
             if (c != null) {
                 c.insertControlPoint();
+            }
+            else {
+                this.errorMessageBox(
+                    "There must be exactly one thing selected to insert a control point.");
             }
         }
     }

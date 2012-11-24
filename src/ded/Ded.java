@@ -81,6 +81,9 @@ public class Ded extends JFrame implements WindowListener {
     {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(buildFileMenu());
+        menuBar.add(buildEditMenu());
+        menuBar.add(buildModeMenu());
+        menuBar.add(buildHelpMenu());
         this.setJMenuBar(menuBar);
     }
     
@@ -89,6 +92,12 @@ public class Ded extends JFrame implements WindowListener {
     {
         JMenu m = new JMenu("File");
         m.setMnemonic(KeyEvent.VK_F);
+        
+        m.add(new MenuAction("New", KeyEvent.VK_N) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.newFile();
+            }
+        });
         
         m.add(new MenuAction("Open ...", KeyEvent.VK_O, KeyEvent.VK_O, ActionEvent.CTRL_MASK) {
             public void actionPerformed(ActionEvent e) {
@@ -117,6 +126,99 @@ public class Ded extends JFrame implements WindowListener {
         });
 
         return m;
+    }
+    
+    @SuppressWarnings("serial")
+    private JMenu buildEditMenu()
+    {
+        JMenu m = new JMenu("Edit");
+        m.setMnemonic(KeyEvent.VK_E);
+        
+        m.add(new MenuAction("Edit selected ...", KeyEvent.VK_ENTER, KeyEvent.VK_ENTER, 0) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.editSelected();
+            }
+        });
+        
+        m.add(new MenuAction("Insert control point", KeyEvent.VK_INSERT, KeyEvent.VK_INSERT, 0) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.insertControlPoint();
+            }
+        });
+        
+        m.add(new MenuAction("Delete selected", KeyEvent.VK_DELETE, KeyEvent.VK_DELETE, 0) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.deleteSelected();
+            }
+        });
+        
+        return m;
+    }
+    
+    @SuppressWarnings("serial")
+    private JMenu buildModeMenu()
+    {
+        JMenu m = new JMenu("Mode");
+        m.setMnemonic(KeyEvent.VK_M);
+        
+        m.add(new MenuAction("Select (normal)", KeyEvent.VK_S, KeyEvent.VK_S, 0) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.setMode(DiagramController.Mode.DCM_SELECT);
+            }
+        });
+        
+        m.add(new MenuAction("Create entity", KeyEvent.VK_C, KeyEvent.VK_C, 0) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.setMode(DiagramController.Mode.DCM_CREATE_ENTITY);
+            }
+        });
+        
+        m.add(new MenuAction("Create relation (arrow)", KeyEvent.VK_A, KeyEvent.VK_A, 0) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.setMode(DiagramController.Mode.DCM_CREATE_RELATION);
+            }
+        });
+        
+        m.add(new MenuAction("Create inheritance", KeyEvent.VK_I, KeyEvent.VK_I, 0) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.setMode(DiagramController.Mode.DCM_CREATE_INHERITANCE);
+            }
+        });
+        
+        return m;
+    }
+    
+    @SuppressWarnings("serial")
+    private JMenu buildHelpMenu()
+    {
+        JMenu m = new JMenu("Help");
+        m.setMnemonic(KeyEvent.VK_H);
+        
+        m.add(new MenuAction("Help ...", KeyEvent.VK_H, KeyEvent.VK_H, 0) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.showHelpBox();
+            }
+        });
+
+        m.addSeparator();
+        
+        m.add(new MenuAction("About ...", KeyEvent.VK_A) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.showAboutBox();
+            }
+        });
+        
+        return m;
+    }
+    
+    private void showAboutBox()
+    {
+        JOptionPane.showMessageDialog(
+            this,
+            "Diagram Editor (DED)\n"+
+                "Copyright 2012 Scott McPeak",
+            "About Diagram Editor",
+            JOptionPane.INFORMATION_MESSAGE);
     }
     
     @Override

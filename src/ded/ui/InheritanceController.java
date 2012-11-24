@@ -234,12 +234,6 @@ public class InheritanceController extends Controller {
     }
     
     @Override
-    public void edit()
-    {
-        // not implemented...
-    }
-    
-    @Override
     public void deleteSelfAndData(Diagram diagram)
     {
         // Make sure no resize handles are around.

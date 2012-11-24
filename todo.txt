@@ -3,6 +3,7 @@ TODOs for Diagram Editor
 
 Small:
 - full out the menu bar
+- package up as JAR file
 - copy+paste for sets of selected entities
 - entity grouping
 - better self-loop rendering
