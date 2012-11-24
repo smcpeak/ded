@@ -1,3 +1,6 @@
-- prompt before overwriting a file
+TODOs for Diagram Editor
+------------------------
+
+(empty for moment)
 
 EOF

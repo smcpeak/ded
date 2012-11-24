@@ -13,6 +13,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -515,23 +516,43 @@ public class DiagramController extends JPanel
     /** Prompt user for file name and save to it. */
     private void saveToFile()
     {
-        String result = 
-            JOptionPane.showInputDialog(this, "File name to save to:", this.fileName);
-        if (result != null) {
-            try {
-                this.diagram.saveToFile(result);
-                
-                // If it worked, remember the new name.
-                this.dirty = false;
-                this.setFileName(result);
+        // Prompt for a file name, confirming if it is a new name
+        // but the file already exists.
+        String result = this.fileName;
+        while (true) {
+            result = JOptionPane.showInputDialog(this, "File name to save to:", result);
+            if (result == null) {
+                return;
             }
-            catch (Exception e) {
-                // Java error messages are really bad.  Maybe I will fix this
-                // at some point.
-                this.errorMessageBox(
-                    "Error while writing to \""+result+"\": "+
-                    e.getClass().getSimpleName()+": "+e.getMessage());
+            
+            if (!result.equals(this.fileName) && new File(result).exists()) {
+                int res = JOptionPane.showConfirmDialog(
+                    this,
+                    "A file called \""+result+"\" already exists.  Overwrite it?",
+                    "Confirm Overwrite",
+                    JOptionPane.YES_NO_OPTION);
+                if (res != JOptionPane.YES_OPTION) {
+                    continue;      // Ask again, but starting with last answer.
+                }
             }
+            
+            break;
+        }
+
+        // Save to the chosen file.
+        try {
+            this.diagram.saveToFile(result);
+            
+            // If it worked, remember the new name.
+            this.dirty = false;
+            this.setFileName(result);
+        }
+        catch (Exception e) {
+            // Java error messages are really bad.  Maybe I will fix this
+            // at some point.
+            this.errorMessageBox(
+                "Error while writing to \""+result+"\": "+
+                e.getClass().getSimpleName()+": "+e.getMessage());
         }
     }
 
