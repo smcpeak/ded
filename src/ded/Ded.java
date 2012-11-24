@@ -3,15 +3,21 @@
 package ded;
 
 import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+
+import util.swing.MenuAction;
 
 import ded.model.Entity;
 import ded.ui.DiagramController;
@@ -66,6 +72,51 @@ public class Ded extends JFrame implements WindowListener {
         this.diagramController = new DiagramController(this);
         this.diagramController.setOpaque(true);
         this.setContentPane(this.diagramController);
+
+        this.buildMenuBar();
+    }
+
+    /** Build the menu. */
+    private void buildMenuBar()
+    {
+        JMenuBar menuBar = new JMenuBar();
+        menuBar.add(buildFileMenu());
+        this.setJMenuBar(menuBar);
+    }
+    
+    @SuppressWarnings("serial")
+    private JMenu buildFileMenu()
+    {
+        JMenu m = new JMenu("File");
+        m.setMnemonic(KeyEvent.VK_F);
+        
+        m.add(new MenuAction("Open ...", KeyEvent.VK_O, KeyEvent.VK_O, ActionEvent.CTRL_MASK) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.loadFromFile();
+            }
+        });
+        
+        m.add(new MenuAction("Save", KeyEvent.VK_S, KeyEvent.VK_S, ActionEvent.CTRL_MASK) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.saveCurrentFile();
+            }
+        });
+        
+        m.add(new MenuAction("Save as ...", KeyEvent.VK_A) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.chooseAndSaveToFile();
+            }
+        });
+        
+        m.addSeparator();
+        
+        m.add(new MenuAction("Quit", KeyEvent.VK_Q, KeyEvent.VK_Q, 0) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.tryCloseWindow();
+            }
+        });
+
+        return m;
     }
     
     @Override

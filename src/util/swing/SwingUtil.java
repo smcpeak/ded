@@ -23,6 +23,12 @@ public class SwingUtil {
         return (e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0;
     }
 
+    /** Return true if the Alt button was held when 'e' was generated. */
+    public static boolean altPressed(InputEvent e)
+    {
+        return (e.getModifiersEx() & InputEvent.ALT_DOWN_MASK) != 0;
+    }
+
     /** Return true if the Shift button was held when 'e' was generated. */
     public static boolean shiftPressed(InputEvent e)
     {

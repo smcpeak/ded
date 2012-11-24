@@ -379,16 +379,10 @@ public class DiagramController extends JPanel
     @Override
     public void keyPressed(KeyEvent e)
     {
-        if (SwingUtil.controlPressed(e)) {
-            switch (e.getKeyCode()) {
-                case KeyEvent.VK_S:
-                    this.saveToFile();
-                    break;
-                        
-                case KeyEvent.VK_O:
-                    this.loadFromFile();
-                    break;
-            }
+        // Note: Some of the key bindings shown in the help dialog
+        // have been moved to the menu created in Ded.java.
+        
+        if (SwingUtil.controlPressed(e) || SwingUtil.altPressed(e)) {
             return;
         }
         
@@ -405,10 +399,6 @@ public class DiagramController extends JPanel
                 JOptionPane.showMessageDialog(this, helpMessage, 
                     "Diagram Editor Keybindings",
                     JOptionPane.INFORMATION_MESSAGE);
-                break;
-                
-            case KeyEvent.VK_Q:
-                this.dedWindow.tryCloseWindow();
                 break;
                 
             case KeyEvent.VK_X:
@@ -451,7 +441,7 @@ public class DiagramController extends JPanel
     }
 
     /** Prompt for a file name to load, then replace the current diagram with it. */
-    private void loadFromFile()
+    public void loadFromFile()
     {
         if (this.isDirty()) {
             int res = JOptionPane.showConfirmDialog(this, 
@@ -524,10 +514,9 @@ public class DiagramController extends JPanel
     }
 
     /** Prompt user for file name and save to it. */
-    private void saveToFile()
+    public void chooseAndSaveToFile()
     {
-        // Prompt for a file name, confirming if it is a new name
-        // but the file already exists.
+        // Prompt for a file name, confirming if the file already exists.
         String result = this.fileName;
         while (true) {
             JFileChooser chooser = new JFileChooser();
@@ -541,7 +530,7 @@ public class DiagramController extends JPanel
             this.currentFileChooserDirectory = chooser.getCurrentDirectory();
             result = chooser.getSelectedFile().getAbsolutePath();
             
-            if (!result.equals(this.fileName) && new File(result).exists()) {
+            if (new File(result).exists()) {
                 res = JOptionPane.showConfirmDialog(
                     this,
                     "A file called \""+result+"\" already exists.  Overwrite it?",
@@ -556,18 +545,36 @@ public class DiagramController extends JPanel
         }
 
         // Save to the chosen file.
+        this.saveToNamedFile(result);
+    }
+
+    /** Save to the current file name.  If there is no file name,
+      * prompt for a name. */
+    public void saveCurrentFile()
+    {
+        if (this.fileName.isEmpty()) {
+            this.chooseAndSaveToFile();
+        }
+        else {
+            this.saveToNamedFile(this.fileName);
+        }
+    }
+    
+    /** Save to the specified file. */
+    private void saveToNamedFile(String fname)
+    {
         try {
-            this.diagram.saveToFile(result);
+            this.diagram.saveToFile(fname);
             
             // If it worked, remember the new name.
             this.dirty = false;
-            this.setFileName(result);
+            this.setFileName(fname);
         }
         catch (Exception e) {
             // Java error messages are really bad.  Maybe I will fix this
             // at some point.
             this.errorMessageBox(
-                "Error while writing to \""+result+"\": "+
+                "Error while writing to \""+fname+"\": "+
                 e.getClass().getSimpleName()+": "+e.getMessage());
         }
     }
