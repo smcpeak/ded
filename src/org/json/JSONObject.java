@@ -30,6 +30,7 @@ import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -741,6 +742,23 @@ public class JSONObject {
         }
         return ja.length() == 0 ? null : ja;
     }
+
+    /**
+     * Get a sorted array of the keys of the JSONObject.
+     *
+     * @return A sorted array of keys.  Never null.
+     */
+    public String[] sortedKeyArray() {
+        String[] arr = new String[this.length()];
+        int i = 0;
+        Iterator it = this.keys();
+        while (it.hasNext()) {
+            arr[i++] = (String)it.next();
+        }
+        Arrays.sort(arr);
+        return arr;
+    }
+
 
     /**
      * Produce a string from a Number.
@@ -1551,6 +1569,8 @@ public class JSONObject {
      * Write the contents of the JSONObject as JSON text to a writer with
      * optional indentation.
      * 
+     * This writes keys in sorted order so the output is canonical.
+     *
      * <p>
      * Warning: This method assumes that the data structure is acyclical.
      *
@@ -1565,11 +1585,10 @@ public class JSONObject {
         try {
             boolean commanate = false;
             final int length = this.length();
-            Iterator keys = this.keys();
             writer.write('{');
 
             if (length == 1) {
-                Object key = keys.next();
+                Object key = this.keys().next();
                 writer.write(quote(key.toString()));
                 writer.write(':');
                 if (indentFactor > 0) {
@@ -1578,8 +1597,9 @@ public class JSONObject {
                 writeValue(writer, this.map.get(key), indentFactor, indent);
             } else if (length != 0) {
                 final int newindent = indent + indentFactor;
-                while (keys.hasNext()) {
-                    Object key = keys.next();
+                String[] keyArray = this.sortedKeyArray();
+                for (int i=0; i < keyArray.length; i++) {
+                    Object key = keyArray[i];
                     if (commanate) {
                         writer.write(',');
                     }

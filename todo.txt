@@ -4,7 +4,6 @@ TODOs for Diagram Editor
 Small:
 - copy+paste for sets of selected entities
 - entity grouping
-- write the JSON in canonical order to avoid spurious conflicts
 - better self-loop rendering
 - two or zero arrowheads for relations
 - choose colors for entities and relations
