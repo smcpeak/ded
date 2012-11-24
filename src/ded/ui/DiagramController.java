@@ -370,6 +370,14 @@ public class DiagramController extends JPanel
             return;
         }
         
+        // See if the selected controller wants this keypress.
+        Controller sel = this.getUniqueSelected();
+        if (sel != null) {
+            if (sel.keyPressed(e)) {
+                return;
+            }
+        }
+        
         switch (e.getKeyCode()) {
             case KeyEvent.VK_H:
                 JOptionPane.showMessageDialog(this, helpMessage, 

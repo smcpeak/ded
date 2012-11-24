@@ -138,7 +138,14 @@ public abstract class Controller {
     
     // Input handlers.
     public void mousePressed(MouseEvent e) {}
-    public void keyPressed(KeyEvent e) {}
+    
+    /** Handle a key pressed while the controller is selected.  If it
+      * returns true, the controller is treated as having processed
+      * the key, so the parent widget will ignore it. */
+    public boolean keyPressed(KeyEvent e) 
+    {
+        return false;
+    }
 
     /** Assert invariants. */
     public void selfCheck()

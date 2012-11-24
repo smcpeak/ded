@@ -339,6 +339,7 @@ public class RelationController extends Controller {
             upPoint = SwingUtil.add(end2, GeomUtil.toPoint(up));
             downPoint = SwingUtil.add(end2, GeomUtil.toPoint(down));
             g.drawLine(end2.x, end2.y, upPoint.x, upPoint.y);
+            g.drawLine(end2.x, end2.y, downPoint.x, downPoint.y);
         }
     }
 
@@ -692,7 +693,7 @@ public class RelationController extends Controller {
     }
     
     @Override
-    public void keyPressed(KeyEvent ev)
+    public boolean keyPressed(KeyEvent ev)
     {
         if (SwingUtil.noModifiers(ev)) {
             switch (ev.getKeyCode()) {
@@ -713,11 +714,14 @@ public class RelationController extends Controller {
                     break;
                     
                 default:
-                    return;
+                    return false;
             }
             
             this.diagramController.repaint();
+            return true;
         }
+        
+        return false;
     }
     
     
