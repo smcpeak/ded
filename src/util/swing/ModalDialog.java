@@ -288,6 +288,16 @@ public class ModalDialog extends JDialog {
         
         ModalDialog.disallowVertStretch(btnBox);
     }
+    
+    /** Do the usual final actions to create the dialog: create the
+      * Cancel and OK buttons, pack the dialog, and set the location
+      * relative to the parent. */
+    public void finishBuildingDialog(Box containingVBox)
+    {
+        this.createCancelAndOkButtons(containingVBox);
+        this.pack();
+        this.setLocationRelativeTo(this.getParent());
+    }
 }
 
 // EOF

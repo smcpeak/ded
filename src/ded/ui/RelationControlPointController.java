@@ -7,7 +7,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
-import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
@@ -87,7 +86,11 @@ public class RelationControlPointController extends ResizeController {
     /** Show the properties dialog for the control point. */
     private void showProperties()
     {
-        JOptionPane.showMessageDialog(null, "TODO");
+        if ((new RelationControlPointDialog(this.diagramController, 
+                                            this.rcontroller.relation, 
+                                            this.which)).exec()) {
+            this.diagramController.repaint();
+        }
     }
     
     /** Delete this control point. */

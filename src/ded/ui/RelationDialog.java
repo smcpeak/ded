@@ -50,10 +50,7 @@ public class RelationDialog extends ModalDialog {
         // that is challenging due to the ability to connect them to
         // Entities and Inheritances.
         
-        this.createCancelAndOkButtons(vb);
-        
-        this.pack();
-        this.setLocationRelativeTo(parent);
+        this.finishBuildingDialog(vb);
     }
     
     @Override

@@ -108,11 +108,7 @@ public class EntityDialog extends ModalDialog {
             ModalDialog.disallowVertStretch(sizeBox);
         }
         
-        // Buttons
-        this.createCancelAndOkButtons(vb);
-
-        this.pack();
-        this.setLocationRelativeTo(documentParent);
+        this.finishBuildingDialog(vb);
     }
 
     /** React to the OK button being pressed. */
