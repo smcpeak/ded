@@ -3,10 +3,15 @@
 package ded.ui;
 
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+
+import util.swing.MenuAction;
 
 /** Control the position of a control point in the middle of a Relation. */
 public class RelationControlPointController extends ResizeController {
@@ -50,35 +55,47 @@ public class RelationControlPointController extends ResizeController {
         assert(     this.which < this.rcontroller.relation.controlPts.size());
     }
     
+    @SuppressWarnings("serial")
     @Override
     public void mousePressed(MouseEvent ev)
     {
         super.mousePressed(ev);
         
         if (SwingUtilities.isRightMouseButton(ev)) {
-            // Context menu choices.
-            String items[] = {
-                "&Properties",
-                "&Delete"
-            };
+            final RelationControlPointController thisController = this;
             
-            // Launch menu.
-            int choice = this.diagramController.popupMenu(
-                ev.getPoint(), "Relation Control Point", items);
-            switch (choice) {
-                case 0:
-                    JOptionPane.showMessageDialog(this.diagramController,
-                        "TODO: Properties of control point");
-                    break;
-                
-                case 1:
-                    this.rcontroller.deleteControlPoint(this.which);
-                    
-                    // Careful: 'this' has been removed from the DiagramController.
-                    
-                    break;
-            }
+            // Construct menu.
+            JPopupMenu menu = new JPopupMenu("Relation Control Point");
+            
+            menu.add(new MenuAction("Properties", KeyEvent.VK_P) {
+                public void actionPerformed(ActionEvent e) {
+                    thisController.showProperties();
+                }
+            });
+            
+            menu.add(new MenuAction("Delete", KeyEvent.VK_D) {
+                public void actionPerformed(ActionEvent e) {
+                    thisController.deleteControlPoint();
+                }
+            });
+            
+            // Show the popup menu.  This does *not* wait for the choice to be made. 
+            menu.show(this.diagramController, ev.getPoint().x, ev.getPoint().y);
         }
+    }
+    
+    /** Show the properties dialog for the control point. */
+    private void showProperties()
+    {
+        JOptionPane.showMessageDialog(null, "TODO");
+    }
+    
+    /** Delete this control point. */
+    private void deleteControlPoint()
+    {
+        this.rcontroller.deleteControlPoint(this.which);
+        
+        // Careful: 'this' has been removed from the DiagramController.
     }
 }
 
