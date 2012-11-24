@@ -29,6 +29,18 @@ public class GeomUtil {
         return Math.sqrt(v.x * v.x + v.y * v.y);
     }
     
+    /** Return the euclidean length of 'v'. */
+    public static int lengthVector(Point v)
+    {
+        return (int)Math.sqrt(lengthVectorSquared(v));
+    }
+
+    /** Return the square of the length of 'v'. */
+    public static double lengthVectorSquared(Point v)
+    {
+        return Math.sqrt((double)v.x * v.x + (double)v.y + v.y);
+    }
+    
     /** Return 'v' rotated 90 degrees counterclockwise in cartesian coordinates. */
     public static Point2D.Double rot2DVector90(Point2D.Double v)
     {
@@ -80,6 +92,12 @@ public class GeomUtil {
     public static Point2D.Double getLineStart(Line2D.Double line)
     {
         return new Point2D.Double(line.x1, line.y1);
+    }
+    
+    /** Return the end point of 'line'. */
+    public static Point2D.Double getLineEnd(Line2D.Double line)
+    {
+        return new Point2D.Double(line.x2, line.y2);
     }
     
     /** Return the vector from the start of 'line' to its end. */
@@ -299,6 +317,80 @@ public class GeomUtil {
             ret.addPoint(p.x, p.y);
         }
         return ret;
+    }
+    
+    /** Return the magnitude of the cross product of 'a' and 'a',
+     * which is |a||b|sin(theta), theta being the positive angle
+     * between 'a' to 'b'. */
+   public static double crossProdZ2DVector(Point2D.Double a, Point2D.Double b)
+   {
+       return (a.x * b.y) - (a.y * b.x);
+   }
+
+   /** Return the dot product of 'a' and 'b',
+     * which is |a||b|cos(theta), theta being the angle
+     * between 'a' to 'b'. */
+   public static double dotProd2DVector(Point2D.Double a, Point2D.Double b)
+   {
+       return (a.x * b.x) + (a.y * b.y);
+   }
+   
+    /** Return the distance between 'point' and either the line through
+      * 'lineSeg' or 'lineSeg' itself, depending on 'distToSeg'. */
+    public static double distance2DPointLineOrSeg(
+        Point2D.Double point, 
+        Line2D.Double lineSeg,
+        boolean distToSeg)
+    {
+        // Let 'a' be the vector from the start of 'lineSeg' to 'pt'.
+        Point2D.Double a = subtract(point, getLineStart(lineSeg));
+        
+        // Let 'b' be the vector from the start to end of 'lineSeg'.
+        Point2D.Double b = getLineVector(lineSeg);
+        
+        if (distToSeg) {
+            // Check to see if the closest point on the line is
+            // between start and end.
+            double dot = dotProd2DVector(a, b);      // |a||b|cos(theta)
+            if (dot < 0) {
+                // The start is the closest point.
+                return length2DVector(a);
+            }
+            if (dot > dotProd2DVector(b, b)) {
+                // The end is the closest point.
+                return length2DVector(subtract(point, getLineEnd(lineSeg)));
+            }
+            
+            // The line is closer than either endpoint, so get the
+            // distance to it.
+        }
+        
+        // This is "|a||b|sin(theta)", theta being the angle between a and b. 
+        double cross = crossProdZ2DVector(a, b);
+        
+        // This is "|a|sin(theta)".
+        return Math.abs(cross / length2DVector(b));
+    }
+    
+    /** Return the distance between 'point' and the line through 'lineSeg'. */
+    public static double distance2DPointLine(
+        Point2D.Double point, 
+        Line2D.Double lineSeg)
+    {
+        return distance2DPointLineOrSeg(point, lineSeg, false /*distToSeg*/);
+    }
+    
+    /** Return the distance between 'point' and 'lineSeg'.  When 'point'
+      * is far from the segment, the distance is usually the distance
+      * to the closest endpoint.
+      * 
+      * This differs from 'distance2DPointLine' in that we do not
+      * consider the line through 'lineSeg', just the segment itself. */
+    public static double distance2DPointLineSeg(
+        Point2D.Double point,
+        Line2D.Double lineSeg)
+    {
+        return distance2DPointLineOrSeg(point, lineSeg, true /*distToSeg*/);
     }
 }
 

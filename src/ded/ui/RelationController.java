@@ -647,22 +647,74 @@ public class RelationController extends Controller {
         this.diagramController.remove(this);
     }
 
-    /** Insert a new control point. */
+    /** Insert a new control point in a default location. */
     @Override
     public void insertControlPoint()
+    {
+        this.insertControlPointAtWhere(new Point(
+            GeomUtil.midPoint(this.relation.start.getCenter(),
+                              this.relation.end.getCenter())),
+            0);
+    }
+    
+    /** Insert a new control point at 'p', so it becomes number 'where'
+      * in the control point sequence. */
+    private void insertControlPointAtWhere(Point p, int where)
     {
         // Temporarily become unselected so handles will be rebuilt
         // if needed.
         SelectionState oldSel = this.getSelState();
         this.setSelected(SelectionState.SS_UNSELECTED);
         
-        this.relation.controlPts.add(0, new Point(
-            GeomUtil.midPoint(this.relation.start.getCenter(),
-                              this.relation.end.getCenter())));
+        this.relation.controlPts.add(where, p);
         
         this.setSelected(oldSel);
         
         this.diagramController.repaint();
+    }
+    
+    /** Insert a new control point at the specified location, putting
+      * it between the nearest pair of existing points. */
+    private void insertControlPointAt(Point point)
+    {
+        if (this.relation.controlPts.isEmpty()) {
+            // No choice about where to put it.
+            this.insertControlPointAtWhere(point, 0);
+            return;
+        }
+        
+        // Consider putting it before each existing control point.  In
+        // each case, calculate the distance from the existing segment
+        // to the new point.  Select the position that leads to the
+        // minimum distance.
+        //
+        // Note that I use distance to straight line segment even when
+        // the routing algorithm is not "direct".  It works well
+        // enough.
+        int bestPosition = -1;
+        double bestDistance = Double.MAX_VALUE;
+        
+        for (int pos=0; pos <= this.relation.controlPts.size(); pos++) {
+            Point before = (pos == 0) ?
+                this.relation.start.getCenter() :
+                this.relation.controlPts.get(pos-1);
+            Point after = (pos == this.relation.controlPts.size()) ?
+                this.relation.end.getCenter() :
+                this.relation.controlPts.get(pos);
+                
+            double dist = GeomUtil.distance2DPointLineSeg(
+                GeomUtil.toPoint2D_Double(point),
+                new Line2D.Double(GeomUtil.toPoint2D_Double(before),
+                                  GeomUtil.toPoint2D_Double(after)));
+                
+            if (dist < bestDistance) {
+                bestPosition = pos;
+                bestDistance = dist;
+            }
+        }
+        
+        assert(bestPosition >= 0);
+        this.insertControlPointAtWhere(point, bestPosition);
     }
 
     /** Delete a control point.  This will delete and re-create
@@ -682,7 +734,7 @@ public class RelationController extends Controller {
     
     @SuppressWarnings("serial")
     @Override
-    public void mousePressed(MouseEvent ev)
+    public void mousePressed(final MouseEvent ev)
     {
         if (SwingUtilities.isRightMouseButton(ev)) {
             final RelationController thisController = this;
@@ -691,7 +743,7 @@ public class RelationController extends Controller {
             
             menu.add(new MenuAction("Insert control point", KeyEvent.VK_I) {
                 public void actionPerformed(ActionEvent e) {
-                    thisController.insertControlPoint();
+                    thisController.insertControlPointAt(ev.getPoint());
                 }
             });
             
