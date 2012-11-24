@@ -198,8 +198,12 @@ public class Ded extends JFrame implements WindowListener {
     {
         JMenu m = new JMenu("Help");
         m.setMnemonic(KeyEvent.VK_H);
-        
-        m.add(new MenuAction("Help ...", KeyEvent.VK_H, KeyEvent.VK_H, 0) {
+
+        // I would like the 'H' key displayed as an accelerator here,
+        // but it conflicts with the use of 'H' when a relation is
+        // selected.  There does not appear to be a way for the menu
+        // item to display an accelerator key but ignore it.
+        m.add(new MenuAction("Help ...", KeyEvent.VK_H) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.showHelpBox();
             }

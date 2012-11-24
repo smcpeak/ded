@@ -405,6 +405,10 @@ public class DiagramController extends JPanel
                     throw new RuntimeException("Test exception/error message.");
                 }
                 break;
+                
+            case KeyEvent.VK_H:
+                this.showHelpBox();
+                break;
         }
     }
 
