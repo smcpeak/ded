@@ -1,0 +1,436 @@
+{
+  "drawFileName": false,
+  "entities": [
+    {
+      "attributes": "",
+      "loc": {
+        "x": 160,
+        "y": 230
+      },
+      "name": "",
+      "shape": "ES_RECTANGLE",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "attributes": "",
+      "loc": {
+        "x": 270,
+        "y": 75
+      },
+      "name": "",
+      "shape": "ES_RECTANGLE",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "attributes": "",
+      "loc": {
+        "x": 280,
+        "y": 155
+      },
+      "name": "",
+      "shape": "ES_RECTANGLE",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "attributes": "",
+      "loc": {
+        "x": 15,
+        "y": 0
+      },
+      "name": "<-- no title",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 85
+      }
+    }
+  ],
+  "inheritances": [{
+    "open": false,
+    "parentRef": 1,
+    "pt": {
+      "x": 330,
+      "y": 150
+    }
+  }],
+  "relations": [
+    {
+      "controlPts": [],
+      "end": {"pt": {
+        "x": 75,
+        "y": 50
+      }},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "start": {"pt": {
+        "x": 41,
+        "y": 50
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"pt": {
+        "x": 40,
+        "y": 75
+      }},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "start": {"pt": {
+        "x": 70,
+        "y": 75
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"pt": {
+        "x": 40,
+        "y": 150
+      }},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "start": {"pt": {
+        "x": 41,
+        "y": 106
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"pt": {
+        "x": 75,
+        "y": 110
+      }},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "start": {"pt": {
+        "x": 74,
+        "y": 149
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"pt": {
+        "x": 170,
+        "y": 45
+      }},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 143,
+        "y": 72
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"pt": {
+        "x": 165,
+        "y": 105
+      }},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 198,
+        "y": 70
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"pt": {
+        "x": 245,
+        "y": 120
+      }},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 219,
+        "y": 88
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"pt": {
+        "x": 195,
+        "y": 120
+      }},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 229,
+        "y": 152
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "start": {"pt": {
+        "x": 90,
+        "y": 260
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "start": {"pt": {
+        "x": 330,
+        "y": 260
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "start": {"pt": {
+        "x": 210,
+        "y": 330
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "start": {"pt": {
+        "x": 215,
+        "y": 190
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 139,
+        "y": 206
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 280,
+        "y": 206
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 235,
+        "y": 320
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 175,
+        "y": 340
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 270,
+        "y": 320
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 295,
+        "y": 310
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 310,
+        "y": 290
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 310,
+        "y": 245
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 310,
+        "y": 221
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 260,
+        "y": 190
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 185,
+        "y": 183
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 163,
+        "y": 188
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 115,
+        "y": 213
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 108,
+        "y": 239
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 117,
+        "y": 297
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 144,
+        "y": 320
+      }}
+    },
+    {
+      "controlPts": [],
+      "end": {"inheritanceRef": 0},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "start": {"entityRef": 2}
+    },
+    {
+      "controlPts": [
+        {
+          "x": 70,
+          "y": 290
+        },
+        {
+          "x": 50,
+          "y": 320
+        }
+      ],
+      "end": {"pt": {
+        "x": 70,
+        "y": 345
+      }},
+      "label": "",
+      "owning": false,
+      "routingAlg": "RA_DIRECT",
+      "start": {"pt": {
+        "x": 34,
+        "y": 267
+      }}
+    }
+  ],
+  "type": "Diagram Editor Diagram",
+  "version": 3,
+  "windowSize": {
+    "h": 392,
+    "w": 409
+  }
+}

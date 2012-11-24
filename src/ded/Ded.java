@@ -4,6 +4,7 @@ package ded;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -11,6 +12,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -38,7 +40,11 @@ public class Ded extends JFrame implements WindowListener {
     public static ImageIcon windowIcon16, windowIcon32;
     
     // ---------- private data --------------
+    /** The main diagram editor pane. */
     private DiagramController diagramController;
+    
+    /** The menu item associated with Diagram.drawFileName. */
+    private JCheckBoxMenuItem drawFileNameCheckbox;
     
     // ---------- public methods -------------
     public Ded()
@@ -104,6 +110,7 @@ public class Ded extends JFrame implements WindowListener {
         menuBar.add(buildFileMenu());
         menuBar.add(buildEditMenu());
         menuBar.add(buildModeMenu());
+        menuBar.add(buildDiagramMenu());
         menuBar.add(buildHelpMenu());
         this.setJMenuBar(menuBar);
     }
@@ -208,6 +215,24 @@ public class Ded extends JFrame implements WindowListener {
         
         return m;
     }
+
+    private JMenu buildDiagramMenu()
+    {
+        JMenu m = new JMenu("Diagram");
+        m.setMnemonic(KeyEvent.VK_D);
+        
+        this.drawFileNameCheckbox =
+            new JCheckBoxMenuItem("Draw file name in upper-left corner", true);
+        this.drawFileNameCheckbox.setMnemonic(KeyEvent.VK_F);
+        this.drawFileNameCheckbox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.toggleDrawFileName();
+            }
+        });
+        m.add(this.drawFileNameCheckbox);
+        
+        return m;
+    }
     
     @SuppressWarnings("serial")
     private JMenu buildHelpMenu()
@@ -234,6 +259,21 @@ public class Ded extends JFrame implements WindowListener {
         });
         
         return m;
+    }
+    
+    private void toggleDrawFileName()
+    {
+        this.diagramController.diagram.drawFileName = 
+            !this.diagramController.diagram.drawFileName;
+        this.diagramController.diagramChanged();
+        this.updateMenuState();
+    }
+    
+    /** Update the state of stateful menu items (checkboxes)
+      * to match the current diagram. */
+    public void updateMenuState()
+    {
+        this.drawFileNameCheckbox.setState(this.diagramController.diagram.drawFileName);
     }
     
     private void showAboutBox()

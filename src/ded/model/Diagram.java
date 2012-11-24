@@ -35,6 +35,11 @@ public class Diagram implements JSONable {
       * the window system. */
     public Dimension windowSize;
     
+    /** When true, the editor will paint the diagram file name in the
+      * upper-left corner of the editing area, and also include it
+      * when exporting to other file formats.  Normally true. */
+    public boolean drawFileName;
+   
     /** Entities, in display order.  The last entity will appear on top
       * of all others. */
     public ArrayList<Entity> entities;
@@ -49,6 +54,7 @@ public class Diagram implements JSONable {
     public Diagram()
     {
         this.windowSize = new Dimension(800, 800);
+        this.drawFileName = true;
         this.entities = new ArrayList<Entity>();
         this.inheritances = new ArrayList<Inheritance>();
         this.relations = new ArrayList<Relation>();
@@ -72,9 +78,10 @@ public class Diagram implements JSONable {
         JSONObject o = new JSONObject();
         try {
             o.put("type", jsonType);
-            o.put("version", 2);
+            o.put("version", 3);
             
             o.put("windowSize", AWTJSONUtil.dimensionToJSON(this.windowSize));
+            o.put("drawFileName", this.drawFileName);
             
             // Map from an entity to its position in the serialized
             // 'entities' array, so it can be referenced by inheritances
@@ -125,11 +132,18 @@ public class Diagram implements JSONable {
         }
         
         int ver = (int)o.getLong("version");
-        if (!( 1 <= ver && ver <= 2 )) {
+        if (!( 1 <= ver && ver <= 3 )) {
             throw new JSONException("unknown file version: "+ver);
         }
         
         this.windowSize = AWTJSONUtil.dimensionFromJSON(o.getJSONObject("windowSize"));
+
+        if (ver >= 3) {
+            this.drawFileName = o.getBoolean("drawFileName");
+        }
+        else {
+            this.drawFileName = true;
+        }
 
         // Make the lists now; this is particularly useful for handling
         // older file formats.
@@ -148,29 +162,26 @@ public class Diagram implements JSONable {
             integerToEntity.add(e);
         }
 
-        if (ver == 1) {
-            // Version 1 did not have inheritances or relations.
-            return;
-        }
-        
-        // Map from serialized position to deserialized Inheritance.
-        ArrayList<Inheritance> integerToInheritance = new ArrayList<Inheritance>();
-        
-        // Inheritances.
-        a = o.getJSONArray("inheritances");
-        for (int i=0; i < a.length(); i++) {
-            Inheritance inh = 
-                new Inheritance(a.getJSONObject(i), integerToEntity);
-            this.inheritances.add(inh);
-            integerToInheritance.add(inh);
-        }
-        
-        // Relations.
-        a = o.getJSONArray("relations");
-        for (int i=0; i < a.length(); i++) {
-            Relation rel =
-                new Relation(a.getJSONObject(i), integerToEntity, integerToInheritance);
-            this.relations.add(rel);
+        if (ver >= 2) {
+            // Map from serialized position to deserialized Inheritance.
+            ArrayList<Inheritance> integerToInheritance = new ArrayList<Inheritance>();
+            
+            // Inheritances.
+            a = o.getJSONArray("inheritances");
+            for (int i=0; i < a.length(); i++) {
+                Inheritance inh = 
+                    new Inheritance(a.getJSONObject(i), integerToEntity);
+                this.inheritances.add(inh);
+                integerToInheritance.add(inh);
+            }
+            
+            // Relations.
+            a = o.getJSONArray("relations");
+            for (int i=0; i < a.length(); i++) {
+                Relation rel =
+                    new Relation(a.getJSONObject(i), integerToEntity, integerToInheritance);
+                this.relations.add(rel);
+            }
         }
     }
 
@@ -218,6 +229,7 @@ public class Diagram implements JSONable {
         if (this.getClass() == obj.getClass()) {
             Diagram d = (Diagram)obj;
             return this.windowSize.equals(d.windowSize) &&
+                   this.drawFileName == d.drawFileName &&
                    this.entities.equals(d.entities);
         }
         return false;
@@ -228,6 +240,7 @@ public class Diagram implements JSONable {
     {
         int h = 1;
         h = h*31 + this.windowSize.hashCode();
+        h = h*31 + (this.drawFileName? 1 : 0);
         h = h*31 + Util.collectionHashCode(this.entities);
         return h;
     }

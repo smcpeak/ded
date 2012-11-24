@@ -13,7 +13,6 @@ Small:
 - clip the relation title to its box
 - option to automatically expand entities to contain their title and attributes
 - relation dialog should include owner checkbox
-- automatically put the file name as a label in upper left; option to hide?
 
 Medium:
 - load the C++ file format

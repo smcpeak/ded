@@ -3,6 +3,7 @@
 package ded.ui;
 
 import java.awt.Color;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -13,6 +14,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.font.LineMetrics;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,6 +42,9 @@ public class DiagramController extends JPanel
 {
     // ------------- constants ---------------
     private static final long serialVersionUID = 1266678840598864303L;
+    
+    /** Pixels from left/top edge to draw the file name label. */
+    public static final int fileNameLabelMargin = 2;
     
     private static final String helpMessage =
         "H - This message\n"+
@@ -100,7 +105,7 @@ public class DiagramController extends JPanel
     private Ded dedWindow;
     
     /** The diagram we are editing. */
-    private Diagram diagram;
+    public Diagram diagram;
     
     /** Set of controllers for elements of the diagram.  For the moment, the order
       * is supposed to be the same as the corresponding 'diagram' model elements,
@@ -165,6 +170,18 @@ public class DiagramController extends JPanel
     {
         super.paint(g);
 
+        // Filename label.
+        if (this.diagram.drawFileName && !this.fileName.isEmpty()) {
+            String name = new File(this.fileName).getName();
+            FontMetrics fm = g.getFontMetrics();
+            LineMetrics lm = fm.getLineMetrics(name, g);
+            int x = fileNameLabelMargin;
+            int y = fileNameLabelMargin + (int)lm.getAscent();
+            g.drawString(name, x, y);
+            y += (int)lm.getUnderlineOffset() + 1 /*...*/;
+            g.drawLine(x, y, x + fm.stringWidth(name), y);
+        }
+        
         // Controllers.
         for (Controller c : this.controllers) {
             c.paint(g);
@@ -175,11 +192,11 @@ public class DiagramController extends JPanel
             Rectangle r = this.getLassoRect();
             g.drawRect(r.x, r.y, r.width, r.height);
         }
-        
+
+        // Mode label.
         if (this.mode != Mode.DCM_SELECT) {
             g.drawString("Mode: " + this.mode.description, 3, this.getHeight()-4);
         }
-        
     }
 
     /** Deselect all controllers and return the number that were previously selected. */
@@ -437,9 +454,16 @@ public class DiagramController extends JPanel
         this.setFileName("");
         
         // Clear the diagram.
-        this.diagram = new Diagram();
-        this.rebuildControllers();
+        this.setDiagram(new Diagram());
+    }
+
+    /** Change the Diagram to an entirely new one. */
+    private void setDiagram(Diagram newDiagram)
+    {
+        this.diagram = newDiagram;
         
+        this.rebuildControllers();
+        this.dedWindow.updateMenuState();
         this.repaint();
     }
     
@@ -484,10 +508,7 @@ public class DiagramController extends JPanel
             this.dedWindow.pack();
 
             // Swap in the new diagram and rebuild the UI for it.
-            this.diagram = d;
-            this.rebuildControllers();
-
-            this.repaint();
+            this.setDiagram(d);
         }
         catch (Exception e) {
             this.errorMessageBox(
