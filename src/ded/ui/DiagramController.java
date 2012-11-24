@@ -639,25 +639,11 @@ public class DiagramController extends JPanel
       * SS_SELECTED. */
     public void normalizeExclusiveSelect()
     {
-        // First selected controller found.
-        Controller sel = null;
-
-        for (Controller c : this.controllers) {
-            if (c.isSelected()) {
-                if (sel != null) {
-                    // More than one is selected.
-                    if (sel.getSelState() != SelectionState.SS_SELECTED) {
-                        sel.setSelected(SelectionState.SS_SELECTED);
-                    }
-                    c.setSelected(SelectionState.SS_SELECTED);
-                }
-                else {
-                    // Exactly one selected (so far).
-                    sel = c;
-                    sel.setSelected(SelectionState.SS_EXCLUSIVE);
-                }
+        this.selectAccordingToFilter(new ControllerFilter() {
+            public boolean satisfies(Controller c) {
+                return c.isSelected();
             }
-        }
+        });
     }
 
     /** Select a single controller. */
@@ -701,11 +687,9 @@ public class DiagramController extends JPanel
             Math.abs(this.lassoEnd.y - this.lassoStart.y));
     }
     
-    /** Set the set of selected controllers according to the lasso. */
-    protected void selectAccordingToLasso()
+    /** Set the set of selected controllers according to the filter. */
+    protected void selectAccordingToFilter(ControllerFilter filter)
     {
-        Rectangle lasso = this.getLassoRect();
-        
         // During the loop, merely collect the sets of controllers
         // to select and deselect, then set the selection state afterward;
         // otherwise, we risk trying to modify the set of controllers
@@ -715,18 +699,7 @@ public class DiagramController extends JPanel
         HashSet<Controller> toDeselect = new HashSet<Controller>();
         
         for (Controller c : this.controllers) {
-            if (!c.wantLassoSelection()) {
-                // Do not consider resize handles, mainly because doing so
-                // causes them to flicker: lassoing a single control adds
-                // resize handles, making the lasso no longer enclose just
-                // one control, which turns off resize handles, etc.
-                //
-                // I'm actually not sure how the C++ ered tool avoids this
-                // effect.  I do not see any avoidance in the code...
-                continue;
-            }
-            
-            if (c.boundsIntersects(lasso)) {
+            if (filter.satisfies(c)) {
                 toSelect.add(c);
             }
             else if (c.isSelected()) {
@@ -758,6 +731,30 @@ public class DiagramController extends JPanel
                 c.setSelected(SelectionState.SS_SELECTED);
             }
         }
+    }
+    
+    /** Set the set of selected controllers according to the lasso. */
+    protected void selectAccordingToLasso()
+    {
+        final Rectangle lasso = this.getLassoRect();
+        
+        this.selectAccordingToFilter(new ControllerFilter() {
+            public boolean satisfies(Controller c)
+            {
+                if (!c.wantLassoSelection()) {
+                    // Do not consider resize handles, mainly because doing so
+                    // causes them to flicker: lassoing a single control adds
+                    // resize handles, making the lasso no longer enclose just
+                    // one control, which turns off resize handles, etc.
+                    //
+                    // I'm actually not sure how the C++ ered tool avoids this
+                    // effect.  I do not see any avoidance in the code...
+                    return false;
+                }
+                
+                return c.boundsIntersects(lasso);
+            }
+        });
     }
 
     /** Add an active controller. */
