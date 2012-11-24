@@ -18,9 +18,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import util.awt.GeomUtil;
 import util.swing.SwingUtil;
@@ -123,6 +125,9 @@ public class DiagramController extends JPanel
     /** Most recently used file name. */
     private String fileName;
     
+    /** Most recently used directory for loading/saving files. */
+    private File currentFileChooserDirectory;
+    
     /** When true, the in-memory Diagram has been modified since the
       * last time it was saved. */
     private boolean dirty;
@@ -137,6 +142,7 @@ public class DiagramController extends JPanel
         this.controllers = new ArrayList<Controller>();
         this.mode = Mode.DCM_SELECT;
         this.fileName = "";
+        this.currentFileChooserDirectory = new File(System.getProperty("user.dir"));
         this.dirty = false;
         
         this.addMouseListener(this);
@@ -456,10 +462,14 @@ public class DiagramController extends JPanel
             }
         }
         
-        String result =
-            JOptionPane.showInputDialog(this, "File name to load from:", this.fileName);
-        if (result != null) {
-            loadFromNamedFile(result);
+        JFileChooser chooser = new JFileChooser();
+        chooser.setCurrentDirectory(this.currentFileChooserDirectory);
+        chooser.addChoosableFileFilter(
+            new FileNameExtensionFilter("Diagram and ER Editor Files (.ded, .er)", "ded", "er"));
+        int res = chooser.showOpenDialog(this);
+        if (res == JFileChooser.APPROVE_OPTION) {
+            this.currentFileChooserDirectory = chooser.getCurrentDirectory();
+            this.loadFromNamedFile(chooser.getSelectedFile().getAbsolutePath());
         }
     }
     
@@ -520,19 +530,25 @@ public class DiagramController extends JPanel
         // but the file already exists.
         String result = this.fileName;
         while (true) {
-            result = JOptionPane.showInputDialog(this, "File name to save to:", result);
-            if (result == null) {
+            JFileChooser chooser = new JFileChooser();
+            chooser.setCurrentDirectory(this.currentFileChooserDirectory);
+            chooser.addChoosableFileFilter(
+                new FileNameExtensionFilter("Diagram and ER Editor Files (.ded, .er)", "ded", "er"));
+            int res = chooser.showSaveDialog(this);
+            if (res != JFileChooser.APPROVE_OPTION) {
                 return;
             }
+            this.currentFileChooserDirectory = chooser.getCurrentDirectory();
+            result = chooser.getSelectedFile().getAbsolutePath();
             
             if (!result.equals(this.fileName) && new File(result).exists()) {
-                int res = JOptionPane.showConfirmDialog(
+                res = JOptionPane.showConfirmDialog(
                     this,
                     "A file called \""+result+"\" already exists.  Overwrite it?",
                     "Confirm Overwrite",
                     JOptionPane.YES_NO_OPTION);
                 if (res != JOptionPane.YES_OPTION) {
-                    continue;      // Ask again, but starting with last answer.
+                    continue;      // Ask again.
                 }
             }
             
@@ -601,7 +617,8 @@ public class DiagramController extends JPanel
         String title = Ded.windowTitle;
         
         if (!this.fileName.isEmpty()) {
-            title += ": " + this.fileName;
+            // Do not include the directory here.
+            title += ": " + new File(this.fileName).getName();
         }
         
         if (this.dirty) {

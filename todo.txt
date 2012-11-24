@@ -2,6 +2,7 @@ TODOs for Diagram Editor
 ------------------------
 
 Small:
+- add menu bar so I can properly split Save and Save as
 - copy+paste for sets of selected entities
 - entity grouping
 - better self-loop rendering
