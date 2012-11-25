@@ -608,6 +608,10 @@ public class DiagramController extends JPanel
     {
         this.fileName = name;
         this.updateWindowTitle();
+        
+        // Changing the file name affects the drawn name in the
+        // main editing area (if enabled).
+        this.repaint();
     }
     
     /** Called when the diagram has been changed.  This does a repaint

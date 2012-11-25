@@ -99,8 +99,11 @@ public class EntityController extends Controller {
         
         super.paint(g);
         
-        // Entity outline with proper shape.
+        // Get bounding rectangle and clip to it.
         Rectangle r = this.entity.getRect();
+        g.setClip(r.x, r.y, r.width, r.height);
+        
+        // Entity outline with proper shape.
         switch (this.entity.shape) {
             case ES_NO_SHAPE:
                 g.setColor(entityOutlineColor);

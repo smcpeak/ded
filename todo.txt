@@ -10,7 +10,6 @@ Small:
 - choose relation line thickness
 - dashed lines for relations
 - specify initial size (etc.?) for new relations
-- clip the relation title to its box
 - option to automatically expand entities to contain their title and attributes
 - relation dialog should include owner checkbox
 
