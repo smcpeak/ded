@@ -2,6 +2,7 @@ TODOs for Diagram Editor
 ------------------------
 
 Small:
+- export to PNG
 - copy+paste for sets of selected entities
 - entity grouping
 - better self-loop rendering
@@ -15,7 +16,6 @@ Small:
 
 Medium:
 - load the C++ file format
-- export to SVG
 - control over which entities are on top
 - smarter relation routing
 - undo/redo

@@ -1,0 +1,97 @@
+Why no SVG?
+===========
+
+I spent a few hours exploring options for creating SVG, but in the end
+gave up.  These are my reasons.
+
+
+Advantages of SVG
+-----------------
+
+What I hoped to gain by exporting to SVG instead of PNG:
+
+1. Smaller file size for the artifact that a web browser can display.
+
+2. When printing to paper, less jagged text and diagonal lines.
+
+3. Possibility of editing or composing afterward using vector drawing
+tools such as InkScape.
+
+4. Better adaptability to a range of display resolutions.
+
+
+Problems
+--------
+
+The first problem I hit is the inability to portably render text.
+
+Text decorations like underlining do not work in FireFox:
+
+  https://bugzilla.mozilla.org/show_bug.cgi?id=317196
+
+There is an ugly workaround using HTML foreignObject:
+
+  http://stackoverflow.com/questions/4645551/firefox-svg-underline-how-for-christs-sake
+
+but, not surprisingly, that fails in any SVG viewer that is not a web
+browser, such as the Batik "Squiggle" renderer.  So there is no way to
+portably underline text in SVG.
+
+My version of Firefox also ignores "font-family:sans-serif", causing
+more problems for making the SVG look like the diagram editor and
+generally making text fit in the same spaces.
+
+And, there's no way to portably center text vertically in a region,
+which means that labels inside rectangles do not work.
+
+All this is related to the apparent SVG design idea that it should be
+"like HTML" with regard to its font handling.  Well, small variations
+in fonts might work for prose, but in a diagram, they are fatal, since
+the relationship between the text and the surrounding elements is
+critical to viewers' understanding of the information.
+
+The second problem I hit is the lack of portability in the rendering
+model.  FF and Chrome need 0.5 pixels added to certain values to
+render one-pixel-wide vertical and horizontal lines without
+awful-looking antialiasing, whereas Batik does not.  This might be due
+to the SVG spec not carefully specifying how rendering works in their
+coordinate system (Qt does this well; Swing does a mediocre job but
+still better than SVG).  Of course, I realize that SVG is partly
+intended to avoid the need to deal in "pixels" all the time, but my
+goal is essentially to do WYSIWYG diagram editing, and the editor uses
+a real computer monitor with pixels, and pixels are important for
+making the diagrams aesthetic in that environment.  SVG images are
+also often viewed in browsers on computer monitors, so again, the
+pixels are important.
+
+The last problem was related to the above: I tried to use the Batik
+library to generate the SVG (after realizing that doing so by hand was
+going to be too much work), but a quick test revealed that they had
+done nothing to reconcile the subtle differences between the Swing and
+SVG coordinate systems and rendering models.  So I would at least have
+to do a bunch more work on Batik to add 0.5 pixels in certain places
+to get reasonable results.
+
+Overall, the main problem is this: SVG is not portable.  You cannot
+predict how it will display on any given device.  Consequently, it is
+not useful--for any purpose, as far as I can tell.
+
+
+Conclusions
+-----------
+
+Comparing to the list of originally perceived advantages, the only one
+that is really practially important is 1, file size.  But loss of
+portability is not worth smaller files.  Additionally, the diagrams I
+generate are so regular that PNG compression is likely to be
+competitive with the verbose SVG anyway.  In fact, for a realistic
+diagram (tunit-inputs.er), with no antialiasing, the JSON file is 8kB
+and the PNG is 16kB.  Considering that the XML would be much more
+verbose than the JSON, having to express all the geometry rather than
+just the core data model, the PNG would probably be smaller.
+
+So, I'll just stick with export to PNG.  Which now is very much needed
+because the menu bar messes up my grab-screenshot script.
+
+
+EOF
