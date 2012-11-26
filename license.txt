@@ -1,6 +1,8 @@
-Except for the code in the src/org subdirectory, which has its own
-copyright information embedded, the Diagram Editor is subject to
-the following copyright and license terms:
+The code in the src/org subdirectory has its own copyright and
+(very liberal) license information embedded.
+
+Everything else in the Diagram Editor is subject to the following
+copyright and license terms:
 
 Copyright (c) 2012, Scott McPeak
 All rights reserved.

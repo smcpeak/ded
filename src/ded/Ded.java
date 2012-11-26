@@ -3,12 +3,17 @@
 
 package ded;
 
+import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 
@@ -37,7 +42,10 @@ public class Ded extends JFrame implements WindowListener {
     /** Window icons. */
     public static ImageIcon windowIcon16, windowIcon32;
     
-    // ---------- private data --------------
+    // ---------- instance data --------------
+    /** The font I want to use in the diagram area. */
+    public Font diagramFont;
+    
     /** The main diagram editor pane. */
     private DiagramController diagramController;
     
@@ -92,6 +100,45 @@ public class Ded extends JFrame implements WindowListener {
             icons.add(windowIcon16.getImage());
             icons.add(windowIcon32.getImage());
             this.setIconImages(icons);
+        }
+
+        // Fallback.
+        this.diagramFont = this.getFont();
+        
+        // Try to use a portable font.
+        InputStream in = null;
+        try {
+            // I tried lots of different fonts.  MS Arial is the best,
+            // but it is not free.  Liberation Sans is decent, but is
+            // GPL.  Everything else I tried (a dozen or two) was awful.
+            // In the end, I copied an ancient X11 bitmap font, fixed
+            // one glyph myself, and converted it to TTF to pacify Swing.
+            // Portable = awesome!
+            String fname = "resources/helvR12sm.ttf";
+            
+            // First try loading it from the JAR file.
+            URL url = Ded.class.getResource("/"+fname);
+            if (url != null) {
+                in = url.openStream();
+            }
+            else {
+                // Then try loading from file system.
+                // (Maybe getResource already tries this?)
+                in = new FileInputStream(fname);
+            }
+            this.diagramFont = Font.createFont(Font.TRUETYPE_FONT, new BufferedInputStream(in));
+            this.diagramFont = this.diagramFont.deriveFont((float)12);
+        }
+        catch (Exception e) {
+            System.out.println("while trying to load font: "+e);
+        }
+        finally {
+            if (in != null) {
+                try {
+                    in.close();
+                }
+                catch (IOException e) {/*don't care*/}
+            }
         }
         
         this.diagramController = new DiagramController(this);

@@ -180,6 +180,13 @@ public class DiagramController extends JPanel
     {
         super.paint(g);
 
+        // I do not know the proper way to get a font set automatically
+        // in a Graphics object.  Calling JComponent.setFont has gotten
+        // be nowhere.  Setting it myself when I first get control
+        // seems to work; but note that I have to do this *after*
+        // calling super.paint().
+        g.setFont(this.dedWindow.diagramFont);
+        
         // Filename label.
         if (this.diagram.drawFileName && !this.fileName.isEmpty()) {
             String name = new File(this.fileName).getName();
