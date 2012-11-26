@@ -1,0 +1,106 @@
+Comparison of Diagram Editor to ERED
+====================================
+
+This is a comparison of the Java and Swing-based Diagram Editor (DED)
+to its predecessor, the C++ and Qt-based ER Editor (ERED).
+
+
+Portability of executable
+-------------------------
+
+ERED is a C++ Qt program.  In theory that makes it portable, but in
+practice I never built it for anything but Linux32 and Linux64, and
+even those executables had shared library dependencies that made it
+difficult to run them on machines other than what I used to compile.
+With more effort, these problems could have been overcome, but I
+wasn't prepared to spend the time for a side project.
+
+DED is written in 100% Java using Swing.  Its JAR file will run
+anywhere that Java will run.  I can just publish the JAR on NFS and
+know that everyone will be able to run it.
+
+On a related note, almost anyone should be able to hack on it, since
+the only build-time dependency is a JDK.  Hacking is most convenient
+in Eclipse but command line works too.
+
+
+Portability of diagram font
+---------------------------
+
+I never got around to fixing the font portability problems with ERED.
+A diagram that looked fine on one machine would have its labels cut
+off on another due to font differences.  Machines also varied in use
+of antialiasing, despite my best efforts to turn off antialiasing
+everywhere.  Consequently, making a "simple edit" in ERED could turn
+into a bigger project since the diagram needed to be globally adjusted
+to accomodate a different font, and often introduced graphical
+inconsistencies between diagrams on the same page.
+
+With DED, I've embedded one particular bitmap font into the JAR
+(selected after a non-trivial search, since every diagram implicitly
+depends on it).  Consequently, DED renders the exact same set of
+pixels with the exact same colors on all machines.
+
+
+File format interaction with source control
+-------------------------------------------
+
+ERED saved its files in a custom binary format.  That is not good for
+source control.
+
+DED saves in JSON-based text.  SCM interaction is much better, and you
+can edit by hand if necessary (search & replace?).
+
+Note that DED can read the old binary ERED format (it will auto-detect
+when a file is opened), so you do not have to re-create your diagrams
+to use the new tool.  But it cannot write the old format, so switching
+is a one-way street.
+
+
+Automatic export to PNG
+-----------------------
+
+With ERED, you had to take a screenshot to make a PNG.  DED will
+export to PNG every time the file is saved: save foo.ded, and it will
+implicitly write foo.ded.png.  That eliminates significant hassle and
+ensures that you don't forget to export a diagram.
+
+Also, the PNG is byte-for-byte identical on all machines.  That avoids
+problems where saving a file might make the SCM thing that something
+had changed.
+
+
+Miscellaneous diagramming enhancements
+--------------------------------------
+
+DED has various improvements:
+
+* The snap to 5 pixels is active in more places, making it easier to
+get a well-aligned diagram from the start.
+
+* DED by default puts the diagram file name in the upper left corner
+so you don't have to.  (The title is useful for referring to diagrams
+in conversation, and for finding the source when you want to edit a
+diagram.)
+
+* DED prompts when quitting with unsaved work, before overwriting a
+file, etc.
+
+* DED has a menu to make it a little easier to learn and to provide a
+place to put features that don't deserve a keybinding.
+
+Beyond those, I expect to keep adding significant new features to DED
+over time.  Having all the above problems solved makes further
+enhancements less of a waste of time.
+
+
+Note on the names
+-----------------
+
+I decided to use a different name for DED because I hope to expand its
+feature set beyond simple ER diagrams.  That might include the ability
+to do some UI wireframing.  But ER will remain the primary use case,
+and I won't make that harder in order to make other stuff possible.
+
+
+EOF
