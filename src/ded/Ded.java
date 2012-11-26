@@ -1,4 +1,5 @@
 // Ded.java
+// See toplevel license.txt for copyright and license terms.
 
 package ded;
 
@@ -278,7 +279,9 @@ public class Ded extends JFrame implements WindowListener {
         JOptionPane.showMessageDialog(
             this,
             "Diagram Editor (DED)\n"+
-                "Copyright 2012 Scott McPeak",
+                "Copyright (c) 2012 Scott McPeak\n"+
+                "This software is made available under the terms of the BSD license:\n"+
+                "http://opensource.org/licenses/BSD-2-Clause",
             "About Diagram Editor",
             JOptionPane.INFORMATION_MESSAGE,
             windowIcon32);

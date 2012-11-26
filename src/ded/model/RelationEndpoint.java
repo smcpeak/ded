@@ -1,4 +1,5 @@
 // RelationEndpoint.java
+// See toplevel license.txt for copyright and license terms.
 
 package ded.model;
 
