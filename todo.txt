@@ -14,7 +14,6 @@ Small:
 - relation dialog should include owner checkbox
 
 Medium:
-- load the C++ file format
 - control over which entities are on top
 - smarter relation routing
 - undo/redo

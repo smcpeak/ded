@@ -5,8 +5,11 @@ package ded.model;
 import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -17,7 +20,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import util.FlattenInputStream;
 import util.Util;
+import util.XParse;
 import util.awt.AWTJSONUtil;
 import util.json.JSONable;
 
@@ -202,8 +207,9 @@ public class Diagram implements JSONable {
         }
     }
 
-    /** Read a diagram from a file and return the new Diagram object. */
-    public static Diagram readFromFile(String fname) throws Exception
+    /** Read a Diagram from a file, expect the JSON format only. */
+    public static Diagram readFromFile(String fname)
+        throws Exception
     {
         Reader r = null;
         JSONObject obj;
@@ -217,6 +223,160 @@ public class Diagram implements JSONable {
             }
         }
         return new Diagram(obj);
+    }
+    
+    /** Read a diagram from a file and return the new Diagram object.
+      * This will auto-detect the ER or JSON file formats and read
+      * the file appropriately. */
+    public static Diagram readFromFileAutodetect(String fname) 
+        throws Exception
+    {
+        // For compatibility with the C++ implementation, first attempt
+        // to read it in the ER format.
+        Diagram d = readFromERFile(fname);
+        if (d != null) {
+            return d;
+        }
+        else {
+            // The file is not in the ER format.  Proceed with reading
+            // it as JSON.  Exceptions will propagate out of
+            // this method, as they indicate that the file *was* in the
+            // ER format but some other problem occurred (or the file
+            // could not be read at all, which is a problem no matter
+            // what format we think the file is).
+        }
+
+        return readFromFile(fname);
+    }
+
+    // ------------------ legacy deserialization -------------------------
+    /** Read a Diagram from an ER file and return the new Diagram object.
+      * Return null if the file is not in the ER format; throw an
+      * exception for all other problems. */
+    public static Diagram readFromERFile(String fname)
+        throws XParse, IOException
+    {
+        InputStream is = null;
+        try {
+            is = new FileInputStream(fname);
+            return readFromERStream(is);
+        }
+        finally {
+            if (is != null) {
+                is.close();
+            }
+        }
+    }
+    
+    /** Read a Diagram from an ER InputStream.  This will return null in
+      * the one specific case where the file exists and is readable, but
+      * the magic number is not present, meaning the file is probably
+      * not in the ER format at all. */
+    public static Diagram readFromERStream(InputStream is)
+        throws XParse, IOException
+    {
+        FlattenInputStream flat = new FlattenInputStream(is);
+        
+        // Magic number identifier for the file format.
+        int magic = flat.readInt();
+        if (magic != 0x2B044C63) {
+            // The file is not in the expected format.
+            return null;
+        }
+        
+        // File format version number.
+        int ver = flat.readInt();
+        if (!( 1 <= ver && ver <= 8 )) {
+            throw new XParse("version is "+ver+" but I only know how to read 1 to 8");
+        }
+        flat.version = ver;
+        
+        return new Diagram(flat);
+    }
+    
+    /** Read a Diagram from an ER FlattenInputStream */
+    public Diagram(FlattenInputStream flat)
+        throws XParse, IOException
+    {
+        // Defaults if file does not specify.
+        this.drawFileName = true;
+        this.entities = new ArrayList<Entity>();
+        this.inheritances = new ArrayList<Inheritance>();
+        this.relations = new ArrayList<Relation>();
+        
+        if (flat.version >= 5) {
+            this.windowSize = flat.readDimension();
+        }
+        else {
+            // Default size from C++ code.
+            this.windowSize = new Dimension(400, 300);
+        }
+        
+        // Entities
+        {
+            int numEntities = flat.readInt();
+            for (int i=0; i < numEntities; i++) {
+                Entity e = new Entity(flat);
+                flat.noteOwner(e);
+                this.entities.add(e);
+            }
+        }
+        
+        flat.checkpoint(0x64E2C40F);
+
+        // Inheritances
+        if (flat.version >= 7) {
+            int numInheritances = flat.readInt();
+            for (int i=0; i < numInheritances; i++) {
+                Inheritance inh = new Inheritance(flat);
+                flat.noteOwner(inh);
+                this.inheritances.add(inh);
+            }
+            
+            flat.checkpoint(0x144CB789);
+        }
+        
+        // Relations
+        {
+            int numRelations = flat.readInt();
+            for (int i=0; i < numRelations; i++) {
+                Relation r = new Relation(flat);
+                this.relations.add(r);
+            }
+        }
+        
+        flat.checkpoint(0x378264D9);
+
+        this.selfCheck();
+        
+        // In the ER format, I needed to add titles manually.  But in
+        // Ded, that is automatic.  So, look for a title entity and
+        // remove it.
+        for (Entity e : this.entities) {
+            if (e.loc.x == 0 && e.loc.y == 0 && 
+                e.attributes.equals(" ") && 
+                e.shape == EntityShape.ES_NO_SHAPE)
+            {
+                // Looks like a title; remove it.
+                this.entities.remove(e);
+                
+                // Paranoia: make sure we didn't mess up the Diagram
+                // by doing that.  That would happen if there were a
+                // Relation connected to the title.
+                try {
+                    this.selfCheck();
+                }
+                catch (AssertionError ae) {
+                    throw new RuntimeException(
+                        "Oops, I broke the file by removing the title element!  "+
+                        "Complain to Scott.  :)");
+                }
+
+                // Cannot keep iterating, since we just modified the
+                // collection we are iterating over.
+                break;
+            }
+        }
     }
     
     // ------------------ data object boilerplate ------------------------

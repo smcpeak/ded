@@ -884,7 +884,7 @@ public class RelationController extends Controller {
                      this.relation.owning);
                   
         // Label above the circle.
-        int arrowLabelOffset = 20;
+        int arrowLabelOffset = 10;
         Point labelPt = GeomUtil.add(pt, new Point(0, -radius - arrowLabelOffset));
         SwingUtil.drawCenteredText(g, labelPt, this.relation.label);
     }

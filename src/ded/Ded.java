@@ -124,7 +124,7 @@ public class Ded extends JFrame implements WindowListener {
             }
         });
         
-        m.add(new MenuAction("Open ...", KeyEvent.VK_O, KeyEvent.VK_O, ActionEvent.CTRL_MASK) {
+        m.add(new MenuAction("Open or import...", KeyEvent.VK_O, KeyEvent.VK_O, ActionEvent.CTRL_MASK) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.loadFromFile();
             }

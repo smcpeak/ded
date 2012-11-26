@@ -3,12 +3,15 @@
 package ded.model;
 
 import java.awt.Point;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import util.FlattenInputStream;
+import util.XParse;
 import util.awt.AWTJSONUtil;
 
 /** Node that indicates an inheritance relationship; it directly points
@@ -113,6 +116,23 @@ public class Inheritance {
         else {
             throw new JSONException("invalid entity ref "+index);
         }
+    }
+    
+    // ------------------- legacy serialization -------------------
+    /** Read an Inheritance from an ER FlattenInputStream. */
+    public Inheritance(FlattenInputStream flat)
+        throws XParse, IOException
+    {
+        Object par = flat.readSerf();
+        if (par instanceof Entity) {
+            this.parent = (Entity)par;
+        }
+        else {
+            throw new XParse("Inheritance.parent: expected Entity");
+        }
+        
+        this.open = flat.readBoolean();
+        this.pt = flat.readPoint();
     }
 }
 

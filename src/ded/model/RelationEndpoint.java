@@ -3,12 +3,15 @@
 package ded.model;
 
 import java.awt.Point;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import util.FlattenInputStream;
+import util.XParse;
 import util.awt.AWTJSONUtil;
 
 /** Start or end point of a relation (arrow). */
@@ -200,6 +203,52 @@ public class RelationEndpoint {
         }
 
         this.pt = AWTJSONUtil.pointFromJSON(o.getJSONObject("pt"));
+    }
+    
+    // ------------------ legacy serialization ------------------
+    /** Read a RelationEndpoint from an ER FlattenInputStream. */
+    public RelationEndpoint(FlattenInputStream flat)
+        throws XParse, IOException
+    {
+        this.entity = null;
+        this.inheritance = null;
+        this.pt = null;
+        
+        // entity
+        Object ent = flat.readSerf();
+        if (ent != null) {
+            if (ent instanceof Entity) {
+                this.entity = (Entity)ent;
+            }
+            else {
+                throw new XParse("RelationEndpoint.entity: expected an Entity");
+            }
+        }
+        
+        if (flat.version >= 7) {
+            Object inh = flat.readSerf();
+            if (inh != null) {
+                if (inh instanceof Inheritance) {
+                    this.inheritance = (Inheritance)inh;
+                }
+                else {
+                    throw new XParse("RelationEndpoint.inheritance: expected an Inheritance");
+                }
+            }
+        }
+        
+        // The C++ serialization code contains a bug: it serializes
+        // 'pt' whenever 'entity' is NULL, ignoring the fact that
+        // a non-NULL 'inheritance' makes it irrelevant.  So, I will
+        // read a Point in the same circumstance, but only use it if
+        // there is also no inheritance.
+        if (this.entity == null) {
+            Point p = flat.readPoint();
+            
+            if (this.inheritance == null) {
+                this.pt = p;
+            }
+        }
     }
 }
 

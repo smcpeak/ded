@@ -96,7 +96,7 @@ public class SerializationTests {
         System.out.println("testing: "+fname);
         
         // Parse the file, checking that we can.
-        Diagram d = Diagram.readFromFile(fname);
+        Diagram d = Diagram.readFromFileAutodetect(fname);
         d.selfCheck();
         
         // Put it through a serialization cycle.

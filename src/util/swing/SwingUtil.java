@@ -100,10 +100,10 @@ public class SwingUtil {
         }
     }
     
-    /** Show an error message dialog box with message word wrapping. */
-    public static void errorMessageBox(Component parent, String message)
+    /** Create a JOptionPane instance that word-wraps its message. */
+    public static JOptionPane makeWordWrapJOptionPane()
     {
-        // Basic problem is described in this bug report:
+        // The basic problem is described in this bug report:
         //
         //   http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4104906
         //
@@ -129,11 +129,42 @@ public class SwingUtil {
                 return 80;
             }
         };
+        return pane;
+    }
+    
+    /** Show an error message dialog box with message word wrapping. */
+    public static void errorMessageBox(Component parent, String message)
+    {
+        JOptionPane pane = makeWordWrapJOptionPane();
         pane.setMessage(message);
         pane.setMessageType(JOptionPane.ERROR_MESSAGE);
         
         JDialog dialog = pane.createDialog(parent, "Error");
         dialog.setVisible(true);
+    }
+    
+    /** Show a confirmation message box with line wrapped message. */
+    public static int confirmationBox(
+        Component parent, 
+        String message, 
+        String title, 
+        int optionType)
+    {
+        JOptionPane pane = makeWordWrapJOptionPane();
+        pane.setMessage(message);
+        pane.setMessageType(JOptionPane.QUESTION_MESSAGE);
+        pane.setOptionType(optionType);
+        
+        JDialog dialog = pane.createDialog(parent, "Error");
+        dialog.setVisible(true);
+        
+        Object result = pane.getValue();
+        if (result == null || !(result instanceof Integer)) {
+            return JOptionPane.CLOSED_OPTION;
+        }
+        else {
+            return ((Integer)result).intValue();
+        }
     }
 }
 

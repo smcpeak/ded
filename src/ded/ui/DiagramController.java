@@ -60,7 +60,7 @@ public class DiagramController extends JPanel
         "Insert - Insert relation control point\n"+
         "Delete - Delete selected thing\n"+
         "Ctrl+S - Save to file and export to PNG (fname+\".png\")\n"+
-        "Ctrl+O - Load from file\n"+
+        "Ctrl+O - Load from file (can import ER files)\n"+
         "Left click - select\n"+
         "Ctrl+Left click - multiselect\n"+
         "Left click+drag - multiselect rectangle\n"+
@@ -142,6 +142,11 @@ public class DiagramController extends JPanel
       * last time it was saved. */
     private boolean dirty;
     
+    /** When true, the in-memory Diagram was loaded from a file that
+      * was in the ER format.  This matters because we cannot *save*
+      * the file in that format. */
+    private boolean importedFile;
+    
     // ------------- public methods ---------------
     public DiagramController(Ded dedWindow)
     {
@@ -154,6 +159,7 @@ public class DiagramController extends JPanel
         this.fileName = "";
         this.currentFileChooserDirectory = new File(System.getProperty("user.dir"));
         this.dirty = false;
+        this.importedFile = false;
         
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
@@ -497,8 +503,20 @@ public class DiagramController extends JPanel
     public void loadFromNamedFile(String name)
     {
         try {
-            // Read the file.
-            Diagram d = Diagram.readFromFile(name);
+            // For compatibility with the C++ implementation, start
+            // by trying to read it in the ER format.
+            Diagram d = Diagram.readFromERFile(name);
+            if (d != null) {
+                // Success; but we need to indicate that the file will
+                // be saved in a different format, lest people lose
+                // their original file unexpectedly.
+                this.importedFile = true;
+            }
+            else {
+                // Read the file as JSON.
+                d = Diagram.readFromFile(name);
+                this.importedFile = false;
+            }
             
             // Success.  First, update file name.
             this.dirty = false;
@@ -581,6 +599,23 @@ public class DiagramController extends JPanel
             this.chooseAndSaveToFile();
         }
         else {
+            if (this.importedFile) {
+                int res = SwingUtil.confirmationBox(
+                    this,
+                    "This diagram was loaded from \""+this.fileName+
+                        "\", which uses the old binary ER format from the "+
+                        "C++ ERED implementation.  If you save the file, it "+
+                        "will be overwritten with the new JSON-based format "+
+                        "used by the Java-based Diagram Editor, which the "+
+                        "C++ ERED cannot read.  Overwrite with the new "+
+                        "format?",
+                    "Confirm Overwrite of Imported File",
+                    JOptionPane.YES_NO_OPTION);
+                if (res != JOptionPane.YES_OPTION) {
+                    return;
+                }
+            }
+            
             this.saveToNamedFile(this.fileName);
         }
     }
@@ -593,6 +628,7 @@ public class DiagramController extends JPanel
             
             // If it worked, remember the new name.
             this.dirty = false;
+            this.importedFile = false;
             this.setFileName(fname);
             
             // Additionally, always export to PNG.
@@ -715,8 +751,12 @@ public class DiagramController extends JPanel
             title += ": " + new File(this.fileName).getName();
         }
         
+        if (this.importedFile) {
+            title += " (imported)";
+        }
+        
         if (this.dirty) {
-            title += "*";
+            title += " *";
         }
         
         this.dedWindow.setTitle(title);

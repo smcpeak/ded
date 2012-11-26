@@ -5,12 +5,15 @@ package ded.model;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import util.FlattenInputStream;
+import util.XParse;
 import util.awt.AWTJSONUtil;
 import util.json.JSONable;
 
@@ -101,6 +104,35 @@ public class Entity implements JSONable {
         }
     }
 
+    // -------------- legacy serialization ---------------
+    /** Construct an Entity by reading an ER FlattenInputStream. */
+    public Entity(FlattenInputStream flat)
+        throws XParse, IOException
+    {
+        // Defaults in case the file does not specify.
+        this.shape = EntityShape.ES_RECTANGLE;
+        this.attributes = "";
+        
+        this.loc = flat.readPoint();
+        this.size = flat.readDimension();
+        this.name = flat.readString();
+        
+        if (flat.version < 2) { return; }
+        
+        this.attributes = flat.readString();
+        
+        if (flat.version < 6) { return; }
+        
+        int s = flat.readInt();
+        switch (s) {
+            case 0: this.shape = EntityShape.ES_NO_SHAPE; break;
+            case 1: this.shape = EntityShape.ES_RECTANGLE; break;
+            case 2: this.shape = EntityShape.ES_ELLIPSE; break;
+            default:
+                throw new XParse("unrecognized entity shape code: "+s);
+        }
+    }
+    
     // ------------- data object boilerplate -------------
     @Override
     public boolean equals(Object obj)

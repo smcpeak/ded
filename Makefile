@@ -13,6 +13,7 @@ clean:
 	rm -rf bin dist
 
 check:
+	java -cp bin -ea ded.model.SerializationTests tests/*.ded
 	java -cp bin -ea ded.model.SerializationTests tests/*.er
 
 # ------------------- Coverity -----------------

@@ -3,6 +3,7 @@
 package ded.model;
 
 import java.awt.Point;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -10,7 +11,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import util.FlattenInputStream;
 import util.Util;
+import util.XParse;
 import util.awt.AWTJSONUtil;
 
 /** Arrow, sometimes between Entities (boxes). */
@@ -139,6 +142,47 @@ public class Relation {
                                                    o.getString("routingAlg"));
         this.label = o.getString("label");
         this.owning = o.getBoolean("owning");
+    }
+    
+    // ------------------ legacy serialization -----------------
+    /** Read a Relation from an ER FlattenInputStream. */
+    public Relation(FlattenInputStream flat)
+        throws XParse, IOException
+    {
+        // Defaults/initials, related to if file does not specify.
+        this.routingAlg = RoutingAlgorithm.RA_MANHATTAN_HORIZ;
+        this.controlPts = new ArrayList<Point>();
+        this.owning = false;
+        
+        this.start = new RelationEndpoint(flat);
+        this.end = new RelationEndpoint(flat);
+        this.label = flat.readString();
+        
+        if (flat.version < 3) { return; }
+        
+        // routingAlg
+        int r = flat.readInt();
+        switch (r) {
+            case 0: this.routingAlg = RoutingAlgorithm.RA_DIRECT; break;
+            case 1: this.routingAlg = RoutingAlgorithm.RA_MANHATTAN_HORIZ; break;
+            case 2: this.routingAlg = RoutingAlgorithm.RA_MANHATTAN_VERT; break;
+            default:
+                throw new XParse("invalid routingAlg code: "+r);
+        }
+        
+        if (flat.version < 4) { return; }
+        
+        // controlPts
+        {
+            int numControlPts = flat.readInt();
+            for (int i=0; i < numControlPts; i++) {
+                this.controlPts.add(flat.readPoint());
+            }
+        }
+
+        if (flat.version < 8) { return; }
+        
+        this.owning = flat.readBoolean();
     }
 }
 
