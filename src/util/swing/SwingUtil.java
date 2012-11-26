@@ -2,6 +2,7 @@
 
 package util.swing;
 
+import java.awt.Component;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -13,6 +14,8 @@ import java.awt.event.WindowEvent;
 import java.awt.font.LineMetrics;
 
 import javax.swing.AbstractAction;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 
 
 /** Miscellaneous Swing-related utililities. */
@@ -95,6 +98,42 @@ public class SwingUtil {
             g.drawString(s, x, y);
             y += lineHeight;
         }
+    }
+    
+    /** Show an error message dialog box with message word wrapping. */
+    public static void errorMessageBox(Component parent, String message)
+    {
+        // Basic problem is described in this bug report:
+        //
+        //   http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4104906
+        //
+        // The workaround there requires adding a scrollbar to the
+        // message, which I do not want to do.
+        
+        // I tried these solutions, but they do not work (anymore?):
+        //
+        //   http://stackoverflow.com/questions/4330076/joptionpane-showmessagedialog-truncates-jtextarea-message
+        //   http://www.coderanch.com/t/339970/GUI/java/wrap-large-message-JOptionPane-showConfirmDialog
+        //
+        // Most other solutions involve manually inserting newlines.
+        
+        // Thankfully, this one actually does work:
+        //
+        //   http://www.jroller.com/Fester/entry/joptionpane_with_word_wrapping
+        
+        @SuppressWarnings("serial")
+        JOptionPane pane = new JOptionPane() {
+            @Override
+            public int getMaxCharactersPerLineCount()
+            {
+                return 80;
+            }
+        };
+        pane.setMessage(message);
+        pane.setMessageType(JOptionPane.ERROR_MESSAGE);
+        
+        JDialog dialog = pane.createDialog(parent, "Error");
+        dialog.setVisible(true);
     }
 }
 

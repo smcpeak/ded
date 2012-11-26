@@ -22,10 +22,7 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
 import util.swing.MenuAction;
-
-import ded.model.Entity;
 import ded.ui.DiagramController;
-import ded.ui.EntityDialog;
 
 /** Diagram editor. */
 public class Ded extends JFrame implements WindowListener {
@@ -133,7 +130,7 @@ public class Ded extends JFrame implements WindowListener {
             }
         });
         
-        m.add(new MenuAction("Save", KeyEvent.VK_S, KeyEvent.VK_S, ActionEvent.CTRL_MASK) {
+        m.add(new MenuAction("Save and export to PNG", KeyEvent.VK_S, KeyEvent.VK_S, ActionEvent.CTRL_MASK) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.saveCurrentFile();
             }
@@ -352,6 +349,7 @@ public class Ded extends JFrame implements WindowListener {
             public void uncaughtException(Thread t, final Throwable e) {
                 // For the moment, I'm going to say that any exception
                 // that gets here is a bug, so dump a trace to the console.
+                System.err.println("Uncaught exception at Diagram Editor top-level:");
                 e.printStackTrace();
                 
                 SwingUtilities.invokeLater(new Runnable() {
@@ -375,33 +373,14 @@ public class Ded extends JFrame implements WindowListener {
         // Kick off the Swing app.
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                // for testing during development: just run one dialog
-                if (false) {
-                    Entity e = new Entity();
-                    e.name = "name";
-                    e.attributes = "attr1\nattr2\nattr3\n";
-                    e.loc.x = 10;
-                    e.loc.y = 20;
-                    e.size.width = 30;
-                    e.size.height = 40;
-                    System.out.println("e: "+e);
-                    
-                    boolean okPressed = EntityDialog.exec(null, e);
-                    
-                    System.out.println("okPressed: "+okPressed);
-                    System.out.println("e: "+e);
+                Ded ded = new Ded();
+                
+                // Open specified file if any.
+                if (args.length >= 1) {
+                    ded.diagramController.loadFromNamedFile(args[0]);
                 }
 
-                else {
-                    Ded ded = new Ded();
-                    
-                    // Open specified file if any.
-                    if (args.length >= 1) {
-                        ded.diagramController.loadFromNamedFile(args[0]);
-                    }
-
-                    ded.setVisible(true);
-                }
+                ded.setVisible(true);
             }
         });
     }

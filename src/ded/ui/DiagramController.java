@@ -3,6 +3,7 @@
 package ded.ui;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -15,11 +16,13 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.font.LineMetrics;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -56,7 +59,7 @@ public class DiagramController extends JPanel
         "Enter or Double click - Edit selected thing\n"+
         "Insert - Insert relation control point\n"+
         "Delete - Delete selected thing\n"+
-        "Ctrl+S - Save to file\n"+
+        "Ctrl+S - Save to file and export to PNG (fname+\".png\")\n"+
         "Ctrl+O - Load from file\n"+
         "Left click - select\n"+
         "Ctrl+Left click - multiselect\n"+
@@ -511,9 +514,7 @@ public class DiagramController extends JPanel
             this.setDiagram(d);
         }
         catch (Exception e) {
-            this.errorMessageBox(
-                "Error while reading \""+name+"\": "+
-                e.getClass().getSimpleName()+": "+e.getMessage());
+            this.exnErrorMessageBox("Error while reading \""+name+"\"", e);
         }
     }
     
@@ -593,13 +594,12 @@ public class DiagramController extends JPanel
             // If it worked, remember the new name.
             this.dirty = false;
             this.setFileName(fname);
+            
+            // Additionally, always export to PNG.
+            writeToPNG(new File(fname+".png"));
         }
         catch (Exception e) {
-            // Java error messages are really bad.  Maybe I will fix this
-            // at some point.
-            this.errorMessageBox(
-                "Error while writing to \""+fname+"\": "+
-                e.getClass().getSimpleName()+": "+e.getMessage());
+            this.exnErrorMessageBox("Error while writing to \""+fname+"\"", e);
         }
     }
 
@@ -612,6 +612,65 @@ public class DiagramController extends JPanel
         // Changing the file name affects the drawn name in the
         // main editing area (if enabled).
         this.repaint();
+    }
+
+    /** Write the diagram in PNG format to 'file'. */
+    public void writeToPNG(File file)
+    {
+        // For a large-ish diagram, this operation takes ~200ms.  For now,
+        // I will just acknowledge the delay.  An idea for the future is
+        // to add a status bar to the UI, then do the export work in a
+        // separate thread, with an indicator in the status bar that will
+        // reflect when the operation completes.  I consider it important
+        // for the user to know when it finishes so if it takes a long
+        // time, they don't in the meantime go copy or view the partially
+        // written image.
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        
+        // Based on code from:
+        // http://stackoverflow.com/questions/5655908/export-jpanel-graphics-to-png-or-gif-or-jpg
+        
+        // First, render the image to an in-memory image buffer.
+        BufferedImage bi =
+            new BufferedImage(this.getSize().width, this.getSize().height,
+                              BufferedImage.TYPE_INT_ARGB); 
+        Graphics g = bi.createGraphics();
+        this.paint(g);
+        g.dispose();
+        
+        // Now, write that image to a file in PNG format.
+        try {
+            // This is a very convenient call, but it has many flaws.
+            //
+            // First, it unconditionally deletes 'file' before writing.
+            // That means it won't work as a symlink, does not interact
+            // with permissions as expected, etc.
+            //
+            // Second, worse, the error handling is atrocious.  In my
+            // testing, when there is a permission problem, this code
+            // prints the "Permission denied" exception to *stderr*, with
+            // no opportunity to do something reasonable with it, and
+            // then throws a totally uninformative NullPointerException.
+            //
+            // I made a brief attempt to fix these problems by copying
+            // some of the implementation code into my code, but the
+            // problems go pretty deep so I gave up.
+            //
+            // Since all of these are simply bugs in the Java libraries
+            // (my code is not doing anything incorrect), I will simply
+            // hope that eventually those bugs get fixed by Sun/Oracle.
+            ImageIO.write(bi, "png", file);
+        }
+        catch (Exception e) {
+            this.exnErrorMessageBox(
+                "While writing PNG to \""+file+"\", the "+
+                "following exception was raised by the ImageIO "+
+                "library, whose error handling is really bad, so "+
+                "good luck figuring out the real problem "+
+                "(maybe check stderr)", e);
+        }
+        
+        this.setCursor(Cursor.getDefaultCursor());
     }
     
     /** Called when the diagram has been changed.  This does a repaint
@@ -1023,7 +1082,17 @@ public class DiagramController extends JPanel
     /** Show an error message dialog box with 'message'. */
     public void errorMessageBox(String message)
     {
-        JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+        SwingUtil.errorMessageBox(this, message);
+    }
+    
+    /** Show an error message arising from Exception 'e'. */
+    public void exnErrorMessageBox(String context, Exception e)
+    {
+        // Java error messages are really bad.  Maybe I will fix this
+        // at some point.
+        errorMessageBox(context+": "+
+                        e.getClass().getSimpleName()+": "+e.getMessage());
+
     }
 
     @Override
