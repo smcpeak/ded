@@ -288,7 +288,8 @@ public class Diagram implements JSONable {
         // File format version number.
         int ver = flat.readInt();
         if (!( 1 <= ver && ver <= 8 )) {
-            throw new XParse("version is "+ver+" but I only know how to read 1 to 8");
+            throw new XParse("ER file format version is "+ver+
+                             " but I only know how to read 1 through 8.");
         }
         flat.version = ver;
         
