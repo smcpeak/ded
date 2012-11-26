@@ -566,7 +566,7 @@ public class DiagramController extends JPanel
             JFileChooser chooser = new JFileChooser();
             chooser.setCurrentDirectory(this.currentFileChooserDirectory);
             chooser.addChoosableFileFilter(
-                new FileNameExtensionFilter("Diagram and ER Editor Files (.ded, .er)", "ded", "er"));
+                new FileNameExtensionFilter("Diagram Editor Files (.ded)", "ded"));
             int res = chooser.showSaveDialog(this);
             if (res != JFileChooser.APPROVE_OPTION) {
                 return;
