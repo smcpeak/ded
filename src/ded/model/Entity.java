@@ -8,8 +8,10 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,6 +38,9 @@ public class Entity implements JSONable {
     /** Attributes as free text with newlines. */
     public String attributes;
     
+    /** Additional shape-specific geometry parameters.  May be null. */
+    public int[] shapeParams;
+    
     // ------------ public methods ------------
     public Entity()
     {
@@ -44,8 +49,12 @@ public class Entity implements JSONable {
         this.shape = EntityShape.ES_RECTANGLE;
         this.name = "";
         this.attributes = "";
+        this.shapeParams = null;
     }
 
+    /** Return the primary bounding rectangle for this entity, used for
+      * drawing the selection box and hit testing.  Some shapes might
+      * extend a little outside this box visually. */
     public Rectangle getRect()
     {
         return new Rectangle(this.loc, this.size);
@@ -69,6 +78,9 @@ public class Entity implements JSONable {
             o.put("shape", this.shape.name());
             o.put("name", this.name);
             o.put("attributes", this.attributes);
+            if (this.shapeParams != null) {
+                o.put("shapeParams", new JSONArray(this.shapeParams));
+            }
         }
         catch (JSONException e) { assert(false); }
         return o;
@@ -81,6 +93,17 @@ public class Entity implements JSONable {
         this.shape = EntityShape.valueOf(EntityShape.class, o.getString("shape"));
         this.name = o.getString("name");
         this.attributes = o.getString("attributes");
+        
+        JSONArray params = o.optJSONArray("shapeParams");
+        if (params != null) {
+            this.shapeParams = new int[params.length()];
+            for (int i=0; i < params.length(); i++) {
+                this.shapeParams[i] = params.getInt(i);
+            }
+        }
+        else {
+            this.shapeParams = null;
+        }
     }
     
     /** Return the value to which 'this' is mapped in 'entityToInteger'. */
@@ -113,6 +136,7 @@ public class Entity implements JSONable {
         // Defaults in case the file does not specify.
         this.shape = EntityShape.ES_RECTANGLE;
         this.attributes = "";
+        this.shapeParams = null;
         
         this.loc = flat.readPoint();
         this.size = flat.readDimension();
@@ -147,7 +171,8 @@ public class Entity implements JSONable {
                    this.size.equals(e.size) &&
                    this.shape.equals(e.shape) &&
                    this.name.equals(e.name) &&
-                   this.attributes.equals(e.attributes);
+                   this.attributes.equals(e.attributes) &&
+                   Arrays.equals(this.shapeParams, e.shapeParams);
         }
         return false;
     }
@@ -161,6 +186,7 @@ public class Entity implements JSONable {
         h = h*31 + this.shape.hashCode();
         h = h*31 + this.name.hashCode();
         h = h*31 + this.attributes.hashCode();
+        h = h*31 + Arrays.hashCode(this.shapeParams);
         return h;
     }
     

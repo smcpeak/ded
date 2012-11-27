@@ -18,6 +18,7 @@ import util.swing.SwingUtil;
 
 import ded.model.Diagram;
 import ded.model.Entity;
+import ded.model.EntityShape;
 
 /** Controller for Entity. */
 public class EntityController extends Controller {
@@ -100,8 +101,16 @@ public class EntityController extends Controller {
         
         super.paint(g);
         
-        // Get bounding rectangle and clip to it.
+        // Get bounding rectangle.
         Rectangle r = this.entity.getRect();
+        
+        // If cuboid, draw visible side faces beside the front face,
+        // outside 'r'.
+        if (this.entity.shape == EntityShape.ES_CUBOID) {
+            this.drawCuboidSides(g, r);
+        }
+        
+        // All further options are clipped to the rectangle.
         g.setClip(r.x, r.y, r.width, r.height);
         
         // Entity outline with proper shape.
@@ -111,6 +120,7 @@ public class EntityController extends Controller {
                 break;
                 
             case ES_RECTANGLE:
+            case ES_CUBOID:
                 if (!this.isSelected()) {
                     // Fill with the normal entity color (selected controllers
                     // get filled with selection color by super.paint).
@@ -161,6 +171,60 @@ public class EntityController extends Controller {
                 attributeRect.x,
                 attributeRect.y + g.getFontMetrics().getMaxAscent());
         }
+    }
+    
+    /** Draw the part of a cuboid outside the main rectangle 'r'. */
+    public void drawCuboidSides(Graphics g, Rectangle r)
+    {
+        int[] params = this.entity.shapeParams;
+        if (params == null || params.length < 2) {
+            return;
+        }
+        
+        // Distance to draw to left/up.
+        int left = params[0];
+        int up = params[1];
+        
+        // Distance to right/bottom.
+        int w = r.width-1;
+        int h = r.height-1;
+        
+        //          r.x
+        //      left|        w
+        //       <->|<---------------->
+        //          V
+        //       C                    D
+        //       *--------------------*        ^
+        //       |\                    \       |up
+        //       | \ F                  \      V
+        //       |  *--------------------*E  <---- r.y
+        //       |  |                    |     ^
+        //      B*  |                    |     |
+        //        \ |                    |     |h
+        //         \|                    |     |
+        //         A*--------------------*     V
+        //
+        // Construct polygon ABCDEFA.
+        Polygon p = new Polygon();
+        p.addPoint(r.x,            r.y + h);       // A
+        p.addPoint(r.x     - left, r.y + h - up);  // B
+        p.addPoint(r.x     - left, r.y     - up);  // C
+        p.addPoint(r.x + w - left, r.y     - up);  // D
+        p.addPoint(r.x + w,        r.y);           // E
+        p.addPoint(r.x,            r.y);           // F
+        p.addPoint(r.x,            r.y + h);       // A
+        
+        // Fill it and draw its edges.
+        g.setColor(entityFillColor);
+        g.fillPolygon(p);
+        g.setColor(entityOutlineColor);
+        g.drawPolygon(p);
+        
+        // Draw line CF.
+        p = new Polygon();
+        g.drawLine(r.x     - left, r.y     - up,   // C
+                   r.x,            r.y);           // F
+        g.drawPolygon(p);
     }
 
     /** Return the rectangle describing this controller's bounds. */

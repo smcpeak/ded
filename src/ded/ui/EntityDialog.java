@@ -6,6 +6,8 @@ package ded.ui;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
 import javax.swing.Box;
 import javax.swing.JComboBox;
@@ -21,7 +23,7 @@ import ded.model.Entity;
 import ded.model.EntityShape;
 
 /** Dialog box to edit an Entity. */
-public class EntityDialog extends ModalDialog {
+public class EntityDialog extends ModalDialog implements ItemListener {
     private static final long serialVersionUID = 1455207901388264571L;
 
     // -------------- private data --------------
@@ -33,6 +35,8 @@ public class EntityDialog extends ModalDialog {
     private JTextArea attributeText;
     private JComboBox shapeChooser;
     private JTextField xText, yText, wText, hText;
+    private JLabel paramsLabel;
+    private JTextField pText, qText;
     
     // -------------- methods ---------------
     public EntityDialog(Component documentParent, Entity entity)
@@ -86,6 +90,7 @@ public class EntityDialog extends ModalDialog {
                 's',
                 EntityShape.class,
                 this.entity.shape);
+            this.shapeChooser.addItemListener(this);
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
         }
         
@@ -108,7 +113,37 @@ public class EntityDialog extends ModalDialog {
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
             ModalDialog.disallowVertStretch(sizeBox);
         }
+
+        // paramsLabel
+        {
+            Box hb = ModalDialog.makeHBox(vb);
+            hb.add(this.paramsLabel = new JLabel());    // Text set later.
+            hb.add(Box.createHorizontalGlue());
+        }
         
+        // shapeParams
+        {
+            
+            int p=5, q=5;
+            int[] params = this.entity.shapeParams;
+            if (params != null) {
+                if (params.length >= 1) {
+                    p = params[0];
+                }
+                if (params.length >= 2) {
+                    q = params[1];
+                }
+            }
+            
+            Box hb = ModalDialog.makeHBox(vb);
+            this.pText = ModalDialog.makeLineEdit(hb, "P:", 'p', String.valueOf(p));
+            hb.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
+            this.qText = ModalDialog.makeLineEdit(hb, "Q:", 'q', String.valueOf(q));
+            vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+            ModalDialog.disallowVertStretch(hb);
+        }
+
+        this.updateControls();
         this.finishBuildingDialog(vb);
     }
 
@@ -117,16 +152,27 @@ public class EntityDialog extends ModalDialog {
     public void okPressed()
     {
         // Parse/validate all the integers first.
-        int x, y, w, h;
+        int x, y, w, h, p, q;
         try {
             x = Integer.valueOf(this.xText.getText());
             y = Integer.valueOf(this.yText.getText());
             w = Integer.valueOf(this.wText.getText());
             h = Integer.valueOf(this.hText.getText());
+            p = Integer.valueOf(this.pText.getText());
+            q = Integer.valueOf(this.qText.getText());
         }
         catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, 
-                "At least one of x/y/w/h is not a valid integer.",
+                "At least one of X/Y/W/H/P/Q is not a valid integer.",
+                "Input Validation Error",
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        EntityShape shape = (EntityShape)this.shapeChooser.getSelectedItem();
+        if (shape.numParams > 0 && (p < 0 || q < 0)) {
+            JOptionPane.showMessageDialog(this,
+                "P and Q must be non-negative.",
                 "Input Validation Error",
                 JOptionPane.ERROR_MESSAGE);
             return;
@@ -135,14 +181,51 @@ public class EntityDialog extends ModalDialog {
         // Update the entity.
         this.entity.name = this.nameText.getText();
         this.entity.attributes = this.attributeText.getText();
-        this.entity.shape = (EntityShape)this.shapeChooser.getSelectedItem();
+        this.entity.shape = shape;
         this.entity.loc.x = x;
         this.entity.loc.y = y;
         this.entity.size.width = w;
         this.entity.size.height = h;
+        
+        // Not completely general at this time.
+        if (this.entity.shape.numParams == 2) {
+            this.entity.shapeParams = new int[]{ p, q };
+        }
+        else {
+            this.entity.shapeParams = null;
+        }
 
         // Close dialog, signaling that a change was made.
         super.okPressed();
+    }
+    
+    /** React to the shape dropdown being changed. */
+    @Override
+    public void itemStateChanged(ItemEvent e)
+    {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            updateControls();
+        }
+    }
+
+    /** Update certain dialog control state based on how the
+      * other controls are currently set. */
+    private void updateControls()
+    {
+        EntityShape shape = (EntityShape)this.shapeChooser.getSelectedItem();
+        
+        // Enable or disable P/Q based on which shape is active.
+        boolean en = (shape.numParams == 2);
+        this.pText.setEnabled(en);
+        this.qText.setEnabled(en);
+        
+        // Set the params caption.
+        if (en) {
+            this.paramsLabel.setText("Cuboid extends left by P, up by Q pixels:");
+        }
+        else {
+            this.paramsLabel.setText("Shape params (none for this shape):");
+        }
     }
     
     /** Show the edit dialog for Entity, waiting until the user closes the dialog

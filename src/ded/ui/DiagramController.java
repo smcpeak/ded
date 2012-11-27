@@ -182,7 +182,7 @@ public class DiagramController extends JPanel
 
         // I do not know the proper way to get a font set automatically
         // in a Graphics object.  Calling JComponent.setFont has gotten
-        // be nowhere.  Setting it myself when I first get control
+        // me nowhere.  Setting it myself when I first get control
         // seems to work; but note that I have to do this *after*
         // calling super.paint().
         g.setFont(this.dedWindow.diagramFont);

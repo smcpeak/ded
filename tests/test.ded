@@ -1,0 +1,256 @@
+{
+  "drawFileName": true,
+  "entities": [
+    {
+      "attributes": "open?\nPoint pt\n\n",
+      "loc": {
+        "x": 220,
+        "y": 117
+      },
+      "name": "Inheritance",
+      "shape": "ES_RECTANGLE",
+      "size": {
+        "h": 64,
+        "w": 87
+      }
+    },
+    {
+      "attributes": "Point pt",
+      "loc": {
+        "x": 196,
+        "y": 35
+      },
+      "name": "RelationEndpoint",
+      "shape": "ES_RECTANGLE",
+      "size": {
+        "h": 48,
+        "w": 108
+      }
+    },
+    {
+      "attributes": "Point loc",
+      "loc": {
+        "x": 491,
+        "y": 166
+      },
+      "name": "ControlPoint",
+      "shape": "ES_RECTANGLE",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "attributes": "Size windowSize",
+      "loc": {
+        "x": 122,
+        "y": 233
+      },
+      "name": "Diagram",
+      "shape": "ES_RECTANGLE",
+      "size": {
+        "h": 49,
+        "w": 303
+      }
+    },
+    {
+      "attributes": "string label?\n[Point labelOffset]\nroutingAlg in\n  {direct,manhattan{h,v}}",
+      "loc": {
+        "x": 392,
+        "y": 36
+      },
+      "name": "Relation",
+      "shape": "ES_RECTANGLE",
+      "size": {
+        "h": 94,
+        "w": 192
+      }
+    },
+    {
+      "attributes": "Point loc\nSize size\nstring name\nstring attributes\nshape in\n  { box, ellipse, ... }",
+      "loc": {
+        "x": 13,
+        "y": 34
+      },
+      "name": "Entity",
+      "shape": "ES_RECTANGLE",
+      "size": {
+        "h": 130,
+        "w": 137
+      }
+    },
+    {
+      "attributes": "abcdefghijklmnopqrstuvwxyz[]a",
+      "loc": {
+        "x": 170,
+        "y": 300
+      },
+      "name": "ABCDEFGHIJKLMNOPQRSTUVWXYZ[]",
+      "shape": "ES_RECTANGLE",
+      "size": {
+        "h": 50,
+        "w": 245
+      }
+    },
+    {
+      "attributes": "",
+      "loc": {
+        "x": 670,
+        "y": 485
+      },
+      "name": "lowerleft",
+      "shape": "ES_RECTANGLE",
+      "size": {
+        "h": 20,
+        "w": 55
+      }
+    },
+    {
+      "attributes": "",
+      "loc": {
+        "x": 60,
+        "y": 385
+      },
+      "name": "Cuboid",
+      "shape": "ES_CUBOID",
+      "shapeParams": [
+        10,
+        20
+      ],
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "attributes": "",
+      "loc": {
+        "x": 610,
+        "y": 60
+      },
+      "name": "Ellipse",
+      "shape": "ES_ELLIPSE",
+      "size": {
+        "h": 20,
+        "w": 65
+      }
+    },
+    {
+      "attributes": "",
+      "loc": {
+        "x": 610,
+        "y": 35
+      },
+      "name": "NoShape",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "attributes": "",
+      "loc": {
+        "x": 55,
+        "y": 295
+      },
+      "name": "",
+      "shape": "ES_CUBOID",
+      "shapeParams": [
+        5,
+        5
+      ],
+      "size": {
+        "h": 20,
+        "w": 20
+      }
+    }
+  ],
+  "inheritances": [],
+  "relations": [
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "inheritances*",
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "start": {"entityRef": 3}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 0},
+      "label": "inherit?",
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "start": {"entityRef": 1}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 5},
+      "label": "parent",
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "start": {"entityRef": 0}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 5},
+      "label": "entity?",
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "start": {"entityRef": 1}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 2},
+      "label": "controlPts[]",
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "start": {"entityRef": 4}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 4},
+      "label": "relations*",
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "start": {"entityRef": 3}
+    },
+    {
+      "controlPts": [],
+      "end": {"entityRef": 5},
+      "label": "entities*",
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "start": {"entityRef": 3}
+    },
+    {
+      "controlPts": [{
+        "x": 310,
+        "y": 44
+      }],
+      "end": {"entityRef": 1},
+      "label": "end",
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "start": {"entityRef": 4}
+    },
+    {
+      "controlPts": [{
+        "x": 306,
+        "y": 74
+      }],
+      "end": {"entityRef": 1},
+      "label": "start",
+      "owning": false,
+      "routingAlg": "RA_MANHATTAN_HORIZ",
+      "start": {"entityRef": 4}
+    }
+  ],
+  "type": "Diagram Editor Diagram",
+  "version": 3,
+  "windowSize": {
+    "h": 505,
+    "w": 725
+  }
+}
