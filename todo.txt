@@ -2,7 +2,6 @@ TODOs for Diagram Editor
 ------------------------
 
 Small:
-- change mouse cursor when creating entity/relation/inheritance
 - copy+paste for sets of selected entities
 - entity grouping
 - better self-loop rendering

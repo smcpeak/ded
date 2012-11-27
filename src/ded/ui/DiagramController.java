@@ -788,6 +788,33 @@ public class DiagramController extends JPanel
             this.lassoStart = this.lassoEnd = new Point(0,0);
         }
         
+        switch (m) {
+            default:
+                // I tried crosshair for lasso, but that is too annoying
+                // when just clicking in empty space.  I also tried the
+                // "move" cursor for dragging, but that cursor blocks too
+                // much of the view of the area right under what is being
+                // moved, making precise positioning difficult.
+                //
+                // Basically, I don't really need a different cursor when
+                // the mouse button is pressed because the user has already
+                // initiated an action and is therefore aware that something
+                // unusual is happening.  And in most other cases, I don't
+                // need a special cursor because the effect of pressing the
+                // mouse is fairly obvious already.
+                this.setCursor(Cursor.getDefaultCursor());
+                break;
+                
+            case DCM_CREATE_ENTITY:
+            case DCM_CREATE_INHERITANCE:
+            case DCM_CREATE_RELATION:
+                // The crosshair here is not particularly suggestive of
+                // what the mode does, but it is noticeably different,
+                // which clues the user to the altered behavior.
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+                break;
+        }
+        
         this.selfCheck();
         this.repaint();
     }
