@@ -143,6 +143,10 @@ public class EntityController extends Controller {
                 g.setColor(entityOutlineColor);
                 g.drawOval(r.x, r.y, r.width-1, r.height-1);
                 break;
+                
+            case ES_CYLINDER:
+                this.drawCylinder(g, r);
+                break;
         }
         
         if (this.entity.attributes.isEmpty()) {
@@ -155,9 +159,15 @@ public class EntityController extends Controller {
             nameRect.height = entityNameHeight;
             SwingUtil.drawCenteredText(g, GeomUtil.getCenter(nameRect), this.entity.name);
             
-            // Divider between name and attributes.
-            g.drawLine(nameRect.x, nameRect.y+nameRect.height,
-                       nameRect.x+nameRect.width-1, nameRect.y+nameRect.height);
+            if (this.entity.shape != EntityShape.ES_CYLINDER) {
+                // Divider between name and attributes.
+                g.drawLine(nameRect.x, nameRect.y+nameRect.height,
+                           nameRect.x+nameRect.width-1, nameRect.y+nameRect.height);
+            }
+            else {
+                // The lower half of the upper ellipse plays the role
+                // of a divider.
+            }
             
             // Attributes.
             Rectangle attributeRect = new Rectangle(r);
@@ -227,6 +237,48 @@ public class EntityController extends Controller {
         g.drawPolygon(p);
     }
 
+    /** Draw the cylinder shape into 'r'. */
+    public void drawCylinder(Graphics g, Rectangle r)
+    {
+        g.setColor(entityFillColor);
+        
+        // Fill upper ellipse.  I do not quite understand why I
+        // have to subtract one from the width and height here,
+        // but experimentation shows that if I do not do that,
+        // then I get fill color pixels peeking out from behind
+        // the outline.
+        g.fillOval(r.x, r.y, 
+                   r.width - 1, entityNameHeight - 1);
+        
+        // Fill lower ellipse.
+        g.fillOval(r.x, r.y + r.height - entityNameHeight,
+                   r.width - 1, entityNameHeight - 1); 
+        
+        // Fill rectangle between them.
+        g.fillRect(r.x, r.y + entityNameHeight/2,
+                   r.width, r.height - entityNameHeight);
+        
+        g.setColor(entityOutlineColor);
+        
+        // Draw upper ellipse.
+        g.drawOval(r.x, r.y,
+                   r.width-1, entityNameHeight-1);
+        
+        // Draw lower ellipse, lower half of it.
+        g.drawArc(r.x, r.y + r.height - entityNameHeight,
+                  r.width-1, entityNameHeight-1,
+                  180, 180);
+        
+        // Draw left side.
+        g.drawLine(r.x, r.y + entityNameHeight/2,
+                   r.x, r.y + r.height - entityNameHeight/2);
+        
+        // Draw right side.
+        g.drawLine(r.x + r.width - 1, r.y + entityNameHeight/2,
+                   r.x + r.width - 1, r.y + r.height - entityNameHeight/2);
+
+    }
+    
     /** Return the rectangle describing this controller's bounds. */
     public Rectangle getRect()
     {

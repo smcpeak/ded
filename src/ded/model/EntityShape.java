@@ -12,7 +12,9 @@ public enum EntityShape {
     ES_ELLIPSE
         ("Ellipse", 0),
     ES_CUBOID
-        ("Cuboid", 2);
+        ("Cuboid", 2),
+    ES_CYLINDER
+        ("Cylinder", 0);
     
     /** Name of this shape as shown in the UI. */
     public final String displayName;

@@ -30,7 +30,20 @@ import util.json.JSONable;
 /** Complete diagram. */
 public class Diagram implements JSONable {
     // ---------- constants ------------
+    /** Value of the "type" attribute in toplevel JSON object.  This
+      * should never be changed. */
     public static final String jsonType = "Diagram Editor Diagram";
+    
+    /** Value to write as the "version" attribute in toplevel JSON
+      * object, and maximum value we can read there.  This should
+      * be bumped every time something is added or changed in the
+      * file format that would cause an older version of this code
+      * to be unable to read the current files.  That includes
+      * adding new enumerators to existing enumerations; although
+      * the serialization code does not literally change, its
+      * behavior does, because it then reads and writes a new
+      * string value for that enumerator. */
+    public static final int currentFileVersion = 4;
     
     // ---------- public data ------------
     /** Size of window to display diagram.  Some elements might not fit
@@ -84,7 +97,7 @@ public class Diagram implements JSONable {
         JSONObject o = new JSONObject();
         try {
             o.put("type", jsonType);
-            o.put("version", 3);
+            o.put("version", currentFileVersion);
             
             o.put("windowSize", AWTJSONUtil.dimensionToJSON(this.windowSize));
             o.put("drawFileName", this.drawFileName);
@@ -138,8 +151,18 @@ public class Diagram implements JSONable {
         }
         
         int ver = (int)o.getLong("version");
-        if (!( 1 <= ver && ver <= 3 )) {
-            throw new JSONException("unknown file version: "+ver);
+        if (ver < 1) {
+            throw new JSONException(
+                "Invalid file version: "+ver+".  Valid version "+
+                "numbers are and will always be positive.");
+        }
+        else if (ver > currentFileVersion) {
+            throw new JSONException(
+                "The file has version "+ver+
+                " but the largest version this program is capable of "+
+                "reading is "+currentFileVersion+".  You need to get "+
+                "a later version of the program in order to read "+
+                "this file.");
         }
         
         this.windowSize = AWTJSONUtil.dimensionFromJSON(o.getJSONObject("windowSize"));
