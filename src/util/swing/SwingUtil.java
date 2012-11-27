@@ -81,9 +81,10 @@ public class SwingUtil {
         FontMetrics fm = g.getFontMetrics();
         LineMetrics lm = fm.getLineMetrics(str, g);
 
-        // Go to 'p', then add (a+d)/2 to get to the bottom
-        // of the text, then subtract d; then simplify algebraically.
-        int baseY = p.y + (int)((lm.getAscent() - lm.getDescent())/2);
+        // Go to 'p', then add a/2 to get to the baseline.
+        // I ignore the descent because it looks better to center without
+        // regard to descenders.
+        int baseY = p.y + (int)(lm.getAscent()/2);
         int baseX = p.x - fm.stringWidth(str)/2;
         
         g.drawString(str, baseX, baseY);
