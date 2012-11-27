@@ -232,7 +232,7 @@ public class ModalDialog extends JDialog {
     /** Build a dropdown control for choosing among elements of an
       * enumeration.
       * 
-      * 'containingVBox' is the Box into which we will put an hbox
+      * 'containingBox' is the Box into which we will put an hbox
       * to contain the combo box and its label.
       * 
       * 'label' labels the combo box, and should end in a colon (":").
@@ -242,26 +242,49 @@ public class ModalDialog extends JDialog {
       *  
       * 'initialValue' what to initially set the box to. */
     public static <E extends Enum<E>> JComboBox makeEnumChooser(
-        Box containingVBox,
+        Box containingBox,
         String label,
         char labelMnemonic,
         Class<E> elementType,
         E initialValue)
     {
-        Box hbox = ModalDialog.makeHBox(containingVBox);
+        // Put all enumerators into a vector.
+        EnumSet<E> eSet = EnumSet.allOf(elementType);
+        Vector<E> eVector = new Vector<E>();
+        eVector.addAll(eSet);
+        
+        return makeVectorChooser(containingBox, label, labelMnemonic, 
+                                 eVector, initialValue);
+    }
+    
+    /** Build a dropdown control for choosing among elements of a
+      * vector.
+      * 
+      * 'containingBox' is the Box into which we will put an hbox
+      * to contain the combo box and its label.
+      * 
+      * 'label' labels the combo box, and should end in a colon (":").
+      * 'labelMnemonic' is its keyboard shortcut.
+      * 
+      * 'elements' is the vector of choices.
+      *  
+      * 'initialValue' what to initially set the box to. */
+    public static <E> JComboBox makeVectorChooser(
+        Box containingBox,
+        String label,
+        char labelMnemonic,
+        Vector<E> elements,
+        E initialValue)
+    {
+        Box hbox = ModalDialog.makeHBox(containingBox);
         
         JLabel lbl = new JLabel(label);
         lbl.setDisplayedMnemonic(labelMnemonic);
         hbox.add(lbl);
         hbox.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
         
-        // Put all enumerators into a vector.
-        EnumSet<E> eSet = EnumSet.allOf(elementType);
-        Vector<E> eVector = new Vector<E>();
-        eVector.addAll(eSet);
-        
         // Build the combo box.
-        JComboBox comboBox = new JComboBox(eVector);
+        JComboBox comboBox = new JComboBox(elements);
         comboBox.setSelectedItem(initialValue);
         lbl.setLabelFor(comboBox);
         hbox.add(comboBox);

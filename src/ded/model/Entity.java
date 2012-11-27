@@ -22,6 +22,11 @@ import util.json.JSONable;
 
 /** An ER entity, represented as a box with a label and text contents. */
 public class Entity implements JSONable {
+    // ------------ constants -------------
+    /** Default entity fill color.  Assumed when no color is
+      * specified in the input file. */
+    public static final String defaultFillColor = "Gray";
+    
     // ------------ public data ------------
     /** Location of upper-left corner, in pixels. */
     public Point loc;
@@ -31,6 +36,10 @@ public class Entity implements JSONable {
     
     /** Shape of the outline (or indication of its absence). */
     public EntityShape shape;
+    
+    /** Name of fill color.  For the moment, this must be one of
+      * a fixed set, but I plan on making it customizable. */
+    public String fillColor = defaultFillColor;
     
     /** Name/title of the entity. */
     public String name;
@@ -81,12 +90,18 @@ public class Entity implements JSONable {
             if (this.shapeParams != null) {
                 o.put("shapeParams", new JSONArray(this.shapeParams));
             }
+            if (this.fillColor.equals(defaultFillColor)) {
+                // Omit it to save space.
+            }
+            else {
+                o.put("fillColor", this.fillColor);
+            }
         }
         catch (JSONException e) { assert(false); }
         return o;
     }
     
-    public Entity(JSONObject o) throws JSONException
+    public Entity(JSONObject o, int ver) throws JSONException
     {
         this.loc = AWTJSONUtil.pointFromJSON(o.getJSONObject("loc"));
         this.size = AWTJSONUtil.dimensionFromJSON(o.getJSONObject("size"));
@@ -103,6 +118,10 @@ public class Entity implements JSONable {
         }
         else {
             this.shapeParams = null;
+        }
+        
+        if (ver >= 5) {
+            this.fillColor = o.optString("fillColor", defaultFillColor);
         }
     }
     
@@ -170,6 +189,7 @@ public class Entity implements JSONable {
             return this.loc.equals(e.loc) &&
                    this.size.equals(e.size) &&
                    this.shape.equals(e.shape) &&
+                   this.fillColor.equals(e.fillColor) &&
                    this.name.equals(e.name) &&
                    this.attributes.equals(e.attributes) &&
                    Arrays.equals(this.shapeParams, e.shapeParams);
@@ -184,6 +204,7 @@ public class Entity implements JSONable {
         h = h*31 + this.loc.hashCode();
         h = h*31 + this.size.hashCode();
         h = h*31 + this.shape.hashCode();
+        h = h*31 + this.fillColor.hashCode();
         h = h*31 + this.name.hashCode();
         h = h*31 + this.attributes.hashCode();
         h = h*31 + Arrays.hashCode(this.shapeParams);

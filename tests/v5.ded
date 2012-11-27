@@ -95,19 +95,18 @@
     {
       "attributes": "",
       "loc": {
-        "x": 660,
+        "x": 670,
         "y": 485
       },
-      "name": "lowerright",
+      "name": "lowerleft",
       "shape": "ES_RECTANGLE",
       "size": {
         "h": 20,
-        "w": 65
+        "w": 55
       }
     },
     {
       "attributes": "",
-      "fillColor": "Orange",
       "loc": {
         "x": 30,
         "y": 245
@@ -168,7 +167,6 @@
     },
     {
       "attributes": "",
-      "fillColor": "Green",
       "loc": {
         "x": 25,
         "y": 280
@@ -249,12 +247,12 @@
     },
     {
       "attributes": "",
-      "fillColor": "Red",
+      "fillColor": "Rust",
       "loc": {
         "x": 440,
-        "y": 405
+        "y": 285
       },
-      "name": "Red",
+      "name": "Rust",
       "shape": "ES_RECTANGLE",
       "size": {
         "h": 20,
@@ -291,12 +289,12 @@
     },
     {
       "attributes": "",
-      "fillColor": "Sky Blue",
+      "fillColor": "Cyan",
       "loc": {
         "x": 440,
         "y": 345
       },
-      "name": "Sky Blue",
+      "name": "Cyan",
       "shape": "ES_RECTANGLE",
       "size": {
         "h": 20,
@@ -311,34 +309,6 @@
         "y": 365
       },
       "name": "Purple",
-      "shape": "ES_RECTANGLE",
-      "size": {
-        "h": 20,
-        "w": 65
-      }
-    },
-    {
-      "attributes": "",
-      "fillColor": "Pink",
-      "loc": {
-        "x": 440,
-        "y": 385
-      },
-      "name": "Pink",
-      "shape": "ES_RECTANGLE",
-      "size": {
-        "h": 20,
-        "w": 65
-      }
-    },
-    {
-      "attributes": "",
-      "fillColor": "Orange",
-      "loc": {
-        "x": 440,
-        "y": 285
-      },
-      "name": "Orange",
       "shape": "ES_RECTANGLE",
       "size": {
         "h": 20,

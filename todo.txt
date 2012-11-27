@@ -2,11 +2,12 @@ TODOs for Diagram Editor
 ------------------------
 
 Small:
+- add right-click menu for entities that allows picking
+  shape and color and works when multiple are selected
 - copy+paste for sets of selected entities
 - entity grouping
 - better self-loop rendering
 - two or zero arrowheads for relations
-- choose colors for entities and relations
 - choose relation line thickness
 - dashed lines for relations
 - specify initial size (etc.?) for new relations

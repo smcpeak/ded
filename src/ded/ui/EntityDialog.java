@@ -8,6 +8,7 @@ import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.Vector;
 
 import javax.swing.Box;
 import javax.swing.JComboBox;
@@ -19,11 +20,14 @@ import javax.swing.JTextField;
 
 import util.swing.ModalDialog;
 
+import ded.model.Diagram;
 import ded.model.Entity;
 import ded.model.EntityShape;
 
 /** Dialog box to edit an Entity. */
-public class EntityDialog extends ModalDialog implements ItemListener {
+public class EntityDialog extends ModalDialog 
+    implements ItemListener 
+{
     private static final long serialVersionUID = 1455207901388264571L;
 
     // -------------- private data --------------
@@ -34,12 +38,13 @@ public class EntityDialog extends ModalDialog implements ItemListener {
     private JTextField nameText;
     private JTextArea attributeText;
     private JComboBox shapeChooser;
+    private JComboBox fillColorChooser;
     private JTextField xText, yText, wText, hText;
     private JLabel paramsLabel;
     private JTextField pText, qText;
     
     // -------------- methods ---------------
-    public EntityDialog(Component documentParent, Entity entity)
+    public EntityDialog(Component documentParent, Diagram diagram, Entity entity)
     {
         super(documentParent, "Edit Entity");
         
@@ -82,7 +87,7 @@ public class EntityDialog extends ModalDialog implements ItemListener {
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
         }
 
-        // Shape
+        // shape
         {
             this.shapeChooser = ModalDialog.makeEnumChooser(
                 vb,
@@ -91,6 +96,32 @@ public class EntityDialog extends ModalDialog implements ItemListener {
                 EntityShape.class,
                 this.entity.shape);
             this.shapeChooser.addItemListener(this);
+            vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+        }
+        
+        // fill color
+        {
+            Vector<String> colors = new Vector<String>();
+            
+            // Defensive: If the current entity color is not in the
+            // diagram colors, add it to the vector so that it is
+            // in the dropdown.
+            if (!diagram.namedColors.containsKey(this.entity.fillColor)) {
+                colors.add(this.entity.fillColor);
+            }
+
+            // Add the diagram colors.
+            for (String c : diagram.namedColors.keySet()) {
+                colors.add(c);
+            }
+            
+            this.fillColorChooser = ModalDialog.makeVectorChooser(
+                vb,
+                "Fill color:",
+                'f',
+                colors,
+                this.entity.fillColor);
+            
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
         }
         
@@ -142,7 +173,7 @@ public class EntityDialog extends ModalDialog implements ItemListener {
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
             ModalDialog.disallowVertStretch(hb);
         }
-
+        
         this.updateControls();
         this.finishBuildingDialog(vb);
     }
@@ -151,7 +182,11 @@ public class EntityDialog extends ModalDialog implements ItemListener {
     @Override
     public void okPressed()
     {
-        // Parse/validate all the integers first.
+        // Parse/validate all the fields first, including casting
+        // objects from JComboBox to their expected type, so that
+        // if there is a problem, we will bail before actually
+        // modifying this.entity;
+
         int x, y, w, h, p, q;
         try {
             x = Integer.valueOf(this.xText.getText());
@@ -177,11 +212,14 @@ public class EntityDialog extends ModalDialog implements ItemListener {
                 JOptionPane.ERROR_MESSAGE);
             return;
         }
+
+        String fillColor = (String)this.fillColorChooser.getSelectedItem();
         
         // Update the entity.
         this.entity.name = this.nameText.getText();
         this.entity.attributes = this.attributeText.getText();
         this.entity.shape = shape;
+        this.entity.fillColor = fillColor;
         this.entity.loc.x = x;
         this.entity.loc.y = y;
         this.entity.size.width = w;
@@ -231,9 +269,9 @@ public class EntityDialog extends ModalDialog implements ItemListener {
     /** Show the edit dialog for Entity, waiting until the user closes the dialog
       * before returning.  If the user presses OK, 'entity' will be updated and
       * true returned.  Otherwise, 'entity' is not modified, and false is returned. */
-    public static boolean exec(Component documentParent, Entity entity)
+    public static boolean exec(Component documentParent, Diagram diagram, Entity entity)
     {
-        EntityDialog dialog = new EntityDialog(documentParent, entity);
+        EntityDialog dialog = new EntityDialog(documentParent, diagram, entity);
         return dialog.exec();
     }
 }

@@ -3,6 +3,7 @@
 
 package ded.model;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -15,6 +16,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,8 +44,11 @@ public class Diagram implements JSONable {
       * adding new enumerators to existing enumerations; although
       * the serialization code does not literally change, its
       * behavior does, because it then reads and writes a new
-      * string value for that enumerator. */
-    public static final int currentFileVersion = 4;
+      * string value for that enumerator.  Even adding a new field
+      * should include a bump--even though the old code might be
+      * able to read the file without choking, the semantics would
+      * not be preserved. */
+    public static final int currentFileVersion = 5;
     
     // ---------- public data ------------
     /** Size of window to display diagram.  Some elements might not fit
@@ -69,6 +74,9 @@ public class Diagram implements JSONable {
     /** Relations. */
     public ArrayList<Relation> relations;
     
+    /** Map from color names to Colors. */
+    public LinkedHashMap<String, Color> namedColors;
+    
     // ----------- public methods -----------
     public Diagram()
     {
@@ -77,8 +85,33 @@ public class Diagram implements JSONable {
         this.entities = new ArrayList<Entity>();
         this.inheritances = new ArrayList<Inheritance>();
         this.relations = new ArrayList<Relation>();
+        this.namedColors = makeDefaultColors();
     }
 
+    public static LinkedHashMap<String, Color> makeDefaultColors()
+    {
+        LinkedHashMap<String, Color> m = new LinkedHashMap<String, Color>();
+
+        // These colors are non-standard.  I chose them manually,
+        // based on factors like readability, garishness and
+        // ability to differentiate from each other.  One of them
+        // is the same as the selection color, which introduces
+        // some ambiguity, but it is a really nice color so I do
+        // not want to lose it in either place.
+        m.put("Gray", new Color(192, 192, 192));
+        m.put("White", Color.WHITE);
+        m.put("Light Gray", new Color(224, 224, 224));
+        m.put("Orange", new Color(236, 125, 70));
+        m.put("Yellow", new Color(234, 236, 52));
+        m.put("Green", new Color(76, 222, 76));
+        m.put("Sky Blue", new Color(135, 193, 255));  // Selection color.
+        m.put("Purple", new Color(161, 140, 237));
+        m.put("Pink", new Color(227, 120, 236));
+        m.put("Red", new Color(248, 50, 50));         // Very intense...
+        
+        return m;
+    }
+    
     public void selfCheck()
     {
         for (Relation r : this.relations) {
@@ -166,6 +199,7 @@ public class Diagram implements JSONable {
         }
         
         this.windowSize = AWTJSONUtil.dimensionFromJSON(o.getJSONObject("windowSize"));
+        this.namedColors = makeDefaultColors();
 
         if (ver >= 3) {
             this.drawFileName = o.getBoolean("drawFileName");
@@ -186,7 +220,7 @@ public class Diagram implements JSONable {
         // Entities.
         JSONArray a = o.getJSONArray("entities");
         for (int i=0; i < a.length(); i++) {
-            Entity e = new Entity(a.getJSONObject(i));
+            Entity e = new Entity(a.getJSONObject(i), ver);
             this.entities.add(e);
             integerToEntity.add(e);
         }
@@ -328,6 +362,7 @@ public class Diagram implements JSONable {
         this.entities = new ArrayList<Entity>();
         this.inheritances = new ArrayList<Inheritance>();
         this.relations = new ArrayList<Relation>();
+        this.namedColors = makeDefaultColors();
         
         if (flat.version >= 5) {
             this.windowSize = flat.readDimension();
@@ -415,7 +450,10 @@ public class Diagram implements JSONable {
             Diagram d = (Diagram)obj;
             return this.windowSize.equals(d.windowSize) &&
                    this.drawFileName == d.drawFileName &&
-                   this.entities.equals(d.entities);
+                   this.entities.equals(d.entities) &&
+                   this.inheritances.equals(d.inheritances) &&
+                   this.relations.equals(d.relations) &&
+                   this.namedColors.equals(d.namedColors);
         }
         return false;
     }
@@ -427,6 +465,9 @@ public class Diagram implements JSONable {
         h = h*31 + this.windowSize.hashCode();
         h = h*31 + (this.drawFileName? 1 : 0);
         h = h*31 + Util.collectionHashCode(this.entities);
+        h = h*31 + Util.collectionHashCode(this.inheritances);
+        h = h*31 + Util.collectionHashCode(this.relations);
+        h = h*31 + this.namedColors.hashCode();
         return h;
     }
     

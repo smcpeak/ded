@@ -23,7 +23,7 @@ import ded.model.EntityShape;
 /** Controller for Entity. */
 public class EntityController extends Controller {
     // ----------- static data -------------
-    public static final Color entityFillColor = new Color(192, 192, 192);
+    public static final Color defaultEntityFillColor = new Color(192, 192, 192);
     public static final Color entityOutlineColor = new Color(0, 0, 0);
     
     public static final int entityNameHeight = 20;
@@ -95,11 +95,11 @@ public class EntityController extends Controller {
     }
     
     @Override
-    public void paint(Graphics g0)
+    public void paint(Diagram diagram, Graphics g0)
     {
         Graphics g = g0.create();
         
-        super.paint(g);
+        super.paint(diagram, g);
         
         // Get bounding rectangle.
         Rectangle r = this.entity.getRect();
@@ -107,7 +107,7 @@ public class EntityController extends Controller {
         // If cuboid, draw visible side faces beside the front face,
         // outside 'r'.
         if (this.entity.shape == EntityShape.ES_CUBOID) {
-            this.drawCuboidSides(g, r);
+            this.drawCuboidSides(diagram, g, r);
         }
         
         // All further options are clipped to the rectangle.
@@ -124,7 +124,7 @@ public class EntityController extends Controller {
                 if (!this.isSelected()) {
                     // Fill with the normal entity color (selected controllers
                     // get filled with selection color by super.paint).
-                    g.setColor(entityFillColor);
+                    g.setColor(this.getFillColor(diagram));
                     g.fillRect(r.x, r.y, r.width-1, r.height-1);
                     
                 }
@@ -135,7 +135,7 @@ public class EntityController extends Controller {
                 
             case ES_ELLIPSE:
                 if (!this.isSelected()) {
-                    g.setColor(entityFillColor);
+                    g.setColor(this.getFillColor(diagram));
                     g.fillOval(r.x, r.y, r.width-1, r.height-1);
                     
                 }
@@ -145,7 +145,7 @@ public class EntityController extends Controller {
                 break;
                 
             case ES_CYLINDER:
-                this.drawCylinder(g, r);
+                this.drawCylinder(diagram, g, r);
                 break;
         }
         
@@ -183,8 +183,21 @@ public class EntityController extends Controller {
         }
     }
     
+    /** Get the color to use to fill this Entity. */
+    public Color getFillColor(Diagram diagram)
+    {
+        Color c = diagram.namedColors.get(this.entity.fillColor);
+        if (c != null) {
+            return c;
+        }
+        else {
+            // Fall back on default if color is not recognized.
+            return defaultEntityFillColor;
+        }
+    }
+    
     /** Draw the part of a cuboid outside the main rectangle 'r'. */
-    public void drawCuboidSides(Graphics g, Rectangle r)
+    public void drawCuboidSides(Diagram diagram, Graphics g, Rectangle r)
     {
         int[] params = this.entity.shapeParams;
         if (params == null || params.length < 2) {
@@ -225,7 +238,7 @@ public class EntityController extends Controller {
         p.addPoint(r.x,            r.y + h);       // A
         
         // Fill it and draw its edges.
-        g.setColor(entityFillColor);
+        g.setColor(this.getFillColor(diagram));
         g.fillPolygon(p);
         g.setColor(entityOutlineColor);
         g.drawPolygon(p);
@@ -238,9 +251,9 @@ public class EntityController extends Controller {
     }
 
     /** Draw the cylinder shape into 'r'. */
-    public void drawCylinder(Graphics g, Rectangle r)
+    public void drawCylinder(Diagram diagram, Graphics g, Rectangle r)
     {
-        g.setColor(entityFillColor);
+        g.setColor(this.getFillColor(diagram));
         
         // Fill upper ellipse.  I do not quite understand why I
         // have to subtract one from the width and height here,
@@ -366,7 +379,9 @@ public class EntityController extends Controller {
     @Override
     public void edit()
     {
-        if (EntityDialog.exec(this.diagramController, this.entity)) {
+        if (EntityDialog.exec(this.diagramController,
+                              this.diagramController.diagram, 
+                              this.entity)) {
             this.diagramController.diagramChanged();
         }
     }

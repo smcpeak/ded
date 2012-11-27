@@ -47,8 +47,10 @@ public abstract class Controller {
       * This is used as a reference point for drag operations. */
     public abstract Point getLoc();
     
-    /** Draw a representation of the controller and the thing it is controlling. */
-    public void paint(Graphics g)
+    /** Draw a representation of the controller and the thing it is
+      * controlling.  'diagram' is the containing diagram, which may be
+      * used to access diagram-global settings. */
+    public void paint(Diagram diagram, Graphics g)
     {
         if (this.isSelected()) {
             this.paintBounds(g, Controller.selectedColor);
