@@ -155,7 +155,7 @@ public class EntityDialog extends ModalDialog
         // shapeParams
         {
             
-            int p=5, q=5;
+            int p=5, q=10;
             int[] params = this.entity.shapeParams;
             if (params != null) {
                 if (params.length >= 1) {
