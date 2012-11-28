@@ -304,8 +304,14 @@ public class RelationController extends Controller {
             // because if I use the integer API, the arrowhead has a
             // very unaesthetic asymmetry.  (That was not the case with Qt.)
             
+            // Endpoint.  Get a small offset in the '-body' direction to fix
+            // the extra pixel, then add the actual end.  The offset has
+            // been tuned to make arrows that look reasonable both alone
+            // and in contact with an entity.
+            Point2D.Double endFloat = GeomUtil.scale2DVectorTo(body, -0.7);
+            endFloat = GeomUtil.add(endFloat, GeomUtil.toPoint2D_Double(end));
+            
             // Vertices of the arrowhead that are not on the main line.
-            Point2D.Double endFloat = GeomUtil.toPoint2D_Double(end);
             Point2D.Double upPoint = GeomUtil.add(endFloat, up);
             Point2D.Double downPoint = GeomUtil.add(endFloat, down);
 

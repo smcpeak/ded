@@ -1,9 +1,6 @@
 TODOs for Diagram Editor
 ------------------------
 
-Bugs:
-- arrows at 30-40 degrees have awkward extra pixel
-
 Small:
 - omit entity name if empty; just show attributes starting at top
 - default cuboid depth should be 10
