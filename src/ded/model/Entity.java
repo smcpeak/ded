@@ -23,6 +23,9 @@ import util.json.JSONable;
 /** An ER entity, represented as a box with a label and text contents. */
 public class Entity implements JSONable {
     // ------------ constants -------------
+    /** Default shape. */
+    public static final EntityShape defaultShape = EntityShape.ES_RECTANGLE;
+    
     /** Default entity fill color.  Assumed when no color is
       * specified in the input file. */
     public static final String defaultFillColor = "Gray";
@@ -35,30 +38,26 @@ public class Entity implements JSONable {
     public Dimension size;
     
     /** Shape of the outline (or indication of its absence). */
-    public EntityShape shape;
+    public EntityShape shape = defaultShape;
     
     /** Name of fill color.  For the moment, this must be one of
       * a fixed set, but I plan on making it customizable. */
     public String fillColor = defaultFillColor;
     
     /** Name/title of the entity. */
-    public String name;
+    public String name = "";
     
     /** Attributes as free text with newlines. */
-    public String attributes;
+    public String attributes = "";
     
     /** Additional shape-specific geometry parameters.  May be null. */
-    public int[] shapeParams;
+    public int[] shapeParams = null;
     
     // ------------ public methods ------------
     public Entity()
     {
         this.loc = new Point(0,0);
         this.size = new Dimension(100, 50);
-        this.shape = EntityShape.ES_RECTANGLE;
-        this.name = "";
-        this.attributes = "";
-        this.shapeParams = null;
     }
 
     /** Return the primary bounding rectangle for this entity, used for
@@ -84,16 +83,24 @@ public class Entity implements JSONable {
         try {
             o.put("loc", AWTJSONUtil.pointToJSON(this.loc));
             o.put("size", AWTJSONUtil.dimensionToJSON(this.size));
-            o.put("shape", this.shape.name());
-            o.put("name", this.name);
-            o.put("attributes", this.attributes);
+            
+            if (this.shape != defaultShape) {
+                o.put("shape", this.shape.name());
+            }
+            
+            if (!this.name.isEmpty()) {
+                o.put("name", this.name);
+            }
+            
+            if (!this.attributes.isEmpty()) {
+                o.put("attributes", this.attributes);
+            }
+            
             if (this.shapeParams != null) {
                 o.put("shapeParams", new JSONArray(this.shapeParams));
             }
-            if (this.fillColor.equals(defaultFillColor)) {
-                // Omit it to save space.
-            }
-            else {
+            
+            if (!this.fillColor.equals(defaultFillColor)) {
                 o.put("fillColor", this.fillColor);
             }
         }
@@ -105,9 +112,13 @@ public class Entity implements JSONable {
     {
         this.loc = AWTJSONUtil.pointFromJSON(o.getJSONObject("loc"));
         this.size = AWTJSONUtil.dimensionFromJSON(o.getJSONObject("size"));
-        this.shape = EntityShape.valueOf(EntityShape.class, o.getString("shape"));
-        this.name = o.getString("name");
-        this.attributes = o.getString("attributes");
+        
+        if (o.has("shape")) {
+            this.shape = EntityShape.valueOf(EntityShape.class, o.getString("shape"));
+        }
+        
+        this.name = o.optString("name", "");
+        this.attributes = o.optString("attributes", "");
         
         JSONArray params = o.optJSONArray("shapeParams");
         if (params != null) {
@@ -115,9 +126,6 @@ public class Entity implements JSONable {
             for (int i=0; i < params.length(); i++) {
                 this.shapeParams[i] = params.getInt(i);
             }
-        }
-        else {
-            this.shapeParams = null;
         }
         
         if (ver >= 5) {
@@ -152,11 +160,6 @@ public class Entity implements JSONable {
     public Entity(FlattenInputStream flat)
         throws XParse, IOException
     {
-        // Defaults in case the file does not specify.
-        this.shape = EntityShape.ES_RECTANGLE;
-        this.attributes = "";
-        this.shapeParams = null;
-        
         this.loc = flat.readPoint();
         this.size = flat.readDimension();
         this.name = flat.readString();

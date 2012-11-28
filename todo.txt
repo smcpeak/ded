@@ -4,7 +4,6 @@ TODOs for Diagram Editor
 Small:
 - omit entity name if empty; just show attributes starting at top
 - default cuboid depth should be 10
-- omit writing controlPts[], label, owning, routingAlg when at default values
 - add right-click menu for entities that allows picking
   shape and color and works when multiple are selected
 - copy+paste for sets of selected entities

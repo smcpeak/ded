@@ -19,32 +19,33 @@ import util.awt.AWTJSONUtil;
 
 /** Arrow, sometimes between Entities (boxes). */
 public class Relation {
+    // ------------------- constants --------------------------
+    /** Default routing algorithm.  Used to save space in serialized form. */
+    public static final RoutingAlgorithm defaultRoutingAlgorithm =
+        RoutingAlgorithm.RA_MANHATTAN_HORIZ;
+    
     // ------------------ instance data -----------------------
     /** Endpoints. */
     public RelationEndpoint start, end;
     
     /** Intermediate control points, if any. */
-    public ArrayList<Point> controlPts;
+    public ArrayList<Point> controlPts = new ArrayList<Point>();
     
     /** Routing algorithm for displaying relation onscreen. */
-    public RoutingAlgorithm routingAlg;
+    public RoutingAlgorithm routingAlg = defaultRoutingAlgorithm;
     
     /** Text label for the relation. */
-    public String label;
+    public String label = "";
     
     /** True for an "owning" relation, drawn with the double arrowhead;
       * false for an ordinary or "shared" relation.  Initially false. */
-    public boolean owning;
+    public boolean owning = false;
     
     // -------------------- methods ----------------------
     public Relation(RelationEndpoint start, RelationEndpoint end)
     {
         this.start = start;
         this.end = end;
-        this.controlPts = new ArrayList<Point>();
-        this.routingAlg = RoutingAlgorithm.RA_MANHATTAN_HORIZ;
-        this.label = "";
-        this.owning = false;
     }
     
     /** True if either endpoint is referentially equal to 'e'. */
@@ -108,15 +109,25 @@ public class Relation {
             o.put("start", this.start.toJSON(entityToInteger, inheritanceToInteger));
             o.put("end", this.end.toJSON(entityToInteger, inheritanceToInteger));
             
-            JSONArray pts = new JSONArray();
-            for (Point p : this.controlPts) {
-                pts.put(AWTJSONUtil.pointToJSON(p));
+            if (!this.controlPts.isEmpty()) {
+                JSONArray pts = new JSONArray();
+                for (Point p : this.controlPts) {
+                    pts.put(AWTJSONUtil.pointToJSON(p));
+                }
+                o.put("controlPts", pts);
             }
-            o.put("controlPts", pts);
             
-            o.put("routingAlg", this.routingAlg.name());
-            o.put("label", this.label);
-            o.put("owning", this.owning);
+            if (this.routingAlg != defaultRoutingAlgorithm) {
+                o.put("routingAlg", this.routingAlg.name());
+            }
+            
+            if (!this.label.isEmpty()) {
+                o.put("label", this.label);
+            }
+            
+            if (this.owning) {
+                o.put("owning", this.owning);
+            }
         }
         catch (JSONException e) { assert(false); }
         return o;
@@ -132,17 +143,21 @@ public class Relation {
                                           integerToEntity, integerToInheritance);
         this.end = new RelationEndpoint(o.getJSONObject("end"), 
                                         integerToEntity, integerToInheritance);
-        
-        this.controlPts = new ArrayList<Point>();
-        JSONArray pts = o.getJSONArray("controlPts");
-        for (int i=0; i < pts.length(); i++) {
-            this.controlPts.add(AWTJSONUtil.pointFromJSON(pts.getJSONObject(i)));
+
+        JSONArray pts = o.optJSONArray("controlPts");
+        if (pts != null) {
+            for (int i=0; i < pts.length(); i++) {
+                this.controlPts.add(AWTJSONUtil.pointFromJSON(pts.getJSONObject(i)));
+            }
         }
         
-        this.routingAlg = RoutingAlgorithm.valueOf(RoutingAlgorithm.class,
-                                                   o.getString("routingAlg"));
-        this.label = o.getString("label");
-        this.owning = o.getBoolean("owning");
+        if (o.has("routingAlg")) {
+            this.routingAlg = RoutingAlgorithm.valueOf(RoutingAlgorithm.class,
+                                                       o.getString("routingAlg"));
+        }
+        
+        this.label = o.optString("label", "");
+        this.owning = o.optBoolean("owning", false);
     }
     
     // ------------------ legacy serialization -----------------
@@ -150,11 +165,6 @@ public class Relation {
     public Relation(FlattenInputStream flat)
         throws XParse, IOException
     {
-        // Defaults/initials, related to if file does not specify.
-        this.routingAlg = RoutingAlgorithm.RA_MANHATTAN_HORIZ;
-        this.controlPts = new ArrayList<Point>();
-        this.owning = false;
-        
         this.start = new RelationEndpoint(flat);
         this.end = new RelationEndpoint(flat);
         this.label = flat.readString();
