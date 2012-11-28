@@ -8,13 +8,18 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
+
 import ded.model.Diagram;
 
+import util.swing.MenuAction;
 import util.swing.SwingUtil;
 
 
@@ -139,8 +144,45 @@ public abstract class Controller {
         }
     }
     
-    // Input handlers.
-    public void mousePressed(MouseEvent e) {}
+    /** Show the right click popup menu. */
+    @SuppressWarnings("serial")
+    public void rightClickMenu(final MouseEvent ev)
+    {
+        final Controller ths = this;
+        
+        JPopupMenu menu = new JPopupMenu();
+        
+        menu.add(new MenuAction("Edit...", KeyEvent.VK_ENTER) {
+            public void actionPerformed(ActionEvent e) {
+                ths.edit();
+            }
+        });
+        
+        this.addToRightClickMenu(menu, ev);
+        
+        menu.show(this.diagramController, ev.getPoint().x, ev.getPoint().y);
+    }
+    
+    /** Add more items to the right click menu if desired.  'ev' is the
+      * click that opened the menu, which can be useful if a menu item
+      * will do something with the clicked location. */
+    protected void addToRightClickMenu(JPopupMenu menu, MouseEvent ev)
+    {}
+    
+    /** Respond to a mouse press on the controller.  The default action
+      * opens the right click menu on right click. */
+    public void mousePressed(MouseEvent e) 
+    {
+        if (SwingUtilities.isRightMouseButton(e)) {
+            // If this controller is not selected, it should become
+            // the only selection.
+            if (!this.isSelected()) {
+                this.diagramController.selectOnly(this);
+            }
+            
+            this.rightClickMenu(e);
+        }
+    }
     
     /** Handle a key pressed while the controller is selected.  If it
       * returns true, the controller is treated as having processed

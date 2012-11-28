@@ -8,10 +8,16 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.swing.AbstractAction;
+import javax.swing.JMenu;
+import javax.swing.JPopupMenu;
 
 import util.awt.GeomUtil;
 import util.swing.SwingUtil;
@@ -250,10 +256,8 @@ public class EntityController extends Controller {
         g.drawPolygon(p);
         
         // Draw line CF.
-        p = new Polygon();
         g.drawLine(r.x     - left, r.y     - up,   // C
                    r.x,            r.y);           // F
-        g.drawPolygon(p);
     }
 
     /** Draw the cylinder shape into 'r'. */
@@ -316,7 +320,37 @@ public class EntityController extends Controller {
     @Override
     public void mousePressed(MouseEvent e)
     {
+        super.mousePressed(e);
         this.mouseSelect(e, true /*wantDrag*/);
+    }
+
+    @SuppressWarnings("serial")
+    @Override
+    protected void addToRightClickMenu(JPopupMenu menu, MouseEvent ev)
+    {
+        final EntityController ths = this;
+        
+        JMenu colorMenu = new JMenu("Set fill color");
+        colorMenu.setMnemonic(KeyEvent.VK_C);
+        for (final String color : this.diagramController.diagram.namedColors.keySet()) {
+            colorMenu.add(new AbstractAction(color) {
+                public void actionPerformed(ActionEvent e) {
+                    ths.diagramController.setSelectedEntitiesFillColor(color);
+                }
+            });
+        }
+        menu.add(colorMenu);
+        
+        JMenu shapeMenu = new JMenu("Set shape");
+        shapeMenu.setMnemonic(KeyEvent.VK_S);
+        for (final EntityShape shape : EntityShape.allValues()) {
+            shapeMenu.add(new AbstractAction(shape.toString()) {
+                public void actionPerformed(ActionEvent e) {
+                    ths.diagramController.setSelectedEntitiesShape(shape);
+                }
+            });
+        }
+        menu.add(shapeMenu);
     }
     
     /** Create a new entity at location 'p' in 'dc'.  This corresponds to
@@ -410,12 +444,10 @@ public class EntityController extends Controller {
                     RelationController rc = (RelationController)c;
                     return rc.relation.involvesEntity(thisEntity);
                 }
-                /*
                 if (c instanceof InheritanceController) {
                     InheritanceController ic = (InheritanceController)c;
                     return ic.inheritance.parent == thisEntity;
                 }
-                */
                 return false;
             }
         });

@@ -225,6 +225,9 @@ public class InheritanceController extends Controller {
     @Override
     public void mousePressed(MouseEvent ev)
     {
+        // No useful right-click menu right now, so not calling
+        // super.mousePressed.
+        
         this.mouseSelect(ev, true /*wantDrag*/);
     }
     
@@ -286,7 +289,7 @@ public class InheritanceController extends Controller {
                     return false;
             }
             
-            this.diagramController.repaint();
+            this.diagramController.diagramChanged();
             return true;
         }
         

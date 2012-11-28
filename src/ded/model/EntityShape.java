@@ -3,6 +3,8 @@
 
 package ded.model;
 
+import java.util.EnumSet;
+
 /** Set of possible entity shapes. */
 public enum EntityShape {
     ES_NO_SHAPE                        // no outline
@@ -28,6 +30,12 @@ public enum EntityShape {
         this.numParams = n;
     }
 
+    /** Set of all values. */
+    public static EnumSet<EntityShape> allValues()
+    {
+        return EnumSet.allOf(EntityShape.class);
+    }
+    
     /** This is what JComboBox uses when it draws the items. */
     @Override
     public String toString()

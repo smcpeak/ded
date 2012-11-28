@@ -354,9 +354,38 @@
         "h": 50,
         "w": 60
       }
+    },
+    {
+      "loc": {
+        "x": 520,
+        "y": 250
+      },
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 55,
+        "y": 0
+      },
+      "name": "(this is my standard diagram for testing stuff)",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 240
+      }
     }
   ],
-  "inheritances": [],
+  "inheritances": [{
+    "open": false,
+    "parentRef": 2,
+    "pt": {
+      "x": 555,
+      "y": 240
+    }
+  }],
   "relations": [
     {
       "end": {"entityRef": 0},
@@ -720,6 +749,10 @@
         "x": 145,
         "y": 475
       }}
+    },
+    {
+      "end": {"inheritanceRef": 0},
+      "start": {"entityRef": 29}
     }
   ],
   "type": "Diagram Editor Diagram",

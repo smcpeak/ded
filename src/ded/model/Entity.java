@@ -75,6 +75,30 @@ public class Entity implements JSONable {
                          this.loc.y + this.size.height/2);
     }
     
+    /** Set 'fillColor'.  For the moment, that is all. */
+    public void setFillColor(String colorName)
+    {
+        this.fillColor = colorName;
+    }
+    
+    /** Set 'shape'.  Adjust 'shapeParams' to match if needed. */
+    public void setShape(EntityShape shape)
+    {
+        if (this.shape != shape) {
+            this.shape = shape;
+            
+            if (shape.numParams == 0) {
+                this.shapeParams = null;
+            }
+            else {
+                this.shapeParams = new int[shape.numParams];
+                for (int i=0; i < shape.numParams; i++) {
+                    this.shapeParams[i] = 5 + 5*i;
+                }
+            }
+        }
+    }
+    
     // ------------ serialization ------------
     @Override
     public JSONObject toJSON()

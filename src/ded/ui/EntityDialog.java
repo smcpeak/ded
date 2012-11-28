@@ -218,8 +218,8 @@ public class EntityDialog extends ModalDialog
         // Update the entity.
         this.entity.name = this.nameText.getText();
         this.entity.attributes = this.attributeText.getText();
-        this.entity.shape = shape;
-        this.entity.fillColor = fillColor;
+        this.entity.setShape(shape);      // Sets 'shapeParams' too.
+        this.entity.setFillColor(fillColor);
         this.entity.loc.x = x;
         this.entity.loc.y = y;
         this.entity.size.width = w;
@@ -227,10 +227,8 @@ public class EntityDialog extends ModalDialog
         
         // Not completely general at this time.
         if (this.entity.shape.numParams == 2) {
-            this.entity.shapeParams = new int[]{ p, q };
-        }
-        else {
-            this.entity.shapeParams = null;
+            this.entity.shapeParams[0] = p;
+            this.entity.shapeParams[1] = q;
         }
 
         // Close dialog, signaling that a change was made.

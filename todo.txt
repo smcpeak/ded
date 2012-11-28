@@ -2,8 +2,6 @@ TODOs for Diagram Editor
 ------------------------
 
 Small:
-- add right-click menu for entities that allows picking
-  shape and color and works when multiple are selected
 - copy+paste for sets of selected entities
 - entity grouping
 - better self-loop rendering

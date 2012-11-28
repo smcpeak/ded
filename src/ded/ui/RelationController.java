@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
 
 import util.IntRange;
 import util.Util;
@@ -746,26 +745,22 @@ public class RelationController extends Controller {
         this.diagramController.diagramChanged();
     }
     
-    @SuppressWarnings("serial")
     @Override
     public void mousePressed(final MouseEvent ev)
     {
-        if (SwingUtilities.isRightMouseButton(ev)) {
-            final RelationController thisController = this;
-            
-            JPopupMenu menu = new JPopupMenu("Relation");
-            
-            menu.add(new MenuAction("Insert control point", KeyEvent.VK_I) {
-                public void actionPerformed(ActionEvent e) {
-                    thisController.insertControlPointAt(ev.getPoint());
-                }
-            });
-            
-            menu.show(this.diagramController, ev.getPoint().x, ev.getPoint().y);
-            return;
-        }
-        
+        super.mousePressed(ev);
         this.mouseSelect(ev, false /*wantDrag*/);
+    }
+
+    @SuppressWarnings("serial")
+    @Override
+    protected void addToRightClickMenu(JPopupMenu menu, final MouseEvent ev)
+    {
+        menu.add(new MenuAction("Insert control point", KeyEvent.VK_I) {
+            public void actionPerformed(ActionEvent e) {
+                RelationController.this.insertControlPointAt(ev.getPoint());
+            }
+        });
     }
     
     @Override

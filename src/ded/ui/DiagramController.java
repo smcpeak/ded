@@ -36,6 +36,7 @@ import util.swing.SwingUtil;
 import ded.Ded;
 import ded.model.Diagram;
 import ded.model.Entity;
+import ded.model.EntityShape;
 import ded.model.Inheritance;
 import ded.model.Relation;
 import ded.model.RelationEndpoint;
@@ -1154,6 +1155,33 @@ public class DiagramController extends JPanel
         this.repaint();
     }
 
+    /** Change the selected entities' fill colors to the named color. */
+    public void setSelectedEntitiesFillColor(String colorName)
+    {
+        // Iterate over selected entities, changing their color.
+        for (Controller c : this.controllers) {
+            if (c.isSelected() && c instanceof EntityController) {
+                EntityController ec = (EntityController)c;
+                ec.entity.setFillColor(colorName);
+            }
+        }
+        
+        this.diagramChanged();
+    }
+
+    /** Change the selected entities' shapes to the indicated shape. */
+    public void setSelectedEntitiesShape(EntityShape shape)
+    {
+        for (Controller c : this.controllers) {
+            if (c.isSelected() && c instanceof EntityController) {
+                EntityController ec = (EntityController)c;
+                ec.entity.setShape(shape);
+            }
+        }
+        
+        this.diagramChanged();
+    }
+    
     /** Show an error message dialog box with 'message'. */
     public void errorMessageBox(String message)
     {
