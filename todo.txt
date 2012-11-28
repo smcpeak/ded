@@ -2,7 +2,6 @@ TODOs for Diagram Editor
 ------------------------
 
 Bugs:
-- entity with height 20 and no shape does not have underline
 - arrows at 30-40 degrees have awkward extra pixel
 
 Small:

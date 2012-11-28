@@ -161,8 +161,8 @@ public class EntityController extends Controller {
             
             if (this.entity.shape != EntityShape.ES_CYLINDER) {
                 // Divider between name and attributes.
-                g.drawLine(nameRect.x, nameRect.y+nameRect.height,
-                           nameRect.x+nameRect.width-1, nameRect.y+nameRect.height);
+                g.drawLine(nameRect.x, nameRect.y+nameRect.height-1,
+                           nameRect.x+nameRect.width-1, nameRect.y+nameRect.height-1);
             }
             else {
                 // The lower half of the upper ellipse plays the role
