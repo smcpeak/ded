@@ -331,6 +331,29 @@
         "h": 20,
         "w": 20
       }
+    },
+    {
+      "attributes": "noname\nline2\nline3",
+      "loc": {
+        "x": 425,
+        "y": 160
+      },
+      "size": {
+        "h": 50,
+        "w": 55
+      }
+    },
+    {
+      "attributes": "noname\nnoshape\nline3\n",
+      "loc": {
+        "x": 155,
+        "y": 85
+      },
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 50,
+        "w": 60
+      }
     }
   ],
   "inheritances": [],

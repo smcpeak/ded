@@ -156,17 +156,23 @@ public class EntityController extends Controller {
         else {
             // Name.
             Rectangle nameRect = new Rectangle(r);
-            nameRect.height = entityNameHeight;
-            SwingUtil.drawCenteredText(g, GeomUtil.getCenter(nameRect), this.entity.name);
-            
-            if (this.entity.shape != EntityShape.ES_CYLINDER) {
-                // Divider between name and attributes.
-                g.drawLine(nameRect.x, nameRect.y+nameRect.height-1,
-                           nameRect.x+nameRect.width-1, nameRect.y+nameRect.height-1);
+            if (this.entity.name.isEmpty()) {
+                // Do not take up space, do not draw divider.
+                nameRect.height = 0;
             }
             else {
-                // The lower half of the upper ellipse plays the role
-                // of a divider.
+                nameRect.height = entityNameHeight;
+                SwingUtil.drawCenteredText(g, GeomUtil.getCenter(nameRect), this.entity.name);
+                
+                if (this.entity.shape != EntityShape.ES_CYLINDER) {
+                    // Divider between name and attributes.
+                    g.drawLine(nameRect.x, nameRect.y+nameRect.height-1,
+                               nameRect.x+nameRect.width-1, nameRect.y+nameRect.height-1);
+                }
+                else {
+                    // The lower half of the upper ellipse plays the role
+                    // of a divider.
+                }
             }
             
             // Attributes.

@@ -2,7 +2,6 @@ TODOs for Diagram Editor
 ------------------------
 
 Small:
-- omit entity name if empty; just show attributes starting at top
 - add right-click menu for entities that allows picking
   shape and color and works when multiple are selected
 - copy+paste for sets of selected entities
@@ -23,5 +22,6 @@ Medium:
 
 Big:
 - add entity shapes to allow mocking UIs
+- allow importing PNG to specify entity appearance
 
 EOF
