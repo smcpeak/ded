@@ -3,11 +3,13 @@
 JAVA_FILES := $(shell find src -name '*.java')
 
 all:
+	rm -rf bin
 	mkdir -p bin
 	javac -sourcepath src -d bin $(JAVA_FILES)
 	cp src/ded/ui/*.png bin/ded/ui/
 	mkdir -p bin/resources
 	cp resources/* bin/resources
+	git log -n 1 --format=format:'%h %ai%n' > bin/resources/version.txt
 	mkdir -p dist
 	cd bin && jar cfm ../dist/ded.jar ../src/MANIFEST.MF *
 

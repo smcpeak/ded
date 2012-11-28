@@ -11,9 +11,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 
@@ -28,6 +30,7 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
 import util.swing.MenuAction;
+import ded.model.Diagram;
 import ded.ui.DiagramController;
 
 /** Diagram editor. */
@@ -323,10 +326,35 @@ public class Ded extends JFrame implements WindowListener {
     
     private void showAboutBox()
     {
+        // Get the version number.
+        String version;
+        {
+            InputStream is = this.getClass().getResourceAsStream("/resources/version.txt");
+            if (is != null) {
+                try {
+                    version = new BufferedReader(new InputStreamReader(is, "UTF-8")).readLine();
+                }
+                catch (IOException e) {
+                    version = "(While retrieving version: "+e.getMessage()+")";
+                }
+                finally {
+                    try {
+                        is.close();
+                    }
+                    catch (IOException e) {/*ignore*/}
+                }
+            }
+            else {
+                version = "(No version information found.)";
+            }
+        }
+        
         JOptionPane.showMessageDialog(
             this,
             "Diagram Editor (DED)\n"+
                 "Copyright (c) 2012 Scott McPeak\n"+
+                "Program version: "+version+"\n"+
+                "Maximum file version: "+Diagram.currentFileVersion+"\n"+
                 "This software is made available under the terms of the BSD license:\n"+
                 "http://opensource.org/licenses/BSD-2-Clause",
             "About Diagram Editor",
