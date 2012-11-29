@@ -264,6 +264,7 @@ public class Ded extends JFrame implements WindowListener {
         return m;
     }
 
+    @SuppressWarnings("serial")
     private JMenu buildDiagramMenu()
     {
         JMenu m = new JMenu("Diagram");
@@ -278,6 +279,12 @@ public class Ded extends JFrame implements WindowListener {
             }
         });
         m.add(this.drawFileNameCheckbox);
+        
+        m.add(new MenuAction("Reload entity images", KeyEvent.VK_R) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.reloadEntityImages();
+            }
+        });
         
         return m;
     }

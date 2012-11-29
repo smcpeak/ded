@@ -3,6 +3,7 @@
 
 package util;
 
+import java.io.File;
 import java.util.Collection;
 
 /** Generic Java utilities. */
@@ -45,6 +46,51 @@ public class Util {
     public static boolean isSpecialDouble(double v)
     {
         return Double.isInfinite(v) || Double.isNaN(v);
+    }
+    
+    /** Return true if 'a' and 'b' are both null or are both not
+      * null and equals(). */
+    public static boolean nullableEquals(Object a, Object b)
+    {
+        if (a == null) {
+            return b == null;
+        }
+        else if (b == null) {
+            return false;
+        }
+        else {
+            return a.equals(b);
+        }
+    }
+    
+    /** Return 0 if 'o' is null, else o.hashCode(). */
+    public static int nullableHashCode(Object o)
+    {
+        if (o == null) {
+            return 0;
+        }
+        else {
+            return o.hashCode();
+        }
+    }
+
+    /** Return the current working directory as a File. */
+    public static File getWorkingDirectoryFile()
+    {
+        return new File(System.getProperty("user.dir"));
+    }
+
+    /** If 'name' is absolute, then just return it as a File.  Otherwise,
+      * interpret it as relative to 'relativeBase' and return that
+      * combination as a File. */
+    public static File getFileRelativeTo(File relativeBase, String name)
+    {
+        if (name.startsWith(File.separator)) {
+            return new File(name);
+        }
+        else {
+            return new File(relativeBase, name);
+        }
     }
 }
 

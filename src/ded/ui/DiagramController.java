@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ComponentEvent;
@@ -20,6 +21,7 @@ import java.awt.font.LineMetrics;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,6 +32,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import util.Util;
 import util.awt.GeomUtil;
 import util.swing.SwingUtil;
 
@@ -134,7 +137,7 @@ public class DiagramController extends JPanel
       * to the Controller's original getLoc(). */ 
     private Point dragOffset;
     
-    /** Most recently used file name. */
+    /** Most recently used file name, or "" if there is none. */
     private String fileName;
     
     /** Most recently used directory for loading/saving files. */
@@ -149,6 +152,10 @@ public class DiagramController extends JPanel
       * the file in that format. */
     private boolean importedFile;
     
+    /** Map from image file name to cached image.  A name can be
+      * mapped to null, meaning we failed to load the image. */
+    private HashMap<String, Image> imageCache;
+    
     // ------------- public methods ---------------
     public DiagramController(Ded dedWindow)
     {
@@ -159,9 +166,10 @@ public class DiagramController extends JPanel
         this.controllers = new ArrayList<Controller>();
         this.mode = Mode.DCM_SELECT;
         this.fileName = "";
-        this.currentFileChooserDirectory = new File(System.getProperty("user.dir"));
+        this.currentFileChooserDirectory = Util.getWorkingDirectoryFile();
         this.dirty = false;
         this.importedFile = false;
+        this.imageCache = new HashMap<String, Image>();
         
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
@@ -1198,6 +1206,54 @@ public class DiagramController extends JPanel
 
     }
 
+    /** Get an image for a given file name.  Save the result in an
+      * image cache.  Return null if it cannot be loaded. */
+    public Image getImage(String imageFileName)
+    {
+        // Consult the cache.
+        if (this.imageCache.containsKey(imageFileName)) {
+            return this.imageCache.get(imageFileName);  // Might be null.
+        }
+        
+        // What directory will we interpret a relative name as relative to?
+        File relativeBase;
+        if (this.fileName.isEmpty()) {
+            // Use current working directory.
+            relativeBase = Util.getWorkingDirectoryFile();
+        }
+        else {
+            // Use the directory containing the diagram file.
+            relativeBase = new File(this.fileName).getParentFile();
+        }
+        
+        // Combine the base with the specified file.
+        File imageFile = Util.getFileRelativeTo(relativeBase, imageFileName);
+        
+        // Try to load the file.
+        try {
+            Image image = ImageIO.read(imageFile);
+            
+            // Success: cache and return.
+            this.imageCache.put(imageFileName, image);
+            return image;
+        }
+        catch (Exception e) {
+            // Currently I have no way of reporting these to the user.
+            // I certainly do not want to pop up a message box because
+            // there could be lots of them.  So just record the failure
+            // and move on.
+            this.imageCache.put(imageFileName, null);
+            return null;
+        }
+    }
+    
+    /** Clear the image cache and redraw so we reload the images. */
+    public void reloadEntityImages()
+    {
+        this.imageCache.clear();
+        this.repaint();
+    }
+    
     @Override
     public void componentResized(ComponentEvent e)
     {

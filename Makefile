@@ -19,6 +19,7 @@ clean:
 check:
 	java -cp bin -ea ded.model.SerializationTests tests/*.ded
 	java -cp bin -ea ded.model.SerializationTests tests/*.er
+	java -cp bin -ea util.UtilTests
 
 # ------------------- Coverity -----------------
 PREV_ROOT := $(HOME)/enc/prevent-git/objs/linux64/root

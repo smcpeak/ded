@@ -5,12 +5,14 @@ package ded.ui;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,7 +29,8 @@ import ded.model.Entity;
 import ded.model.EntityShape;
 
 /** Controller for Entity. */
-public class EntityController extends Controller {
+public class EntityController extends Controller
+{
     // ----------- static data -------------
     public static final Color defaultEntityFillColor = new Color(192, 192, 192);
     public static final Color entityOutlineColor = new Color(0, 0, 0);
@@ -100,6 +103,8 @@ public class EntityController extends Controller {
         this.diagramController.setDirty();
     }
     
+    // TODO: Why did I add the 'diagram' parameter?  It is already
+    // available as this.diagramController.diagram!
     @Override
     public void paint(Diagram diagram, Graphics g0)
     {
@@ -155,6 +160,10 @@ public class EntityController extends Controller {
                 break;
         }
         
+        if (!this.entity.imageFileName.isEmpty()) {
+            this.drawImage(g, r, this.entity.imageFileName);
+        }
+        
         if (this.entity.attributes.isEmpty()) {
             // Name is vertically and horizontally centered in the space.
             SwingUtil.drawCenteredText(g, GeomUtil.getCenter(r), this.entity.name);
@@ -193,6 +202,40 @@ public class EntityController extends Controller {
                 attributeRect.x,
                 attributeRect.y + g.getFontMetrics().getMaxAscent());
         }
+    }
+    
+    /** Draw the named image onto 'g' in 'r'. */
+    public void drawImage(Graphics g, Rectangle r, String imageFileName)
+    {
+        Image image = this.diagramController.getImage(imageFileName);
+        if (image != null) {
+            // I first tried the simplest drawImage call, but it is
+            // significantly slower than specifying all of the
+            // coordinates, even when the image is not clipped (?).
+            //
+            // The API docs do not say that it is ok to pass null
+            // as the observer, but I saw code that did it online,
+            // and so far it seems to work.
+            g.drawImage(image, r.x, r.y, r.x+r.width, r.y+r.height,
+                               0,0, r.width, r.height, null);
+        }
+        else {
+            this.drawBrokenImageIndicator(g, r);
+        }
+    }
+    
+    /** Draw an indicator on 'r' that we could not load the image. */
+    private void drawBrokenImageIndicator(Graphics g0, Rectangle r)
+    {
+        Graphics g = g0.create();
+        
+        // Draw a red box with a red X through it. 
+        g.setColor(Color.RED);
+        int w = r.width-1;
+        int h = r.height-1;
+        g.drawRect(r.x, r.y, w, h);
+        g.drawLine(r.x, r.y, r.x+w, r.y+h);
+        g.drawLine(r.x+w, r.y, r.x, r.y+h);
     }
     
     /** Get the color to use to fill this Entity. */

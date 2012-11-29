@@ -1,6 +1,10 @@
 TODOs for Diagram Editor
 ------------------------
 
+Bugs:
+- double-click on entity, but accidentally hit one of the resize
+  handles: get error about it not being editable
+
 Small:
 - copy+paste for sets of selected entities
 - entity grouping
@@ -20,6 +24,5 @@ Medium:
 
 Big:
 - add entity shapes to allow mocking UIs
-- allow importing PNG to specify entity appearance
 
 EOF

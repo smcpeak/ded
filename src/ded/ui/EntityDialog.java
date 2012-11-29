@@ -42,6 +42,7 @@ public class EntityDialog extends ModalDialog
     private JTextField xText, yText, wText, hText;
     private JLabel paramsLabel;
     private JTextField pText, qText;
+    private JTextField imageFileNameText;
     
     // -------------- methods ---------------
     public EntityDialog(Component documentParent, Diagram diagram, Entity entity)
@@ -174,6 +175,10 @@ public class EntityDialog extends ModalDialog
             ModalDialog.disallowVertStretch(hb);
         }
         
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+        this.imageFileNameText = ModalDialog.makeLineEdit(vb, 
+            "Image file name:", 'i', this.entity.imageFileName);
+        
         this.updateControls();
         this.finishBuildingDialog(vb);
     }
@@ -224,6 +229,7 @@ public class EntityDialog extends ModalDialog
         this.entity.loc.y = y;
         this.entity.size.width = w;
         this.entity.size.height = h;
+        this.entity.imageFileName = this.imageFileNameText.getText();
         
         // Not completely general at this time.
         if (this.entity.shape.numParams == 2) {

@@ -53,6 +53,12 @@ public class Entity implements JSONable {
     /** Additional shape-specific geometry parameters.  May be null. */
     public int[] shapeParams = null;
     
+    /** File name of image to use instead of the specified shape.  When
+      * rendered, if relative, the this will be interpreted as relative
+      * to the directory where the containing .ded file is.  This is
+      * only used if it is not empty. */
+    public String imageFileName = "";
+    
     // ------------ public methods ------------
     public Entity()
     {
@@ -127,6 +133,10 @@ public class Entity implements JSONable {
             if (!this.fillColor.equals(defaultFillColor)) {
                 o.put("fillColor", this.fillColor);
             }
+            
+            if (!this.imageFileName.isEmpty()) {
+                o.put("imageFileName", this.imageFileName);
+            }
         }
         catch (JSONException e) { assert(false); }
         return o;
@@ -154,6 +164,10 @@ public class Entity implements JSONable {
         
         if (ver >= 5) {
             this.fillColor = o.optString("fillColor", defaultFillColor);
+        }
+        
+        if (ver >= 7) {
+            this.imageFileName = o.optString("imageFileName", "");
         }
     }
     
@@ -219,7 +233,8 @@ public class Entity implements JSONable {
                    this.fillColor.equals(e.fillColor) &&
                    this.name.equals(e.name) &&
                    this.attributes.equals(e.attributes) &&
-                   Arrays.equals(this.shapeParams, e.shapeParams);
+                   Arrays.equals(this.shapeParams, e.shapeParams) &&
+                   this.imageFileName.equals(e.imageFileName);
         }
         return false;
     }
@@ -235,6 +250,7 @@ public class Entity implements JSONable {
         h = h*31 + this.name.hashCode();
         h = h*31 + this.attributes.hashCode();
         h = h*31 + Arrays.hashCode(this.shapeParams);
+        h = h*31 + this.imageFileName.hashCode();
         return h;
     }
     
