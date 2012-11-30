@@ -30,6 +30,9 @@ public class Entity implements JSONable {
       * specified in the input file. */
     public static final String defaultFillColor = "Gray";
     
+    /** Default image fill style. */
+    public static final ImageFillStyle defaultImageFillStyle = ImageFillStyle.IFS_UPPER_LEFT;
+    
     // ------------ public data ------------
     /** Location of upper-left corner, in pixels. */
     public Point loc;
@@ -59,6 +62,10 @@ public class Entity implements JSONable {
       * to the directory where the containing .ded file is.  This is
       * only used if it is not empty. */
     public String imageFileName = "";
+    
+    /** When 'imageFileName' is not empty, this specifies how we fill
+      * the entity rectangle with it. */
+    public ImageFillStyle imageFillStyle = defaultImageFillStyle;
     
     // ------------ public methods ------------
     public Entity()
@@ -138,6 +145,10 @@ public class Entity implements JSONable {
             if (!this.imageFileName.isEmpty()) {
                 o.put("imageFileName", this.imageFileName);
             }
+            
+            if (this.imageFillStyle != defaultImageFillStyle) {
+                o.put("imageFillStyle", this.imageFillStyle.name());
+            }
         }
         catch (JSONException e) { assert(false); }
         return o;
@@ -169,6 +180,11 @@ public class Entity implements JSONable {
         
         if (ver >= 7) {
             this.imageFileName = o.optString("imageFileName", "");
+        }
+        
+        if (ver >= 8 && o.has("imageFillStyle")) {
+            this.imageFillStyle = 
+                ImageFillStyle.valueOf(ImageFillStyle.class, o.getString("imageFillStyle"));
         }
     }
     
@@ -235,7 +251,8 @@ public class Entity implements JSONable {
                    this.name.equals(e.name) &&
                    this.attributes.equals(e.attributes) &&
                    Arrays.equals(this.shapeParams, e.shapeParams) &&
-                   this.imageFileName.equals(e.imageFileName);
+                   this.imageFileName.equals(e.imageFileName) &&
+                   this.imageFillStyle.equals(e.imageFillStyle);
         }
         return false;
     }
@@ -252,6 +269,7 @@ public class Entity implements JSONable {
         h = h*31 + this.attributes.hashCode();
         h = h*31 + Arrays.hashCode(this.shapeParams);
         h = h*31 + this.imageFileName.hashCode();
+        h = h*31 + this.imageFillStyle.hashCode();
         return h;
     }
     

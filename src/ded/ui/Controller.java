@@ -232,6 +232,11 @@ public abstract class Controller {
     {
         return true;
     }
+    
+    /** This is called after we reload the referenced images in the
+      * diagram.  The controller might need to take further action. */
+    public void updateAfterImageReload()
+    {}
 }
 
 // EOF

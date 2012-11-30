@@ -1251,6 +1251,12 @@ public class DiagramController extends JPanel
     public void reloadEntityImages()
     {
         this.imageCache.clear();
+        
+        // Reloading images might alter size-locked entity sizes.
+        for (Controller c : this.controllers) {
+            c.updateAfterImageReload();
+        }
+        
         this.repaint();
     }
     

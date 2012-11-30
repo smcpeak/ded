@@ -4,6 +4,7 @@
 package ded.ui;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
@@ -27,6 +28,7 @@ import util.swing.SwingUtil;
 import ded.model.Diagram;
 import ded.model.Entity;
 import ded.model.EntityShape;
+import ded.model.ImageFillStyle;
 
 /** Controller for Entity. */
 public class EntityController extends Controller
@@ -43,10 +45,10 @@ public class EntityController extends Controller
     /** The thing being controlled. */
     public Entity entity;
     
-    /** If 'selState' is SS_EXCLUSIVE, then this is an array of
+    /** If 'wantResizeHandles()', then this is an array of
       * ResizeHandle.NUM_RESIZE_HANDLES resize handles.  Otherwise,
       * it is null. */
-    public EntityResizeController[] handle;
+    public EntityResizeController[] resizeHandles;
     
     // ----------- public methods -----------
     public EntityController(DiagramController dc, Entity e)
@@ -130,7 +132,7 @@ public class EntityController extends Controller
         
         // Image background.
         if (!this.entity.imageFileName.isEmpty()) {
-            this.drawImage(g, r, this.entity.imageFileName);
+            this.drawImage(g, r);
             
             // Do not draw a solid background; the image will
             // act as the background.
@@ -214,22 +216,48 @@ public class EntityController extends Controller
     }
     
     /** Draw the named image onto 'g' in 'r'. */
-    public void drawImage(Graphics g, Rectangle r, String imageFileName)
+    public void drawImage(Graphics g, Rectangle r)
     {
-        Image image = this.diagramController.getImage(imageFileName);
-        if (image != null) {
-            // I first tried the simplest drawImage call, but it is
-            // significantly slower than specifying all of the
-            // coordinates, even when the image is not clipped (?).
-            //
-            // The API docs do not say that it is ok to pass null
-            // as the observer, but I saw code that did it online,
-            // and so far it seems to work.
-            g.drawImage(image, r.x, r.y, r.x+r.width, r.y+r.height,
-                               0,0, r.width, r.height, null);
-        }
-        else {
+        Image image = this.diagramController.getImage(this.entity.imageFileName);
+        if (image == null) {
             this.drawBrokenImageIndicator(g, r);
+            return;
+        }
+
+        ImageFillStyle ifs = this.entity.imageFillStyle;
+        int imageWidth = image.getWidth(null);
+        int imageHeight = image.getHeight(null);
+        if (imageWidth < 0 || imageHeight < 0) {
+            ifs = ImageFillStyle.IFS_UPPER_LEFT;      // fallback
+        }
+        
+        switch (ifs) {
+            case IFS_UPPER_LEFT:
+            case IFS_LOCK_SIZE:
+                // I first tried the simplest drawImage call, but it is
+                // significantly slower than specifying all of the
+                // coordinates, even when the image is not clipped (?).
+                //
+                // The API docs do not say that it is ok to pass null
+                // as the observer, but I saw code that did it online,
+                // and so far it seems to work.
+                g.drawImage(image, r.x, r.y, r.x+r.width, r.y+r.height,
+                                   0,0, r.width, r.height, null);
+                break;
+                
+            case IFS_STRETCH:
+                g.drawImage(image, r.x, r.y, r.x+r.width, r.y+r.height,
+                                   0,0, imageWidth, imageHeight, null);
+                break;
+                
+            case IFS_TILE:
+                for (int x = r.x; x < r.x+r.width; x += imageWidth) {
+                    for (int y = r.y; y < r.y+r.height; y += imageWidth) {
+                        g.drawImage(image, x, y, x+imageWidth, y+imageHeight,
+                                    0,0, imageWidth, imageHeight, null);
+                    }
+                }
+                break;
         }
     }
     
@@ -425,32 +453,48 @@ public class EntityController extends Controller
     @Override
     public void setSelected(SelectionState ss)
     {
-        this.selfCheck();
+        super.setSelected(ss);
+
+        boolean wantHandles = this.wantResizeHandles();
         
-        // When 'exclusive' transitions off, destroy handles.
-        if (this.selState == SelectionState.SS_EXCLUSIVE && 
-            ss != SelectionState.SS_EXCLUSIVE)
+        // Destroy unwanted handles.
+        if (wantHandles == false && this.resizeHandles != null)
         {
-            for (EntityResizeController erc : this.handle) {
+            for (EntityResizeController erc : this.resizeHandles) {
                 this.diagramController.remove(erc);
             }
-            this.handle = null;
+            this.resizeHandles = null;
         }
         
-        // When 'exclusive' transitions on, create handles.
-        if (this.selState != SelectionState.SS_EXCLUSIVE &&
-            ss == SelectionState.SS_EXCLUSIVE)
+        // Create wanted handles.
+        if (wantHandles == true && this.resizeHandles == null)
         {
-            this.handle = new EntityResizeController[ResizeHandle.NUM_RESIZE_HANDLES];
+            this.resizeHandles = new EntityResizeController[ResizeHandle.NUM_RESIZE_HANDLES];
             for (ResizeHandle h : EnumSet.allOf(ResizeHandle.class)) {
                 EntityResizeController erc =
                     new EntityResizeController(this.diagramController, this, h);
-                this.handle[h.ordinal()] = erc;
+                this.resizeHandles[h.ordinal()] = erc;
                 this.diagramController.add(erc);
             }
         }
+    }
+
+    /** Return true if this controller should have resize handles right now. */
+    private boolean wantResizeHandles()
+    {
+        if (this.selState != SelectionState.SS_EXCLUSIVE) {
+            // We never have resize handles if not selected.
+            return false;
+        }
         
-        super.setSelected(ss);
+        if (this.entity.imageFillStyle == ImageFillStyle.IFS_LOCK_SIZE &&
+            this.getImageDimension() != null)
+        {
+            // The size is locked to an image, so no resize handles.
+            return false;
+        }
+        
+        return true;
     }
     
     @Override
@@ -458,15 +502,16 @@ public class EntityController extends Controller
     {
         super.selfCheck();
         
-        if (this.selState == SelectionState.SS_EXCLUSIVE) {
-            assert(this.handle != null);
-            assert(this.handle.length == ResizeHandle.NUM_RESIZE_HANDLES);
-            for (EntityResizeController erc : this.handle) {
+        boolean wantHandles = this.wantResizeHandles();
+        if (wantHandles) {
+            assert(this.resizeHandles != null);
+            assert(this.resizeHandles.length == ResizeHandle.NUM_RESIZE_HANDLES);
+            for (EntityResizeController erc : this.resizeHandles) {
                 assert(this.diagramController.contains(erc));
             }
         }
         else {
-            assert(this.handle == null);
+            assert(this.resizeHandles == null);
         }
     }
     
@@ -476,8 +521,47 @@ public class EntityController extends Controller
         if (EntityDialog.exec(this.diagramController,
                               this.diagramController.diagram, 
                               this.entity)) {
+            this.updateAfterImageReload();
+            
+            // Make sure the presence or absence of resize handles
+            // is consistent with the image fill style.
+            this.setSelected(this.selState);
+            
             this.diagramController.diagramChanged();
         }
+    }
+
+    @Override
+    public void updateAfterImageReload()
+    {
+        if (this.entity.imageFillStyle == ImageFillStyle.IFS_LOCK_SIZE) {
+            Dimension imageDim = this.getImageDimension();
+            if (imageDim != null) {
+                this.entity.size = imageDim;
+            }
+        }
+    }
+            
+    /** Get the dimensions of the fill image for this entity, or null
+      * if they cannot be obtained. */
+    private Dimension getImageDimension()
+    {
+        if (this.entity.imageFileName.isEmpty()) {
+            return null;               // No fill image.
+        }
+        
+        Image image = this.diagramController.getImage(this.entity.imageFileName);
+        if (image == null) {
+            return null;               // Cannot load fill image.
+        }
+
+        int imageWidth = image.getWidth(null);
+        int imageHeight = image.getHeight(null);
+        if (imageWidth < 0 || imageHeight < 0) {
+            return null;               // Some delayed loading thing?
+        }
+
+        return new Dimension(imageWidth, imageHeight);
     }
     
     @Override

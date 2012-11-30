@@ -23,6 +23,7 @@ import util.swing.ModalDialog;
 import ded.model.Diagram;
 import ded.model.Entity;
 import ded.model.EntityShape;
+import ded.model.ImageFillStyle;
 
 /** Dialog box to edit an Entity. */
 public class EntityDialog extends ModalDialog 
@@ -43,6 +44,7 @@ public class EntityDialog extends ModalDialog
     private JLabel paramsLabel;
     private JTextField pText, qText;
     private JTextField imageFileNameText;
+    private JComboBox imageFillStyleChooser;
     
     // -------------- methods ---------------
     public EntityDialog(Component documentParent, Diagram diagram, Entity entity)
@@ -179,6 +181,18 @@ public class EntityDialog extends ModalDialog
         this.imageFileNameText = ModalDialog.makeLineEdit(vb, 
             "Image file name:", 'i', this.entity.imageFileName);
         
+        // shape
+        {
+            vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+            this.imageFillStyleChooser = ModalDialog.makeEnumChooser(
+                vb,
+                "Image fill style:",
+                'm',
+                ImageFillStyle.class,
+                this.entity.imageFillStyle);
+            this.imageFillStyleChooser.addItemListener(this);
+        }
+        
         this.updateControls();
         this.finishBuildingDialog(vb);
     }
@@ -220,6 +234,8 @@ public class EntityDialog extends ModalDialog
 
         String fillColor = (String)this.fillColorChooser.getSelectedItem();
         
+        ImageFillStyle imageFillStyle = (ImageFillStyle)this.imageFillStyleChooser.getSelectedItem();
+        
         // Update the entity.
         this.entity.name = this.nameText.getText();
         this.entity.attributes = this.attributeText.getText();
@@ -230,6 +246,7 @@ public class EntityDialog extends ModalDialog
         this.entity.size.width = w;
         this.entity.size.height = h;
         this.entity.imageFileName = this.imageFileNameText.getText();
+        this.entity.imageFillStyle = imageFillStyle;
         
         // Not completely general at this time.
         if (this.entity.shape.numParams == 2) {

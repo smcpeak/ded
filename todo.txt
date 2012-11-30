@@ -6,6 +6,8 @@ Bugs:
   handles: get error about it not being editable
 
 Small:
+- add image load log
+- selected entities are now sometimes hard to recognize; expand sel rectangle by 1?
 - copy+paste for sets of selected entities
 - entity grouping
 - better self-loop rendering
