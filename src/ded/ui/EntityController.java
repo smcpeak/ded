@@ -103,14 +103,12 @@ public class EntityController extends Controller
         this.diagramController.setDirty();
     }
     
-    // TODO: Why did I add the 'diagram' parameter?  It is already
-    // available as this.diagramController.diagram!
     @Override
-    public void paint(Diagram diagram, Graphics g0)
+    public void paint(Graphics g0)
     {
         Graphics g = g0.create();
         
-        super.paint(diagram, g);
+        super.paint(g);
         
         // Get bounding rectangle.
         Rectangle r = this.entity.getRect();
@@ -118,7 +116,7 @@ public class EntityController extends Controller
         // If cuboid, draw visible side faces beside the front face,
         // outside 'r'.
         if (this.entity.shape == EntityShape.ES_CUBOID) {
-            this.drawCuboidSides(diagram, g, r);
+            this.drawCuboidSides(g, r);
         }
         
         // All further options are clipped to the rectangle.
@@ -135,7 +133,7 @@ public class EntityController extends Controller
                 if (!this.isSelected()) {
                     // Fill with the normal entity color (selected controllers
                     // get filled with selection color by super.paint).
-                    g.setColor(this.getFillColor(diagram));
+                    g.setColor(this.getFillColor());
                     g.fillRect(r.x, r.y, r.width-1, r.height-1);
                     
                 }
@@ -146,7 +144,7 @@ public class EntityController extends Controller
                 
             case ES_ELLIPSE:
                 if (!this.isSelected()) {
-                    g.setColor(this.getFillColor(diagram));
+                    g.setColor(this.getFillColor());
                     g.fillOval(r.x, r.y, r.width-1, r.height-1);
                     
                 }
@@ -156,7 +154,7 @@ public class EntityController extends Controller
                 break;
                 
             case ES_CYLINDER:
-                this.drawCylinder(diagram, g, r);
+                this.drawCylinder(g, r);
                 break;
         }
         
@@ -239,9 +237,9 @@ public class EntityController extends Controller
     }
     
     /** Get the color to use to fill this Entity. */
-    public Color getFillColor(Diagram diagram)
+    public Color getFillColor()
     {
-        Color c = diagram.namedColors.get(this.entity.fillColor);
+        Color c = this.diagramController.diagram.namedColors.get(this.entity.fillColor);
         if (c != null) {
             return c;
         }
@@ -252,7 +250,7 @@ public class EntityController extends Controller
     }
     
     /** Draw the part of a cuboid outside the main rectangle 'r'. */
-    public void drawCuboidSides(Diagram diagram, Graphics g, Rectangle r)
+    public void drawCuboidSides(Graphics g, Rectangle r)
     {
         int[] params = this.entity.shapeParams;
         if (params == null || params.length < 2) {
@@ -293,7 +291,7 @@ public class EntityController extends Controller
         p.addPoint(r.x,            r.y + h);       // A
         
         // Fill it and draw its edges.
-        g.setColor(this.getFillColor(diagram));
+        g.setColor(this.getFillColor());
         g.fillPolygon(p);
         g.setColor(entityOutlineColor);
         g.drawPolygon(p);
@@ -304,9 +302,9 @@ public class EntityController extends Controller
     }
 
     /** Draw the cylinder shape into 'r'. */
-    public void drawCylinder(Diagram diagram, Graphics g, Rectangle r)
+    public void drawCylinder(Graphics g, Rectangle r)
     {
-        g.setColor(this.getFillColor(diagram));
+        g.setColor(this.getFillColor());
         
         // Fill upper ellipse.  I do not quite understand why I
         // have to subtract one from the width and height here,

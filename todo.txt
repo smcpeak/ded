@@ -24,5 +24,6 @@ Medium:
 
 Big:
 - add entity shapes to allow mocking UIs
+- add automated testing for the UI
 
 EOF

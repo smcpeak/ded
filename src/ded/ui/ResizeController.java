@@ -13,8 +13,6 @@ import java.util.Set;
 
 import javax.swing.SwingUtilities;
 
-import ded.model.Diagram;
-
 import util.awt.GeomUtil;
 
 /** Functionality common to resize handles. */
@@ -41,9 +39,9 @@ public abstract class ResizeController extends Controller {
     }
 
     @Override
-    public void paint(Diagram diagram, Graphics g)
+    public void paint(Graphics g)
     {
-        super.paint(diagram, g);
+        super.paint(g);
         this.paintBounds(g, resizeHandleColor);
     }
     

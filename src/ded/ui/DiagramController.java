@@ -210,7 +210,7 @@ public class DiagramController extends JPanel
         
         // Controllers.
         for (Controller c : this.controllers) {
-            c.paint(this.diagram, g);
+            c.paint(g);
         }
 
         // Lasso rectangle.

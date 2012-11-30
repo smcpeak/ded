@@ -358,9 +358,9 @@ public class RelationController extends Controller {
     }
 
     @Override
-    public void paint(Diagram diagram, Graphics g0)
+    public void paint(Graphics g0)
     {
-        super.paint(diagram, g0);
+        super.paint(g0);
         Graphics2D g = (Graphics2D)g0.create();
         
         ArrayList<Point> points = computePoints();
