@@ -36,20 +36,20 @@ public class EntityController extends Controller
     // ----------- static data -------------
     public static final Color defaultEntityFillColor = new Color(192, 192, 192);
     public static final Color entityOutlineColor = new Color(0, 0, 0);
-    
+
     public static final int entityNameHeight = 20;
     public static final int entityAttributeMargin = 5;
     public static final int minimumEntitySize = 20;       // 20x20
-    
+
     // ----------- instance data -------------
     /** The thing being controlled. */
     public Entity entity;
-    
+
     /** If 'wantResizeHandles()', then this is an array of
       * ResizeHandle.NUM_RESIZE_HANDLES resize handles.  Otherwise,
       * it is null. */
     public EntityResizeController[] resizeHandles;
-    
+
     // ----------- public methods -----------
     public EntityController(DiagramController dc, Entity e)
     {
@@ -67,7 +67,7 @@ public class EntityController extends Controller
     public int getTop() { return this.entity.loc.y; }
     public int getRight() { return this.entity.loc.x + this.entity.size.width; }
     public int getBottom() { return this.entity.loc.y + this.entity.size.height; }
-    
+
     /** Set left edge w/o changing other locations. */
     public void setLeft(int v)
     {
@@ -75,7 +75,7 @@ public class EntityController extends Controller
         this.entity.loc.x += diff;
         this.entity.size.width -= diff;
     }
-    
+
     /** Set top edge w/o changing other locations. */
     public void setTop(int v)
     {
@@ -83,44 +83,44 @@ public class EntityController extends Controller
         this.entity.loc.y += diff;
         this.entity.size.height -= diff;
     }
-    
+
     /** Set right edge w/o changing other locations. */
     public void setRight(int v)
     {
         int diff = v - this.getRight();
         this.entity.size.width += diff;
     }
-    
+
     /** Set bottom edge w/o changing other locations. */
     public void setBottom(int v)
     {
         int diff = v - this.getBottom();
         this.entity.size.height += diff;
     }
-    
+
     @Override
     public void dragTo(Point p)
     {
         this.entity.loc = p;
         this.diagramController.setDirty();
     }
-    
+
     @Override
     public void paint(Graphics g0)
     {
         Graphics g = g0.create();
-        
+
         super.paint(g);
-        
+
         // Get bounding rectangle.
         Rectangle r = this.entity.getRect();
-        
+
         // If cuboid, draw visible side faces beside the front face,
         // outside 'r'.
         if (this.entity.shape == EntityShape.ES_CUBOID) {
             this.drawCuboidSides(g, r);
         }
-        
+
         // All further options are clipped to the rectangle.
         g.setClip(r.x, r.y, r.width, r.height);
 
@@ -129,22 +129,22 @@ public class EntityController extends Controller
         // super.paint already painted the background in the
         // selection color.
         boolean wantSolidBackground = !this.isSelected();
-        
+
         // Image background.
         if (!this.entity.imageFileName.isEmpty()) {
             this.drawImage(g, r);
-            
+
             // Do not draw a solid background; the image will
             // act as the background.
             wantSolidBackground = false;
         }
-        
+
         // Entity outline with proper shape.
         switch (this.entity.shape) {
             case ES_NO_SHAPE:
                 g.setColor(entityOutlineColor);
                 break;
-                
+
             case ES_RECTANGLE:
             case ES_CUBOID:
                 if (wantSolidBackground) {
@@ -152,29 +152,29 @@ public class EntityController extends Controller
                     // get filled with selection color by super.paint).
                     g.setColor(this.getFillColor());
                     g.fillRect(r.x, r.y, r.width-1, r.height-1);
-                    
+
                 }
-                
+
                 g.setColor(entityOutlineColor);
-                g.drawRect(r.x, r.y, r.width-1, r.height-1); 
+                g.drawRect(r.x, r.y, r.width-1, r.height-1);
                 break;
-                
+
             case ES_ELLIPSE:
                 if (wantSolidBackground) {
                     g.setColor(this.getFillColor());
                     g.fillOval(r.x, r.y, r.width-1, r.height-1);
-                    
+
                 }
-                
+
                 g.setColor(entityOutlineColor);
                 g.drawOval(r.x, r.y, r.width-1, r.height-1);
                 break;
-                
+
             case ES_CYLINDER:
                 this.drawCylinder(g, r, wantSolidBackground);
                 break;
         }
-        
+
         if (this.entity.attributes.isEmpty()) {
             // Name is vertically and horizontally centered in the space.
             SwingUtil.drawCenteredText(g, GeomUtil.getCenter(r), this.entity.name);
@@ -189,7 +189,7 @@ public class EntityController extends Controller
             else {
                 nameRect.height = entityNameHeight;
                 SwingUtil.drawCenteredText(g, GeomUtil.getCenter(nameRect), this.entity.name);
-                
+
                 if (this.entity.shape != EntityShape.ES_CYLINDER) {
                     // Divider between name and attributes.
                     g.drawLine(nameRect.x, nameRect.y+nameRect.height-1,
@@ -200,7 +200,7 @@ public class EntityController extends Controller
                     // of a divider.
                 }
             }
-            
+
             // Attributes.
             Rectangle attributeRect = new Rectangle(r);
             attributeRect.y += nameRect.height;
@@ -214,7 +214,7 @@ public class EntityController extends Controller
                 attributeRect.y + g.getFontMetrics().getMaxAscent());
         }
     }
-    
+
     /** Draw the named image onto 'g' in 'r'. */
     public void drawImage(Graphics g, Rectangle r)
     {
@@ -230,7 +230,7 @@ public class EntityController extends Controller
         if (imageWidth < 0 || imageHeight < 0) {
             ifs = ImageFillStyle.IFS_UPPER_LEFT;      // fallback
         }
-        
+
         switch (ifs) {
             case IFS_UPPER_LEFT:
             case IFS_LOCK_SIZE:
@@ -244,12 +244,12 @@ public class EntityController extends Controller
                 g.drawImage(image, r.x, r.y, r.x+r.width, r.y+r.height,
                                    0,0, r.width, r.height, null);
                 break;
-                
+
             case IFS_STRETCH:
                 g.drawImage(image, r.x, r.y, r.x+r.width, r.y+r.height,
                                    0,0, imageWidth, imageHeight, null);
                 break;
-                
+
             case IFS_TILE:
                 for (int x = r.x; x < r.x+r.width; x += imageWidth) {
                     for (int y = r.y; y < r.y+r.height; y += imageWidth) {
@@ -260,13 +260,13 @@ public class EntityController extends Controller
                 break;
         }
     }
-    
+
     /** Draw an indicator on 'r' that we could not load the image. */
     private void drawBrokenImageIndicator(Graphics g0, Rectangle r)
     {
         Graphics g = g0.create();
-        
-        // Draw a red box with a red X through it. 
+
+        // Draw a red box with a red X through it.
         g.setColor(Color.RED);
         int w = r.width-1;
         int h = r.height-1;
@@ -274,7 +274,7 @@ public class EntityController extends Controller
         g.drawLine(r.x, r.y, r.x+w, r.y+h);
         g.drawLine(r.x+w, r.y, r.x, r.y+h);
     }
-    
+
     /** Get the color to use to fill this Entity. */
     public Color getFillColor()
     {
@@ -287,7 +287,7 @@ public class EntityController extends Controller
             return defaultEntityFillColor;
         }
     }
-    
+
     /** Draw the part of a cuboid outside the main rectangle 'r'. */
     public void drawCuboidSides(Graphics g, Rectangle r)
     {
@@ -295,15 +295,15 @@ public class EntityController extends Controller
         if (params == null || params.length < 2) {
             return;
         }
-        
+
         // Distance to draw to left/up.
         int left = params[0];
         int up = params[1];
-        
+
         // Distance to right/bottom.
         int w = r.width-1;
         int h = r.height-1;
-        
+
         //          r.x
         //      left|        w
         //       <->|<---------------->
@@ -328,13 +328,13 @@ public class EntityController extends Controller
         p.addPoint(r.x + w,        r.y);           // E
         p.addPoint(r.x,            r.y);           // F
         p.addPoint(r.x,            r.y + h);       // A
-        
+
         // Fill it and draw its edges.
         g.setColor(this.getFillColor());
         g.fillPolygon(p);
         g.setColor(entityOutlineColor);
         g.drawPolygon(p);
-        
+
         // Draw line CF.
         g.drawLine(r.x     - left, r.y     - up,   // C
                    r.x,            r.y);           // F
@@ -345,51 +345,51 @@ public class EntityController extends Controller
     {
         if (wantSolidBackground) {
             g.setColor(this.getFillColor());
-            
+
             // Fill upper ellipse.  I do not quite understand why I
             // have to subtract one from the width and height here,
             // but experimentation shows that if I do not do that,
             // then I get fill color pixels peeking out from behind
             // the outline.
-            g.fillOval(r.x, r.y, 
+            g.fillOval(r.x, r.y,
                        r.width - 1, entityNameHeight - 1);
-            
+
             // Fill lower ellipse.
             g.fillOval(r.x, r.y + r.height - entityNameHeight,
-                       r.width - 1, entityNameHeight - 1); 
-            
+                       r.width - 1, entityNameHeight - 1);
+
             // Fill rectangle between them.
             g.fillRect(r.x, r.y + entityNameHeight/2,
                        r.width, r.height - entityNameHeight);
         }
-        
+
         g.setColor(entityOutlineColor);
-        
+
         // Draw upper ellipse.
         g.drawOval(r.x, r.y,
                    r.width-1, entityNameHeight-1);
-        
+
         // Draw lower ellipse, lower half of it.
         g.drawArc(r.x, r.y + r.height - entityNameHeight,
                   r.width-1, entityNameHeight-1,
                   180, 180);
-        
+
         // Draw left side.
         g.drawLine(r.x, r.y + entityNameHeight/2,
                    r.x, r.y + r.height - entityNameHeight/2);
-        
+
         // Draw right side.
         g.drawLine(r.x + r.width - 1, r.y + entityNameHeight/2,
                    r.x + r.width - 1, r.y + r.height - entityNameHeight/2);
 
     }
-    
+
     /** Return the rectangle describing this controller's bounds. */
     public Rectangle getRect()
     {
         return this.entity.getRect();
     }
-    
+
     @Override
     public Set<Polygon> getBounds()
     {
@@ -411,7 +411,7 @@ public class EntityController extends Controller
     protected void addToRightClickMenu(JPopupMenu menu, MouseEvent ev)
     {
         final EntityController ths = this;
-        
+
         JMenu colorMenu = new JMenu("Set fill color");
         colorMenu.setMnemonic(KeyEvent.VK_C);
         for (final String color : this.diagramController.diagram.namedColors.keySet()) {
@@ -422,7 +422,7 @@ public class EntityController extends Controller
             });
         }
         menu.add(colorMenu);
-        
+
         JMenu shapeMenu = new JMenu("Set shape");
         shapeMenu.setMnemonic(KeyEvent.VK_S);
         for (final EntityShape shape : EntityShape.allValues()) {
@@ -434,7 +434,7 @@ public class EntityController extends Controller
         }
         menu.add(shapeMenu);
     }
-    
+
     /** Create a new entity at location 'p' in 'dc'.  This corresponds to
       * the user left-clicking on 'p' while in entity creation mode. */
     public static void createEntityAt(DiagramController dc, Point p)
@@ -444,19 +444,19 @@ public class EntityController extends Controller
                                                 p.y - ent.size.height/2),
                                       DiagramController.SNAP_DIST);
         dc.getDiagram().entities.add(ent);
-        
+
         EntityController ec = new EntityController(dc, ent);
         dc.add(ec);
         dc.selectOnly(ec);
     }
-    
+
     @Override
     public void setSelected(SelectionState ss)
     {
         super.setSelected(ss);
 
         boolean wantHandles = this.wantResizeHandles();
-        
+
         // Destroy unwanted handles.
         if (wantHandles == false && this.resizeHandles != null)
         {
@@ -465,7 +465,7 @@ public class EntityController extends Controller
             }
             this.resizeHandles = null;
         }
-        
+
         // Create wanted handles.
         if (wantHandles == true && this.resizeHandles == null)
         {
@@ -486,22 +486,22 @@ public class EntityController extends Controller
             // We never have resize handles if not selected.
             return false;
         }
-        
+
         if (this.entity.imageFillStyle == ImageFillStyle.IFS_LOCK_SIZE &&
             this.getImageDimension() != null)
         {
             // The size is locked to an image, so no resize handles.
             return false;
         }
-        
+
         return true;
     }
-    
+
     @Override
     public void selfCheck()
     {
         super.selfCheck();
-        
+
         boolean wantHandles = this.wantResizeHandles();
         if (wantHandles) {
             assert(this.resizeHandles != null);
@@ -514,19 +514,19 @@ public class EntityController extends Controller
             assert(this.resizeHandles == null);
         }
     }
-    
+
     @Override
     public void edit()
     {
         if (EntityDialog.exec(this.diagramController,
-                              this.diagramController.diagram, 
+                              this.diagramController.diagram,
                               this.entity)) {
             this.updateAfterImageReload();
-            
+
             // Make sure the presence or absence of resize handles
             // is consistent with the image fill style.
             this.setSelected(this.selState);
-            
+
             this.diagramController.diagramChanged();
         }
     }
@@ -541,7 +541,7 @@ public class EntityController extends Controller
             }
         }
     }
-            
+
     /** Get the dimensions of the fill image for this entity, or null
       * if they cannot be obtained. */
     private Dimension getImageDimension()
@@ -549,7 +549,7 @@ public class EntityController extends Controller
         if (this.entity.imageFileName.isEmpty()) {
             return null;               // No fill image.
         }
-        
+
         Image image = this.diagramController.getImage(this.entity.imageFileName);
         if (image == null) {
             return null;               // Cannot load fill image.
@@ -563,20 +563,20 @@ public class EntityController extends Controller
 
         return new Dimension(imageWidth, imageHeight);
     }
-    
+
     @Override
     public void deleteSelfAndData(Diagram diagram)
     {
         // Unselect myself so resize controllers are gone.
         this.setSelected(SelectionState.SS_UNSELECTED);
-        
+
         this.selfCheck();
-        
+
         final Entity thisEntity = this.entity;
-        
+
         // Delete any relations or inheritances that involve this entity.
         this.diagramController.deleteControllers(new ControllerFilter() {
-            public boolean satisfies(Controller c) 
+            public boolean satisfies(Controller c)
             {
                 if (c instanceof RelationController) {
                     RelationController rc = (RelationController)c;
@@ -589,11 +589,11 @@ public class EntityController extends Controller
                 return false;
             }
         });
-        
+
         // Remove the entity and this controller.
         diagram.entities.remove(this.entity);
         this.diagramController.remove(this);
-        
+
         this.diagramController.selfCheck();
     }
 }

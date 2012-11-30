@@ -23,51 +23,51 @@ public class Relation {
     /** Default routing algorithm.  Used to save space in serialized form. */
     public static final RoutingAlgorithm defaultRoutingAlgorithm =
         RoutingAlgorithm.RA_MANHATTAN_HORIZ;
-    
+
     // ------------------ instance data -----------------------
     /** Endpoints. */
     public RelationEndpoint start, end;
-    
+
     /** Intermediate control points, if any. */
     public ArrayList<Point> controlPts = new ArrayList<Point>();
-    
+
     /** Routing algorithm for displaying relation onscreen. */
     public RoutingAlgorithm routingAlg = defaultRoutingAlgorithm;
-    
+
     /** Text label for the relation. */
     public String label = "";
-    
+
     /** True for an "owning" relation, drawn with the double arrowhead;
       * false for an ordinary or "shared" relation.  Initially false. */
     public boolean owning = false;
-    
+
     // -------------------- methods ----------------------
     public Relation(RelationEndpoint start, RelationEndpoint end)
     {
         this.start = start;
         this.end = end;
     }
-    
+
     /** True if either endpoint is referentially equal to 'e'. */
     public boolean involvesEntity(Entity e)
     {
-        return this.start.isSpecificEntity(e) || 
+        return this.start.isSpecificEntity(e) ||
                this.end.isSpecificEntity(e);
     }
-    
+
     /** True if either endpoint is referentially equal to 'inh'. */
     public boolean involvesInheritance(Inheritance inh)
     {
         return this.start.isSpecificInheritance(inh) ||
                this.end.isSpecificInheritance(inh);
     }
-    
+
     public void globalSelfCheck(Diagram d)
     {
         this.start.globalSelfCheck(d);
         this.end.globalSelfCheck(d);
     }
-    
+
     // -------------------- data object boilerplate --------------------
     @Override
     public boolean equals(Object obj)
@@ -108,7 +108,7 @@ public class Relation {
         try {
             o.put("start", this.start.toJSON(entityToInteger, inheritanceToInteger));
             o.put("end", this.end.toJSON(entityToInteger, inheritanceToInteger));
-            
+
             if (!this.controlPts.isEmpty()) {
                 JSONArray pts = new JSONArray();
                 for (Point p : this.controlPts) {
@@ -116,15 +116,15 @@ public class Relation {
                 }
                 o.put("controlPts", pts);
             }
-            
+
             if (this.routingAlg != defaultRoutingAlgorithm) {
                 o.put("routingAlg", this.routingAlg.name());
             }
-            
+
             if (!this.label.isEmpty()) {
                 o.put("label", this.label);
             }
-            
+
             if (this.owning) {
                 o.put("owning", this.owning);
             }
@@ -132,16 +132,16 @@ public class Relation {
         catch (JSONException e) { assert(false); }
         return o;
     }
-    
+
     public Relation(
         JSONObject o,
         ArrayList<Entity> integerToEntity,
         ArrayList<Inheritance> integerToInheritance)
         throws JSONException
     {
-        this.start = new RelationEndpoint(o.getJSONObject("start"), 
+        this.start = new RelationEndpoint(o.getJSONObject("start"),
                                           integerToEntity, integerToInheritance);
-        this.end = new RelationEndpoint(o.getJSONObject("end"), 
+        this.end = new RelationEndpoint(o.getJSONObject("end"),
                                         integerToEntity, integerToInheritance);
 
         JSONArray pts = o.optJSONArray("controlPts");
@@ -150,16 +150,16 @@ public class Relation {
                 this.controlPts.add(AWTJSONUtil.pointFromJSON(pts.getJSONObject(i)));
             }
         }
-        
+
         if (o.has("routingAlg")) {
             this.routingAlg = RoutingAlgorithm.valueOf(RoutingAlgorithm.class,
                                                        o.getString("routingAlg"));
         }
-        
+
         this.label = o.optString("label", "");
         this.owning = o.optBoolean("owning", false);
     }
-    
+
     // ------------------ legacy serialization -----------------
     /** Read a Relation from an ER FlattenInputStream. */
     public Relation(FlattenInputStream flat)
@@ -168,9 +168,9 @@ public class Relation {
         this.start = new RelationEndpoint(flat);
         this.end = new RelationEndpoint(flat);
         this.label = flat.readString();
-        
+
         if (flat.version < 3) { return; }
-        
+
         // routingAlg
         int r = flat.readInt();
         switch (r) {
@@ -180,9 +180,9 @@ public class Relation {
             default:
                 throw new XParse("invalid routingAlg code: "+r);
         }
-        
+
         if (flat.version < 4) { return; }
-        
+
         // controlPts
         {
             int numControlPts = flat.readInt();
@@ -192,7 +192,7 @@ public class Relation {
         }
 
         if (flat.version < 8) { return; }
-        
+
         this.owning = flat.readBoolean();
     }
 }

@@ -21,18 +21,18 @@ public class RelationDialog extends ModalDialog {
     // ----------------- instance data ------------------
     /** Relation we are editing. */
     private Relation relation;
-    
+
     // Controls.
     private JTextField labelField;
     private JComboBox routingChooser;
-    
+
     // ------------------- methods ----------------------
     public RelationDialog(Component parent, Relation relation)
     {
         super(parent, "Edit Relation");
-        
+
         this.relation = relation;
-        
+
         Box vb = ModalDialog.makeMarginVBox(this, ModalDialog.OUTER_MARGIN);
 
         this.labelField = ModalDialog.makeLineEdit(vb, "Label:", 'l', this.relation.label);
@@ -50,24 +50,24 @@ public class RelationDialog extends ModalDialog {
         // It might be nice to allow the endpoints to be edited, but
         // that is challenging due to the ability to connect them to
         // Entities and Inheritances.
-        
+
         this.finishBuildingDialog(vb);
     }
-    
+
     @Override
     public void okPressed()
     {
         this.relation.label = this.labelField.getText();
-        this.relation.routingAlg = 
+        this.relation.routingAlg =
             (RoutingAlgorithm)this.routingChooser.getSelectedItem();
-        
+
         super.okPressed();
     }
-    
+
     /** Launch the dialog, blocking until the dialog is dismissed.
       * If the user presses OK, 'relation' will be updated and true
       * returned.  Otherwise, false is returned and 'relation' is
-      * not modified. */ 
+      * not modified. */
     public static boolean exec(Component parent, Relation relation)
     {
         return (new RelationDialog(parent, relation)).exec();

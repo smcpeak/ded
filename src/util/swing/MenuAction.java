@@ -18,7 +18,7 @@ public abstract class MenuAction extends AbstractAction {
         super(title);
         this.putValue(Action.MNEMONIC_KEY, Integer.valueOf(mnemonicKeycode));
     }
-    
+
     /** Create a menu Action with specified title, mnemonic and acclerator.
       * Both key codes should be KeyEvent.VK_XXX constants.
       * 'accelModifiers' should be 0 or some bitwise combination of
@@ -27,7 +27,7 @@ public abstract class MenuAction extends AbstractAction {
     {
         super(title);
         this.putValue(Action.MNEMONIC_KEY, Integer.valueOf(mnemonicKeyCode));
-        this.putValue(Action.ACCELERATOR_KEY, 
+        this.putValue(Action.ACCELERATOR_KEY,
             KeyStroke.getKeyStroke(accelKeyCode, accelModifiers));
     }
 }

@@ -17,13 +17,13 @@ public enum EntityShape {
         ("Cuboid", 2),
     ES_CYLINDER
         ("Cylinder", 0);
-    
+
     /** Name of this shape as shown in the UI. */
     public final String displayName;
-    
+
     /** Number of integer shape parameters needed to draw the shape. */
     public final int numParams;
-    
+
     EntityShape(String dn, int n)
     {
         this.displayName = dn;
@@ -35,7 +35,7 @@ public enum EntityShape {
     {
         return EnumSet.allOf(EntityShape.class);
     }
-    
+
     /** This is what JComboBox uses when it draws the items. */
     @Override
     public String toString()

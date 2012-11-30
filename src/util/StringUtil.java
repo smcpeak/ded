@@ -16,31 +16,31 @@ public class StringUtil {
                 case '\'':
                     sb.append("\\'");
                     break;
-                    
+
                 case '\\':
                     sb.append("\\\\");
                     break;
-                    
+
                 case '\b':
                     sb.append("\\b");
                     break;
-                    
+
                 case '\f':
                     sb.append("\\f");
                     break;
-                    
+
                 case '\n':
                     sb.append("\\n");
                     break;
-                    
+
                 case '\r':
                     sb.append("\\r");
                     break;
-                    
+
                 case '\t':
                     sb.append("\\t");
                     break;
-                    
+
                 default:
                     if (32 <= c && c <= 126) {
                         sb.append(c);

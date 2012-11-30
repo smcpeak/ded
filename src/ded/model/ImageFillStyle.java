@@ -12,15 +12,15 @@ public enum ImageFillStyle {
       ("Tile image to fill space"),
     IFS_LOCK_SIZE
       ("Lock entity size to match image");
-    
+
     /** How to describe this style in the UI. */
     public final String description;
-    
+
     ImageFillStyle(String d)
     {
         this.description = d;
     }
-    
+
     @Override
     public String toString()
     {

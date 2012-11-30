@@ -26,15 +26,15 @@ import ded.model.EntityShape;
 import ded.model.ImageFillStyle;
 
 /** Dialog box to edit an Entity. */
-public class EntityDialog extends ModalDialog 
-    implements ItemListener 
+public class EntityDialog extends ModalDialog
+    implements ItemListener
 {
     private static final long serialVersionUID = 1455207901388264571L;
 
     // -------------- private data --------------
     /** Entity being edited. */
     private Entity entity;
-    
+
     // Controls.
     private JTextField nameText;
     private JTextArea attributeText;
@@ -45,33 +45,33 @@ public class EntityDialog extends ModalDialog
     private JTextField pText, qText;
     private JTextField imageFileNameText;
     private JComboBox imageFillStyleChooser;
-    
+
     // -------------- methods ---------------
     public EntityDialog(Component documentParent, Diagram diagram, Entity entity)
     {
         super(documentParent, "Edit Entity");
-        
+
         this.entity = entity;
-        
+
         // NOTE: This dialog is not laid out well.  I have not yet figured out
         // a good way to do dialog layout well with Swing (whereas it is easy
         // with Qt).  So the code here should not be treated as a good example
         // on which to base other dialog implementations.
-        
+
         Box vb = ModalDialog.makeMarginVBox(this, ModalDialog.OUTER_MARGIN);
-      
+
         this.nameText = ModalDialog.makeLineEdit(vb, "Name:", 'n', this.entity.name);
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
-        
+
         // attributes
         {
             Box attrBox = ModalDialog.makeHBox(vb);
-            
+
             JLabel lbl = new JLabel("Attributes:");
             lbl.setDisplayedMnemonic('a');
             attrBox.add(lbl);
             attrBox.add(Box.createHorizontalGlue());
-            
+
             this.attributeText = new JTextArea(this.entity.attributes);
             lbl.setLabelFor(this.attributeText);
 
@@ -79,13 +79,13 @@ public class EntityDialog extends ModalDialog
             // http://stackoverflow.com/questions/5042429/how-can-i-modify-the-behavior-of-the-tab-key-in-a-jtextarea
             this.attributeText.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
             this.attributeText.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
-            
+
             JScrollPane scroll = new JScrollPane(this.attributeText);
-            
+
             // This is what establishes the initial size of the dialog, as the
             // scroll pane is the main resizable thing.
             scroll.setPreferredSize(new Dimension(300,150));
-            
+
             vb.add(scroll);
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
         }
@@ -101,11 +101,11 @@ public class EntityDialog extends ModalDialog
             this.shapeChooser.addItemListener(this);
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
         }
-        
+
         // fill color
         {
             Vector<String> colors = new Vector<String>();
-            
+
             // Defensive: If the current entity color is not in the
             // diagram colors, add it to the vector so that it is
             // in the dropdown.
@@ -117,17 +117,17 @@ public class EntityDialog extends ModalDialog
             for (String c : diagram.namedColors.keySet()) {
                 colors.add(c);
             }
-            
+
             this.fillColorChooser = ModalDialog.makeVectorChooser(
                 vb,
                 "Fill color:",
                 'f',
                 colors,
                 this.entity.fillColor);
-            
+
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
         }
-        
+
         // x, y
         {
             Box locBox = ModalDialog.makeHBox(vb);
@@ -137,7 +137,7 @@ public class EntityDialog extends ModalDialog
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
             ModalDialog.disallowVertStretch(locBox);
         }
-         
+
         // w, h
         {
             Box sizeBox = ModalDialog.makeHBox(vb);
@@ -154,10 +154,10 @@ public class EntityDialog extends ModalDialog
             hb.add(this.paramsLabel = new JLabel());    // Text set later.
             hb.add(Box.createHorizontalGlue());
         }
-        
+
         // shapeParams
         {
-            
+
             int p=5, q=10;
             int[] params = this.entity.shapeParams;
             if (params != null) {
@@ -168,7 +168,7 @@ public class EntityDialog extends ModalDialog
                     q = params[1];
                 }
             }
-            
+
             Box hb = ModalDialog.makeHBox(vb);
             this.pText = ModalDialog.makeLineEdit(hb, "P:", 'p', String.valueOf(p));
             hb.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
@@ -176,11 +176,11 @@ public class EntityDialog extends ModalDialog
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
             ModalDialog.disallowVertStretch(hb);
         }
-        
+
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
-        this.imageFileNameText = ModalDialog.makeLineEdit(vb, 
+        this.imageFileNameText = ModalDialog.makeLineEdit(vb,
             "Image file name:", 'i', this.entity.imageFileName);
-        
+
         // shape
         {
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
@@ -192,7 +192,7 @@ public class EntityDialog extends ModalDialog
                 this.entity.imageFillStyle);
             this.imageFillStyleChooser.addItemListener(this);
         }
-        
+
         this.updateControls();
         this.finishBuildingDialog(vb);
     }
@@ -216,13 +216,13 @@ public class EntityDialog extends ModalDialog
             q = Integer.valueOf(this.qText.getText());
         }
         catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, 
+            JOptionPane.showMessageDialog(this,
                 "At least one of X/Y/W/H/P/Q is not a valid integer.",
                 "Input Validation Error",
                 JOptionPane.ERROR_MESSAGE);
             return;
         }
-        
+
         EntityShape shape = (EntityShape)this.shapeChooser.getSelectedItem();
         if (shape.numParams > 0 && (p < 0 || q < 0)) {
             JOptionPane.showMessageDialog(this,
@@ -233,9 +233,9 @@ public class EntityDialog extends ModalDialog
         }
 
         String fillColor = (String)this.fillColorChooser.getSelectedItem();
-        
+
         ImageFillStyle imageFillStyle = (ImageFillStyle)this.imageFillStyleChooser.getSelectedItem();
-        
+
         // Update the entity.
         this.entity.name = this.nameText.getText();
         this.entity.attributes = this.attributeText.getText();
@@ -247,7 +247,7 @@ public class EntityDialog extends ModalDialog
         this.entity.size.height = h;
         this.entity.imageFileName = this.imageFileNameText.getText();
         this.entity.imageFillStyle = imageFillStyle;
-        
+
         // Not completely general at this time.
         if (this.entity.shape.numParams == 2) {
             this.entity.shapeParams[0] = p;
@@ -257,7 +257,7 @@ public class EntityDialog extends ModalDialog
         // Close dialog, signaling that a change was made.
         super.okPressed();
     }
-    
+
     /** React to the shape dropdown being changed. */
     @Override
     public void itemStateChanged(ItemEvent e)
@@ -272,12 +272,12 @@ public class EntityDialog extends ModalDialog
     private void updateControls()
     {
         EntityShape shape = (EntityShape)this.shapeChooser.getSelectedItem();
-        
+
         // Enable or disable P/Q based on which shape is active.
         boolean en = (shape.numParams == 2);
         this.pText.setEnabled(en);
         this.qText.setEnabled(en);
-        
+
         // Set the params caption.
         if (en) {
             this.paramsLabel.setText("Cuboid extends left by P, up by Q pixels:");
@@ -286,7 +286,7 @@ public class EntityDialog extends ModalDialog
             this.paramsLabel.setText("Shape params (none for this shape):");
         }
     }
-    
+
     /** Show the edit dialog for Entity, waiting until the user closes the dialog
       * before returning.  If the user presses OK, 'entity' will be updated and
       * true returned.  Otherwise, 'entity' is not modified, and false is returned. */

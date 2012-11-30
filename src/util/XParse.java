@@ -12,7 +12,7 @@ public class XParse extends Exception {
     {
         super(message);
     }
-    
+
     public XParse(String message, Throwable cause)
     {
         super(message, cause);

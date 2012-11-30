@@ -14,10 +14,10 @@ public class Util {
         if (coll == null) {
             return 0;
         }
-        
+
         int h = 1;
         for (T t : coll) {
-            h = h*31 + t.hashCode(); 
+            h = h*31 + t.hashCode();
         }
         return h;
     }
@@ -47,7 +47,7 @@ public class Util {
     {
         return Double.isInfinite(v) || Double.isNaN(v);
     }
-    
+
     /** Return true if 'a' and 'b' are both null or are both not
       * null and equals(). */
     public static boolean nullableEquals(Object a, Object b)
@@ -62,7 +62,7 @@ public class Util {
             return a.equals(b);
         }
     }
-    
+
     /** Return 0 if 'o' is null, else o.hashCode(). */
     public static int nullableHashCode(Object o)
     {

@@ -27,7 +27,7 @@ public class Inheritance {
     /** True if the inheritance is "open", meaning the parent can
       * be instantiated without instantiating any child. */
     public boolean open;
-    
+
     /** Location of the inheritance node. */
     public Point pt;
 
@@ -69,34 +69,34 @@ public class Inheritance {
         h = h*31 + this.pt.hashCode();
         return h;
     }
-    
+
     // ------------------- serialization -------------------
     public JSONObject toJSON(HashMap<Entity, Integer> entityToInteger)
     {
         JSONObject o = new JSONObject();
-        
+
         try {
             Integer parentIndex = entityToInteger.get(this.parent);
             if (parentIndex == null) {
                 throw new RuntimeException("internal error: entityToInteger mapping not found");
             }
             o.put("parentRef", parentIndex.intValue());
-            
+
             o.put("open", this.open);
             o.put("pt", AWTJSONUtil.pointToJSON(this.pt));
         }
         catch (JSONException e) { assert(false); }
-        
+
         return o;
     }
-    
+
     public Inheritance(JSONObject o, ArrayList<Entity> integerToEntity) throws JSONException
     {
         this.parent = Entity.fromJSONRef(integerToEntity, o.getLong("parentRef"));
         this.open = o.getBoolean("open");
         this.pt = AWTJSONUtil.pointFromJSON(o.getJSONObject("pt"));
     }
-    
+
     /** Return the value to which 'this' is mapped in 'inheritanceToInteger'. */
     public int toJSONRef(HashMap<Inheritance, Integer> inheritanceToInteger)
     {
@@ -118,7 +118,7 @@ public class Inheritance {
             throw new JSONException("invalid entity ref "+index);
         }
     }
-    
+
     // ------------------- legacy serialization -------------------
     /** Read an Inheritance from an ER FlattenInputStream. */
     public Inheritance(FlattenInputStream flat)
@@ -131,7 +131,7 @@ public class Inheritance {
         else {
             throw new XParse("Inheritance.parent: expected Entity");
         }
-        
+
         this.open = flat.readBoolean();
         this.pt = flat.readPoint();
     }

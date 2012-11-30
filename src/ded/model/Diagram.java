@@ -35,7 +35,7 @@ public class Diagram implements JSONable {
     /** Value of the "type" attribute in toplevel JSON object.  This
       * should never be changed. */
     public static final String jsonType = "Diagram Editor Diagram";
-    
+
     /** Value to write as the "version" attribute in toplevel JSON
       * object, and maximum value we can read there.  This should
       * be bumped every time something is added or changed in the
@@ -49,34 +49,34 @@ public class Diagram implements JSONable {
       * able to read the file without choking, the semantics would
       * not be preserved. */
     public static final int currentFileVersion = 8;
-    
+
     // ---------- public data ------------
     /** Size of window to display diagram.  Some elements might not fit
       * in the current size.
-      * 
+      *
       * Currently, this is the size of the visible content area.  The
       * surrounding window is generally larger, but that depends on
       * the window system. */
     public Dimension windowSize;
-    
+
     /** When true, the editor will paint the diagram file name in the
       * upper-left corner of the editing area, and also include it
       * when exporting to other file formats.  Normally true. */
     public boolean drawFileName;
-   
+
     /** Entities, in display order.  The last entity will appear on top
       * of all others. */
     public ArrayList<Entity> entities;
-    
+
     /** Inheritance nodes. */
     public ArrayList<Inheritance> inheritances;
-    
+
     /** Relations. */
     public ArrayList<Relation> relations;
-    
+
     /** Map from color names to Colors. */
     public LinkedHashMap<String, Color> namedColors;
-    
+
     // ----------- public methods -----------
     public Diagram()
     {
@@ -108,21 +108,21 @@ public class Diagram implements JSONable {
         m.put("Purple", new Color(161, 140, 237));
         m.put("Pink", new Color(227, 120, 236));
         m.put("Red", new Color(248, 50, 50));         // Very intense...
-        
+
         return m;
     }
-    
+
     public void selfCheck()
     {
         for (Relation r : this.relations) {
             r.globalSelfCheck(this);
         }
-        
+
         for (Inheritance i : this.inheritances) {
             i.globalSelfCheck(this);
         }
     }
-    
+
     // ------------------ serialization --------------------
     @Override
     public JSONObject toJSON()
@@ -131,16 +131,16 @@ public class Diagram implements JSONable {
         try {
             o.put("type", jsonType);
             o.put("version", currentFileVersion);
-            
+
             o.put("windowSize", AWTJSONUtil.dimensionToJSON(this.windowSize));
             o.put("drawFileName", this.drawFileName);
-            
+
             // Map from an entity to its position in the serialized
             // 'entities' array, so it can be referenced by inheritances
             // and relations.
-            HashMap<Entity, Integer> entityToInteger = 
+            HashMap<Entity, Integer> entityToInteger =
                 new HashMap<Entity, Integer>();
-            
+
             // Entities.
             JSONArray arr = new JSONArray();
             int index = 0;
@@ -149,11 +149,11 @@ public class Diagram implements JSONable {
                 arr.put(e.toJSON());
             }
             o.put("entities", arr);
-            
+
             // Map from inheritance to serialized position.
-            HashMap<Inheritance, Integer> inheritanceToInteger = 
+            HashMap<Inheritance, Integer> inheritanceToInteger =
                 new HashMap<Inheritance, Integer>();
-            
+
             // Inheritances.
             arr = new JSONArray();
             index = 0;
@@ -174,7 +174,7 @@ public class Diagram implements JSONable {
         catch (JSONException e) { assert(false); }
         return o;
     }
-    
+
     /** Deserialize from 'o'. */
     public Diagram(JSONObject o) throws JSONException
     {
@@ -182,7 +182,7 @@ public class Diagram implements JSONable {
         if (!type.equals(jsonType)) {
             throw new JSONException("unexpected file type: \""+type+"\"");
         }
-        
+
         int ver = (int)o.getLong("version");
         if (ver < 1) {
             throw new JSONException(
@@ -197,7 +197,7 @@ public class Diagram implements JSONable {
                 "a later version of the program in order to read "+
                 "this file.");
         }
-        
+
         this.windowSize = AWTJSONUtil.dimensionFromJSON(o.getJSONObject("windowSize"));
         this.namedColors = makeDefaultColors();
 
@@ -213,10 +213,10 @@ public class Diagram implements JSONable {
         this.entities = new ArrayList<Entity>();
         this.inheritances = new ArrayList<Inheritance>();
         this.relations = new ArrayList<Relation>();
-        
+
         // Map from serialized position to deserialized Entity.
         ArrayList<Entity> integerToEntity = new ArrayList<Entity>();
-        
+
         // Entities.
         JSONArray a = o.getJSONArray("entities");
         for (int i=0; i < a.length(); i++) {
@@ -228,16 +228,16 @@ public class Diagram implements JSONable {
         if (ver >= 2) {
             // Map from serialized position to deserialized Inheritance.
             ArrayList<Inheritance> integerToInheritance = new ArrayList<Inheritance>();
-            
+
             // Inheritances.
             a = o.getJSONArray("inheritances");
             for (int i=0; i < a.length(); i++) {
-                Inheritance inh = 
+                Inheritance inh =
                     new Inheritance(a.getJSONObject(i), integerToEntity);
                 this.inheritances.add(inh);
                 integerToInheritance.add(inh);
             }
-            
+
             // Relations.
             a = o.getJSONArray("relations");
             for (int i=0; i < a.length(); i++) {
@@ -282,11 +282,11 @@ public class Diagram implements JSONable {
         }
         return new Diagram(obj);
     }
-    
+
     /** Read a diagram from a file and return the new Diagram object.
       * This will auto-detect the ER or JSON file formats and read
       * the file appropriately. */
-    public static Diagram readFromFileAutodetect(String fname) 
+    public static Diagram readFromFileAutodetect(String fname)
         throws Exception
     {
         // For compatibility with the C++ implementation, first attempt
@@ -325,7 +325,7 @@ public class Diagram implements JSONable {
             }
         }
     }
-    
+
     /** Read a Diagram from an ER InputStream.  This will return null in
       * the one specific case where the file exists and is readable, but
       * the magic number is not present, meaning the file is probably
@@ -334,14 +334,14 @@ public class Diagram implements JSONable {
         throws XParse, IOException
     {
         FlattenInputStream flat = new FlattenInputStream(is);
-        
+
         // Magic number identifier for the file format.
         int magic = flat.readInt();
         if (magic != 0x2B044C63) {
             // The file is not in the expected format.
             return null;
         }
-        
+
         // File format version number.
         int ver = flat.readInt();
         if (!( 1 <= ver && ver <= 8 )) {
@@ -349,10 +349,10 @@ public class Diagram implements JSONable {
                              " but I only know how to read 1 through 8.");
         }
         flat.version = ver;
-        
+
         return new Diagram(flat);
     }
-    
+
     /** Read a Diagram from an ER FlattenInputStream */
     public Diagram(FlattenInputStream flat)
         throws XParse, IOException
@@ -363,7 +363,7 @@ public class Diagram implements JSONable {
         this.inheritances = new ArrayList<Inheritance>();
         this.relations = new ArrayList<Relation>();
         this.namedColors = makeDefaultColors();
-        
+
         if (flat.version >= 5) {
             this.windowSize = flat.readDimension();
         }
@@ -371,7 +371,7 @@ public class Diagram implements JSONable {
             // Default size from C++ code.
             this.windowSize = new Dimension(400, 300);
         }
-        
+
         // Entities
         {
             int numEntities = flat.readInt();
@@ -381,7 +381,7 @@ public class Diagram implements JSONable {
                 this.entities.add(e);
             }
         }
-        
+
         flat.checkpoint(0x64E2C40F);
 
         // Inheritances
@@ -392,10 +392,10 @@ public class Diagram implements JSONable {
                 flat.noteOwner(inh);
                 this.inheritances.add(inh);
             }
-            
+
             flat.checkpoint(0x144CB789);
         }
-        
+
         // Relations
         {
             int numRelations = flat.readInt();
@@ -404,22 +404,22 @@ public class Diagram implements JSONable {
                 this.relations.add(r);
             }
         }
-        
+
         flat.checkpoint(0x378264D9);
 
         this.selfCheck();
-        
+
         // In the ER format, I needed to add titles manually.  But in
         // Ded, that is automatic.  So, look for a title entity and
         // remove it.
         for (Entity e : this.entities) {
-            if (e.loc.x == 0 && e.loc.y == 0 && 
-                e.attributes.equals(" ") && 
+            if (e.loc.x == 0 && e.loc.y == 0 &&
+                e.attributes.equals(" ") &&
                 e.shape == EntityShape.ES_NO_SHAPE)
             {
                 // Looks like a title; remove it.
                 this.entities.remove(e);
-                
+
                 // Paranoia: make sure we didn't mess up the Diagram
                 // by doing that.  That would happen if there were a
                 // Relation connected to the title.
@@ -438,7 +438,7 @@ public class Diagram implements JSONable {
             }
         }
     }
-    
+
     // ------------------ data object boilerplate ------------------------
     @Override
     public boolean equals(Object obj)
@@ -470,7 +470,7 @@ public class Diagram implements JSONable {
         h = h*31 + this.namedColors.hashCode();
         return h;
     }
-    
+
     @Override
     public String toString()
     {

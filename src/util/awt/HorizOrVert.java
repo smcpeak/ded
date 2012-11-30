@@ -17,31 +17,31 @@ public enum HorizOrVert {
     {
         return this == HV_HORIZ;
     }
-    
+
     /** Yield collecton of all values for convenient iteration. */
     public static EnumSet<HorizOrVert> allValues()
     {
         return EnumSet.allOf(HorizOrVert.class);
     }
-    
+
     /** Yield the opposite dimension. */
     public HorizOrVert opposite()
     {
         return this == HV_HORIZ? HV_VERT : HV_HORIZ;
     }
-    
+
     /** Add two values, with wrapping: H+H=H, H+V=V, V+V=H. */
     public HorizOrVert plus(HorizOrVert other)
     {
         return this == HV_HORIZ? other : other.opposite();
     }
-    
+
     /** Extract this dimension from a Point. */
     public int get(Point p)
     {
         return this == HV_HORIZ? p.x : p.y;
     }
-    
+
     /** Set the coordinate for this dimension in a Point. */
     public void set(Point p, int newValue)
     {

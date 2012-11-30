@@ -20,7 +20,7 @@ public class JSONUtil {
         }
         return a;
     }
-    
+
     // I can't write 'collectionFromJSON' without reflection or some
     // factory classes (which I might decide to use at some point).
 }

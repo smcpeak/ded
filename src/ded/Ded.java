@@ -37,34 +37,34 @@ import ded.ui.DiagramController;
 public class Ded extends JFrame implements WindowListener {
     // ---------- constants -------------
     private static final long serialVersionUID = -7931792812267064160L;
-    
+
     /** Window title when there is no file name, or prefix of it when there is. */
     public static final String windowTitle = "Diagram Editor";
 
     // ---------- static data ----------------
     /** Window icons. */
     public static ImageIcon windowIcon16, windowIcon32;
-    
+
     // ---------- instance data --------------
     /** The font I want to use in the diagram area. */
     public Font diagramFont;
-    
+
     /** The main diagram editor pane. */
     private DiagramController diagramController;
-    
+
     /** The menu item associated with Diagram.drawFileName. */
     private JCheckBoxMenuItem drawFileNameCheckbox;
-    
+
     // ---------- public methods -------------
     public Ded()
     {
         super(windowTitle);
-        
+
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         this.addWindowListener(this);
-        
+
         this.setSize(800,600);
-        
+
         // Load the Window icon if we haven't already.
         synchronized (Ded.class) {
             if (windowIcon16 == null) {
@@ -81,7 +81,7 @@ public class Ded extends JFrame implements WindowListener {
                         // needed when running from Eclipse.
                         windowIcon16 = new ImageIcon("src/ded/ui/boxarrow16.png");
                     }
-                    
+
                     url = Ded.class.getResource("/ded/ui/boxarrow32.png");
                     if (url != null) {
                         windowIcon32 = new ImageIcon(url);
@@ -97,7 +97,7 @@ public class Ded extends JFrame implements WindowListener {
                 }
             }
         }
-        
+
         if (windowIcon16 != null) {
             ArrayList<Image> icons = new ArrayList<Image>();
             icons.add(windowIcon16.getImage());
@@ -107,7 +107,7 @@ public class Ded extends JFrame implements WindowListener {
 
         // Fallback.
         this.diagramFont = this.getFont();
-        
+
         // Try to use a portable font.
         InputStream in = null;
         try {
@@ -118,7 +118,7 @@ public class Ded extends JFrame implements WindowListener {
             // one glyph myself, and converted it to TTF to pacify Swing.
             // Portable = awesome!
             String fname = "resources/helvR12sm.ttf";
-            
+
             // First try loading it from the JAR file.
             URL url = Ded.class.getResource("/"+fname);
             if (url != null) {
@@ -143,7 +143,7 @@ public class Ded extends JFrame implements WindowListener {
                 catch (IOException e) {/*don't care*/}
             }
         }
-        
+
         this.diagramController = new DiagramController(this);
         this.diagramController.setOpaque(true);
         this.setContentPane(this.diagramController);
@@ -162,39 +162,39 @@ public class Ded extends JFrame implements WindowListener {
         menuBar.add(buildHelpMenu());
         this.setJMenuBar(menuBar);
     }
-    
+
     @SuppressWarnings("serial")
     private JMenu buildFileMenu()
     {
         JMenu m = new JMenu("File");
         m.setMnemonic(KeyEvent.VK_F);
-        
+
         m.add(new MenuAction("New", KeyEvent.VK_N) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.newFile();
             }
         });
-        
+
         m.add(new MenuAction("Open or import...", KeyEvent.VK_O, KeyEvent.VK_O, ActionEvent.CTRL_MASK) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.loadFromFile();
             }
         });
-        
+
         m.add(new MenuAction("Save and export to PNG", KeyEvent.VK_S, KeyEvent.VK_S, ActionEvent.CTRL_MASK) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.saveCurrentFile();
             }
         });
-        
+
         m.add(new MenuAction("Save as ...", KeyEvent.VK_A) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.chooseAndSaveToFile();
             }
         });
-        
+
         m.addSeparator();
-        
+
         m.add(new MenuAction("Quit", KeyEvent.VK_Q, KeyEvent.VK_Q, 0) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.tryCloseWindow();
@@ -203,64 +203,64 @@ public class Ded extends JFrame implements WindowListener {
 
         return m;
     }
-    
+
     @SuppressWarnings("serial")
     private JMenu buildEditMenu()
     {
         JMenu m = new JMenu("Edit");
         m.setMnemonic(KeyEvent.VK_E);
-        
+
         m.add(new MenuAction("Edit selected ...", KeyEvent.VK_ENTER, KeyEvent.VK_ENTER, 0) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.editSelected();
             }
         });
-        
+
         m.add(new MenuAction("Insert control point", KeyEvent.VK_INSERT, KeyEvent.VK_INSERT, 0) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.insertControlPoint();
             }
         });
-        
+
         m.add(new MenuAction("Delete selected", KeyEvent.VK_DELETE, KeyEvent.VK_DELETE, 0) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.deleteSelected();
             }
         });
-        
+
         return m;
     }
-    
+
     @SuppressWarnings("serial")
     private JMenu buildModeMenu()
     {
         JMenu m = new JMenu("Mode");
         m.setMnemonic(KeyEvent.VK_M);
-        
+
         m.add(new MenuAction("Select (normal)", KeyEvent.VK_S, KeyEvent.VK_S, 0) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.setMode(DiagramController.Mode.DCM_SELECT);
             }
         });
-        
+
         m.add(new MenuAction("Create entity", KeyEvent.VK_C, KeyEvent.VK_C, 0) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.setMode(DiagramController.Mode.DCM_CREATE_ENTITY);
             }
         });
-        
+
         m.add(new MenuAction("Create relation (arrow)", KeyEvent.VK_A, KeyEvent.VK_A, 0) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.setMode(DiagramController.Mode.DCM_CREATE_RELATION);
             }
         });
-        
+
         m.add(new MenuAction("Create inheritance", KeyEvent.VK_I, KeyEvent.VK_I, 0) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.setMode(DiagramController.Mode.DCM_CREATE_INHERITANCE);
             }
         });
-        
+
         return m;
     }
 
@@ -269,7 +269,7 @@ public class Ded extends JFrame implements WindowListener {
     {
         JMenu m = new JMenu("Diagram");
         m.setMnemonic(KeyEvent.VK_D);
-        
+
         this.drawFileNameCheckbox =
             new JCheckBoxMenuItem("Draw file name in upper-left corner", true);
         this.drawFileNameCheckbox.setMnemonic(KeyEvent.VK_F);
@@ -279,16 +279,16 @@ public class Ded extends JFrame implements WindowListener {
             }
         });
         m.add(this.drawFileNameCheckbox);
-        
+
         m.add(new MenuAction("Reload entity images", KeyEvent.VK_R) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.reloadEntityImages();
             }
         });
-        
+
         return m;
     }
-    
+
     @SuppressWarnings("serial")
     private JMenu buildHelpMenu()
     {
@@ -306,31 +306,31 @@ public class Ded extends JFrame implements WindowListener {
         });
 
         m.addSeparator();
-        
+
         m.add(new MenuAction("About ...", KeyEvent.VK_A) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.showAboutBox();
             }
         });
-        
+
         return m;
     }
-    
+
     private void toggleDrawFileName()
     {
-        this.diagramController.diagram.drawFileName = 
+        this.diagramController.diagram.drawFileName =
             !this.diagramController.diagram.drawFileName;
         this.diagramController.diagramChanged();
         this.updateMenuState();
     }
-    
+
     /** Update the state of stateful menu items (checkboxes)
       * to match the current diagram. */
     public void updateMenuState()
     {
         this.drawFileNameCheckbox.setState(this.diagramController.diagram.drawFileName);
     }
-    
+
     private void showAboutBox()
     {
         // Get the version number.
@@ -355,7 +355,7 @@ public class Ded extends JFrame implements WindowListener {
                 version = "(No version information found.)";
             }
         }
-        
+
         JOptionPane.showMessageDialog(
             this,
             "Diagram Editor (DED)\n"+
@@ -368,7 +368,7 @@ public class Ded extends JFrame implements WindowListener {
             JOptionPane.INFORMATION_MESSAGE,
             windowIcon32);
     }
-    
+
     @Override
     public void dispose()
     {
@@ -383,12 +383,12 @@ public class Ded extends JFrame implements WindowListener {
         // one process, I'll have to make the logic here smarter.
         System.exit(0);
     }
-    
+
     /** Close the window; but prompt if dirty. */
     public void tryCloseWindow()
     {
         if (this.diagramController.isDirty()) {
-            int res = JOptionPane.showConfirmDialog(this, 
+            int res = JOptionPane.showConfirmDialog(this,
                 "There are unsaved changes.  Quit anyway?",
                 "Quit Confirmation", JOptionPane.YES_NO_OPTION);
             if (res != JOptionPane.YES_OPTION) {
@@ -411,7 +411,7 @@ public class Ded extends JFrame implements WindowListener {
     @Override public void windowDeiconified(WindowEvent e) {}
     @Override public void windowActivated(WindowEvent e) {}
     @Override public void windowDeactivated(WindowEvent e) {}
-    
+
     public static void main(final String[] args)
     {
         // Use the Nimbus L+F.
@@ -427,7 +427,7 @@ public class Ded extends JFrame implements WindowListener {
             System.err.println("Could not use Nimbus look and feel: "+e);
             System.err.println("Falling back to default L+F.");
         }
-        
+
         // Show exceptions in the UI.
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
@@ -436,30 +436,30 @@ public class Ded extends JFrame implements WindowListener {
                 // that gets here is a bug, so dump a trace to the console.
                 System.err.println("Uncaught exception at Diagram Editor top-level:");
                 e.printStackTrace();
-                
+
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         String msg = e.getClass().getSimpleName();
-                        
+
                         String m = e.getMessage();
                         if (m != null) {
                             msg += ": " + m;
                         }
-                        
-                        JOptionPane.showMessageDialog(null, 
+
+                        JOptionPane.showMessageDialog(null,
                             msg, "Error",
                             JOptionPane.ERROR_MESSAGE);
                     }
                 });
             }
         });
-        
+
         // Kick off the Swing app.
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 Ded ded = new Ded();
-                
+
                 // Open specified file if any.
                 if (args.length >= 1) {
                     ded.diagramController.loadFromNamedFile(args[0]);

@@ -12,20 +12,20 @@ public class RelationEndpointController extends ResizeController {
     // ------------------------ instance data --------------------------
     /** Relation controller we are a part of. */
     public RelationController rcontroller;
-    
+
     /** The endpoint we are controlling. */
     public RelationEndpoint endpoint;
 
     // --------------------------- methods -----------------------------
     public RelationEndpointController(
         DiagramController diagramController,
-        RelationController relationController, 
+        RelationController relationController,
         RelationEndpoint relationEndpoint)
     {
         super(diagramController);
         this.rcontroller = relationController;
         this.endpoint = relationEndpoint;
-        
+
         this.selfCheck();
     }
 
@@ -34,14 +34,14 @@ public class RelationEndpointController extends ResizeController {
     {
         return this.endpoint.getCenter();
     }
-    
+
     @Override
     public void dragTo(Point pt)
     {
         this.endpoint.setTo(this.diagramController.getRelationEndpoint(pt));
         this.diagramController.setDirty();
     }
-    
+
     @Override
     public void selfCheck()
     {

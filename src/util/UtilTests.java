@@ -15,7 +15,7 @@ public class UtilTests {
         ut.testFileRelativeTo("/a", "/b/c", "/b/c");
         ut.testFileRelativeTo("/a/b", "../c", "/a/b/../c");
     }
-    
+
     private void testFileRelativeTo(String base, String name, String expected)
     {
         File baseFile = new File(base);

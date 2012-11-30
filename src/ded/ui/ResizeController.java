@@ -44,7 +44,7 @@ public abstract class ResizeController extends Controller {
         super.paint(g);
         this.paintBounds(g, resizeHandleColor);
     }
-    
+
     @Override
     public void mousePressed(MouseEvent e)
     {
@@ -52,7 +52,7 @@ public abstract class ResizeController extends Controller {
             this.diagramController.beginDragging(this, e.getPoint());
         }
     }
-    
+
     @Override
     public boolean wantLassoSelection()
     {

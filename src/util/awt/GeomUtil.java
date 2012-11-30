@@ -23,13 +23,13 @@ public class GeomUtil {
     {
         return new Point2D.Double(a.x - b.x, a.y - b.y);
     }
-    
+
     /** Return the euclidean length of 'v'. */
     public static double length2DVector(Point2D.Double v)
     {
         return Math.sqrt(v.x * v.x + v.y * v.y);
     }
-    
+
     /** Return the euclidean length of 'v'. */
     public static int lengthVector(Point v)
     {
@@ -41,13 +41,13 @@ public class GeomUtil {
     {
         return Math.sqrt((double)v.x * v.x + (double)v.y + v.y);
     }
-    
+
     /** Return 'v' rotated 90 degrees counterclockwise in cartesian coordinates. */
     public static Point2D.Double rot2DVector90(Point2D.Double v)
     {
         return new Point2D.Double(-v.y, v.x);
     }
-    
+
     /** Return 'v' rotated 'theta' radians counterclockwise in cartesian coordinates. */
     public static Point2D.Double rot2DVectorAngle(Point2D.Double v, double theta)
     {
@@ -63,7 +63,7 @@ public class GeomUtil {
     {
         return new Point2D.Double(v.x * factor, v.y * factor);
     }
-    
+
     /** Return 'v' scaled so its length is 'length'. */
     public static Point2D.Double scale2DVectorTo(Point2D.Double v, double length)
     {
@@ -94,19 +94,19 @@ public class GeomUtil {
     {
         return new Point2D.Double(line.x1, line.y1);
     }
-    
+
     /** Return the end point of 'line'. */
     public static Point2D.Double getLineEnd(Line2D.Double line)
     {
         return new Point2D.Double(line.x2, line.y2);
     }
-    
+
     /** Return the vector from the start of 'line' to its end. */
     public static Point2D.Double getLineVector(Line2D.Double line)
     {
         return new Point2D.Double(line.x2 - line.x1, line.y2 - line.y1);
     }
-    
+
     /** Treat 'line' as parametric, where the start point is 0
       * and the end point is 1.  Return the point corresponding
       * to parameter value 't'. */
@@ -122,10 +122,10 @@ public class GeomUtil {
     {
         return v.x != 0 || v.y != 0;
     }
-    
+
     /** Given two lines, regarded as being in parametric form, return the
       * value 't' such that "qwline.origin + qwline.vector * t" is the
-      * intersection point.  If the lines are parallel, returns NaN. */ 
+      * intersection point.  If the lines are parallel, returns NaN. */
     public static double intersectLine2Ds(Line2D.Double pvline, Line2D.Double qwline)
     {
         // Some convenient names.
@@ -133,7 +133,7 @@ public class GeomUtil {
         Point2D.Double v = getLineVector(pvline);
         Point2D.Double q = getLineStart(qwline);
         Point2D.Double w = getLineVector(qwline);
-        
+
         // If either segment is 0 length, bail.
         if (!( nonzero2DVector(v) && nonzero2DVector(w) )) {
             return Double.NaN;
@@ -153,7 +153,7 @@ public class GeomUtil {
             double s = ((q.x - p.x) + (w.x / w.y) * (p.y - q.y)) /
                     // -----------------------------------------
                             (v.x - (w.x / w.y) * v.y) ;
-            
+
             if (Util.isSpecialDouble(s)) {
                 // The lines must be parallel.
                 return Double.NaN;
@@ -162,7 +162,7 @@ public class GeomUtil {
             // The point given by "p + v*s" is the intersection point.
             // Use 's' to compute 't'.
             t = (p.x + (v.x * s) - q.x) / w.x;
-            
+
             if (Util.isSpecialDouble(t)) {
                 // Try the other formula, using 'y' components.
                 t = (p.y + (v.y * s) - q.y) / w.y;
@@ -176,7 +176,7 @@ public class GeomUtil {
                 }
             }
         }
-        
+
         assert(!Util.isSpecialDouble(t));
         return t;
     }
@@ -197,7 +197,7 @@ public class GeomUtil {
 
     /** Return a new rectangle that exceeds 'r' by 'd' pixels on all
       * sides, keeping the center the same.  * If 'd' is negative,
-      * the new rectangle is smaller. */  
+      * the new rectangle is smaller. */
     public static Rectangle growRectangle(Rectangle r, int d)
     {
         return new Rectangle(r.x - d,
@@ -244,13 +244,13 @@ public class GeomUtil {
     {
         int[] px = new int[4];
         int[] py = new int[4];
-        
+
         // Counterclockwise starting at upper left.
         px[0] = x;           py[0] = y;
         px[1] = x;           py[1] = y+h;
         px[2] = x+w;         py[2] = y+h;
         px[3] = x+w;         py[3] = y;
-        
+
         return new Polygon(px, py, 4);
     }
 
@@ -271,25 +271,25 @@ public class GeomUtil {
     {
         return new Point(v.x * s, v.y * s);
     }
-    
+
     /** Rotate 'p' 90 degrees clockwise in Cartesian coordinates. */
     public static Point row90cw(Point p)
     {
         return new Point(-p.y, p.x);
     }
-    
+
     /** Rotate 'p' 90 degrees counterclockwise in Cartesian coordinates. */
     public static Point row90ccw(Point p)
     {
         return new Point(p.y, -p.x);
     }
 
-    /** Return the smallest Rectangle that contains all in 'pts'. */ 
+    /** Return the smallest Rectangle that contains all in 'pts'. */
     public static Rectangle boundingBox(ArrayList<Point> pts)
     {
         assert(!pts.isEmpty());
         Rectangle r = new Rectangle(pts.get(0).x, pts.get(0).y, 1,1);
-        
+
         for (Point p : pts) {
             if (p.x < r.x) {
                 r.width += r.x - p.x;
@@ -306,7 +306,7 @@ public class GeomUtil {
                 r.height = p.y - r.y + 1;
             }
         }
-        
+
         return r;
     }
 
@@ -319,7 +319,7 @@ public class GeomUtil {
         }
         return ret;
     }
-    
+
     /** Return the magnitude of the cross product of 'a' and 'a',
      * which is |a||b|sin(theta), theta being the positive angle
      * between 'a' to 'b'. */
@@ -335,20 +335,20 @@ public class GeomUtil {
    {
        return (a.x * b.x) + (a.y * b.y);
    }
-   
+
     /** Return the distance between 'point' and either the line through
       * 'lineSeg' or 'lineSeg' itself, depending on 'distToSeg'. */
     public static double distance2DPointLineOrSeg(
-        Point2D.Double point, 
+        Point2D.Double point,
         Line2D.Double lineSeg,
         boolean distToSeg)
     {
         // Let 'a' be the vector from the start of 'lineSeg' to 'pt'.
         Point2D.Double a = subtract(point, getLineStart(lineSeg));
-        
+
         // Let 'b' be the vector from the start to end of 'lineSeg'.
         Point2D.Double b = getLineVector(lineSeg);
-        
+
         if (distToSeg) {
             // Check to see if the closest point on the line is
             // between start and end.
@@ -361,30 +361,30 @@ public class GeomUtil {
                 // The end is the closest point.
                 return length2DVector(subtract(point, getLineEnd(lineSeg)));
             }
-            
+
             // The line is closer than either endpoint, so get the
             // distance to it.
         }
-        
-        // This is "|a||b|sin(theta)", theta being the angle between a and b. 
+
+        // This is "|a||b|sin(theta)", theta being the angle between a and b.
         double cross = crossProdZ2DVector(a, b);
-        
+
         // This is "|a|sin(theta)".
         return Math.abs(cross / length2DVector(b));
     }
-    
+
     /** Return the distance between 'point' and the line through 'lineSeg'. */
     public static double distance2DPointLine(
-        Point2D.Double point, 
+        Point2D.Double point,
         Line2D.Double lineSeg)
     {
         return distance2DPointLineOrSeg(point, lineSeg, false /*distToSeg*/);
     }
-    
+
     /** Return the distance between 'point' and 'lineSeg'.  When 'point'
       * is far from the segment, the distance is usually the distance
       * to the closest endpoint.
-      * 
+      *
       * This differs from 'distance2DPointLine' in that we do not
       * consider the line through 'lineSeg', just the segment itself. */
     public static double distance2DPointLineSeg(
