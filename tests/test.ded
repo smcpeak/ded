@@ -380,10 +380,14 @@
     {
       "imageFileName": "smiley.png",
       "loc": {
-        "x": 295,
-        "y": 140
+        "x": 290,
+        "y": 145
       },
-      "shape": "ES_NO_SHAPE",
+      "shape": "ES_CUBOID",
+      "shapeParams": [
+        5,
+        10
+      ],
       "size": {
         "h": 50,
         "w": 50

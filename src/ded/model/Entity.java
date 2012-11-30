@@ -53,7 +53,8 @@ public class Entity implements JSONable {
     /** Additional shape-specific geometry parameters.  May be null. */
     public int[] shapeParams = null;
     
-    /** File name of image to use instead of the specified shape.  When
+    /** File name of image to draw as the entity background instead of
+      * 'fillColor' (which is then not used for most shapes).  When
       * rendered, if relative, the this will be interpreted as relative
       * to the directory where the containing .ded file is.  This is
       * only used if it is not empty. */

@@ -121,6 +121,21 @@ public class EntityController extends Controller
         
         // All further options are clipped to the rectangle.
         g.setClip(r.x, r.y, r.width, r.height);
+
+        // Should we draw a solid background?  As a first cut, we
+        // want it unless we are selected, since in that case,
+        // super.paint already painted the background in the
+        // selection color.
+        boolean wantSolidBackground = !this.isSelected();
+        
+        // Image background.
+        if (!this.entity.imageFileName.isEmpty()) {
+            this.drawImage(g, r, this.entity.imageFileName);
+            
+            // Do not draw a solid background; the image will
+            // act as the background.
+            wantSolidBackground = false;
+        }
         
         // Entity outline with proper shape.
         switch (this.entity.shape) {
@@ -130,7 +145,7 @@ public class EntityController extends Controller
                 
             case ES_RECTANGLE:
             case ES_CUBOID:
-                if (!this.isSelected()) {
+                if (wantSolidBackground) {
                     // Fill with the normal entity color (selected controllers
                     // get filled with selection color by super.paint).
                     g.setColor(this.getFillColor());
@@ -143,7 +158,7 @@ public class EntityController extends Controller
                 break;
                 
             case ES_ELLIPSE:
-                if (!this.isSelected()) {
+                if (wantSolidBackground) {
                     g.setColor(this.getFillColor());
                     g.fillOval(r.x, r.y, r.width-1, r.height-1);
                     
@@ -154,12 +169,8 @@ public class EntityController extends Controller
                 break;
                 
             case ES_CYLINDER:
-                this.drawCylinder(g, r);
+                this.drawCylinder(g, r, wantSolidBackground);
                 break;
-        }
-        
-        if (!this.entity.imageFileName.isEmpty()) {
-            this.drawImage(g, r, this.entity.imageFileName);
         }
         
         if (this.entity.attributes.isEmpty()) {
@@ -302,25 +313,27 @@ public class EntityController extends Controller
     }
 
     /** Draw the cylinder shape into 'r'. */
-    public void drawCylinder(Graphics g, Rectangle r)
+    public void drawCylinder(Graphics g, Rectangle r, boolean wantSolidBackground)
     {
-        g.setColor(this.getFillColor());
-        
-        // Fill upper ellipse.  I do not quite understand why I
-        // have to subtract one from the width and height here,
-        // but experimentation shows that if I do not do that,
-        // then I get fill color pixels peeking out from behind
-        // the outline.
-        g.fillOval(r.x, r.y, 
-                   r.width - 1, entityNameHeight - 1);
-        
-        // Fill lower ellipse.
-        g.fillOval(r.x, r.y + r.height - entityNameHeight,
-                   r.width - 1, entityNameHeight - 1); 
-        
-        // Fill rectangle between them.
-        g.fillRect(r.x, r.y + entityNameHeight/2,
-                   r.width, r.height - entityNameHeight);
+        if (wantSolidBackground) {
+            g.setColor(this.getFillColor());
+            
+            // Fill upper ellipse.  I do not quite understand why I
+            // have to subtract one from the width and height here,
+            // but experimentation shows that if I do not do that,
+            // then I get fill color pixels peeking out from behind
+            // the outline.
+            g.fillOval(r.x, r.y, 
+                       r.width - 1, entityNameHeight - 1);
+            
+            // Fill lower ellipse.
+            g.fillOval(r.x, r.y + r.height - entityNameHeight,
+                       r.width - 1, entityNameHeight - 1); 
+            
+            // Fill rectangle between them.
+            g.fillRect(r.x, r.y + entityNameHeight/2,
+                       r.width, r.height - entityNameHeight);
+        }
         
         g.setColor(entityOutlineColor);
         
