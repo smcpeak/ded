@@ -33,13 +33,27 @@ import ded.model.ImageFillStyle;
 /** Controller for Entity. */
 public class EntityController extends Controller
 {
-    // ----------- static data -------------
-    public static final Color defaultEntityFillColor = new Color(192, 192, 192);
+    // ----------- constants -------------
+    /** Default color to fill the entity interior if the chosen color
+      * is somehow invalid. */
+    public static final Color fallbackEntityFillColor = new Color(192, 192, 192);
+
+    /** Color to draw the outline of an entity. */
     public static final Color entityOutlineColor = new Color(0, 0, 0);
 
+    /** Height of the name box. */
     public static final int entityNameHeight = 20;
+
+    /** Distance between entity box sides and the attribute text. */
     public static final int entityAttributeMargin = 5;
+
+    /** Minimum side size for an entity when resizing using the handles.
+      * Note that a smaller entity can be made by using the edit dialog. */
     public static final int minimumEntitySize = 20;       // 20x20
+
+    /** Number of pixels to expand the selection box on all sides beyond
+      * the normal hit-test rectangle. */
+    public static final int selectionBoxExpansion = 0;
 
     // ----------- instance data -------------
     /** The thing being controlled. */
@@ -106,11 +120,27 @@ public class EntityController extends Controller
     }
 
     @Override
+    public void paintSelectionBackground(Graphics g0)
+    {
+        Graphics g = g0.create();
+        Rectangle r = this.entity.getRect();
+
+        // Paint selection box.  This is a little bigger than the actual
+        // hit-test bounds because a lot of my new options for drawing
+        // entities completely obscure the hit-test rectangle.
+        if (this.isSelected()) {
+            g.setColor(Controller.selectedColor);
+            g.fillRect(r.x - selectionBoxExpansion,
+                       r.y - selectionBoxExpansion,
+                       r.width + selectionBoxExpansion*2,
+                       r.height + selectionBoxExpansion*2);
+        }
+    }
+
+    @Override
     public void paint(Graphics g0)
     {
         Graphics g = g0.create();
-
-        super.paint(g);
 
         // Get bounding rectangle.
         Rectangle r = this.entity.getRect();
@@ -284,7 +314,7 @@ public class EntityController extends Controller
         }
         else {
             // Fall back on default if color is not recognized.
-            return defaultEntityFillColor;
+            return fallbackEntityFillColor;
         }
     }
 

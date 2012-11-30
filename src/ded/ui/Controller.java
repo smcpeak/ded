@@ -52,14 +52,16 @@ public abstract class Controller {
       * This is used as a reference point for drag operations. */
     public abstract Point getLoc();
 
+    /** Paint the background with the selection color. */
+    public void paintSelectionBackground(Graphics g)
+    {
+        this.paintBounds(g, Controller.selectedColor);
+    }
+
     /** Draw a representation of the controller and the thing it is
       * controlling. */
     public void paint(Graphics g)
-    {
-        if (this.isSelected()) {
-            this.paintBounds(g, Controller.selectedColor);
-        }
-    }
+    {}
 
     /** Paint 'getBounds' with a solid color. */
     protected void paintBounds(Graphics g0, Color c)
