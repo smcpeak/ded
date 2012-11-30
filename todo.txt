@@ -12,7 +12,6 @@ Small:
 
 Medium:
 - entities with hyperlinks, export HTML link map
-- control over which entities are on top
 - smarter relation routing
 - undo/redo
 - help bubbles

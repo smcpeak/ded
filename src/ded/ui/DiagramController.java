@@ -74,6 +74,7 @@ public class DiagramController extends JPanel
         "Left click+drag - multiselect rectangle\n"+
         "Right click - properties\n"+
         "\n"+
+        "When entity selected, F/B to move to front/back.\n"+
         "When relation selected, H/V/D to change routing,\n"+
         "and O to toggle owned/shared.\n"+
         "When inheritance selected, O to change open/closed.\n"+
@@ -1305,6 +1306,52 @@ public class DiagramController extends JPanel
         }
 
         this.repaint();
+    }
+
+    /** If 'front' is true, make selected entities top-most so they
+      * are displayed on top of all others, preserving the relative
+      * order of the selected entities.  If 'front' is false, move
+      * them to the bottom. */
+    public void moveSelectedEntitiesToFrontOrBack(boolean front)
+    {
+        // Collect the selected entities and controllers in their
+        // current relative order.  I need 'selEntities' so I can
+        // call 'removeAll' and 'addAll' with them.
+        ArrayList<Entity> selEntities = new ArrayList<Entity>();
+        ArrayList<EntityController> selControllers = new ArrayList<EntityController>();
+        for (Controller c : this.controllers) {
+            if (c.isSelected() && c instanceof EntityController) {
+                EntityController ec = (EntityController)c;
+                selEntities.add(ec.entity);
+                selControllers.add(ec);
+            }
+        }
+
+        if (selEntities.isEmpty()) {
+            this.errorMessageBox("There are no selected entities to move.");
+            return;
+        }
+
+        // Move the entities in the diagram.
+        this.diagram.entities.removeAll(selEntities);
+        if (front) {
+            this.diagram.entities.addAll(selEntities);
+        }
+        else {
+            this.diagram.entities.addAll(0, selEntities);
+        }
+
+        // Move the controller as well.
+        this.controllers.removeAll(selControllers);
+        if (front) {
+            this.controllers.addAll(selControllers);
+        }
+        else {
+            this.controllers.addAll(0, selControllers);
+        }
+
+        this.selfCheck();
+        this.diagramChanged();
     }
 
     @Override

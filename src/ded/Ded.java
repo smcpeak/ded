@@ -286,6 +286,20 @@ public class Ded extends JFrame implements WindowListener {
             }
         });
 
+        m.addSeparator();
+
+        m.add(new MenuAction("Bring selected entities to front", KeyEvent.VK_F, KeyEvent.VK_F, 0) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.moveSelectedEntitiesToFrontOrBack(true /*front*/);
+            }
+        });
+
+        m.add(new MenuAction("Send selected entities to back", KeyEvent.VK_B, KeyEvent.VK_B, 0) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.moveSelectedEntitiesToFrontOrBack(false /*front*/);
+            }
+        });
+
         return m;
     }
 
