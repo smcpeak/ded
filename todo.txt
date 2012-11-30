@@ -10,13 +10,13 @@ Small:
 - dashed lines for relations
 - specify initial size (etc.?) for new relations
 - option to automatically expand entities to contain their title and attributes
-- relation dialog should include owner checkbox
 
 Medium:
 - entities with hyperlinks, export HTML link map
 - control over which entities are on top
 - smarter relation routing
 - undo/redo
+- help bubbles
 
 Big:
 - add entity shapes to allow mocking UIs

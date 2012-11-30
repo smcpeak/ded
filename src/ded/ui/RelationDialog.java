@@ -4,8 +4,10 @@
 package ded.ui;
 
 import java.awt.Component;
+import java.awt.event.KeyEvent;
 
 import javax.swing.Box;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 
@@ -25,6 +27,7 @@ public class RelationDialog extends ModalDialog {
     // Controls.
     private JTextField labelField;
     private JComboBox routingChooser;
+    private JCheckBox owningCheckbox;
 
     // ------------------- methods ----------------------
     public RelationDialog(Component parent, Relation relation)
@@ -47,6 +50,15 @@ public class RelationDialog extends ModalDialog {
             this.relation.routingAlg);
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
+        {
+            Box hb = ModalDialog.makeHBox(vb);
+            hb.add(this.owningCheckbox =
+                new JCheckBox("Owning relation", this.relation.owning));
+            this.owningCheckbox.setMnemonic(KeyEvent.VK_O);
+            hb.add(Box.createHorizontalGlue());
+            vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+        }
+
         // It might be nice to allow the endpoints to be edited, but
         // that is challenging due to the ability to connect them to
         // Entities and Inheritances.
@@ -57,9 +69,11 @@ public class RelationDialog extends ModalDialog {
     @Override
     public void okPressed()
     {
+        RoutingAlgorithm ra = (RoutingAlgorithm)this.routingChooser.getSelectedItem();
+
         this.relation.label = this.labelField.getText();
-        this.relation.routingAlg =
-            (RoutingAlgorithm)this.routingChooser.getSelectedItem();
+        this.relation.routingAlg = ra;
+        this.relation.owning = this.owningCheckbox.isSelected();
 
         super.okPressed();
     }
