@@ -217,15 +217,11 @@ public class DiagramController extends JPanel
             g.drawLine(x, y, x + fm.stringWidth(name), y);
         }
 
-        // Selection boxes.
+        // Controllers.
         for (Controller c : this.controllers) {
             if (c.isSelected()) {
                 c.paintSelectionBackground(g);
             }
-        }
-
-        // Controllers.
-        for (Controller c : this.controllers) {
             c.paint(g);
         }
 
