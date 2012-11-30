@@ -1,10 +1,6 @@
 TODOs for Diagram Editor
 ------------------------
 
-Bugs:
-- double-click on entity, but accidentally hit one of the resize
-  handles: get error about it not being editable
-
 Small:
 - add image load log
 - selected entities are now sometimes hard to recognize; expand sel rectangle by 1?

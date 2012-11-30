@@ -88,6 +88,15 @@ public class EntityResizeController extends ResizeController {
     }
     
     @Override
+    public void edit()
+    {
+        // If I double-click on an entity, sometimes I hit the resize
+        // controller since it appears on the first click.  Just delegate
+        // the message to the entity controller.
+        this.econtroller.edit();
+    }
+    
+    @Override
     public void selfCheck()
     {
         super.selfCheck();
