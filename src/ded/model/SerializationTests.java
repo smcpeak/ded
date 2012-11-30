@@ -56,7 +56,8 @@ public class SerializationTests {
         r1.controlPts.add(new Point(73,74));
         r1.routingAlg = RoutingAlgorithm.RA_DIRECT;
         r1.label = "r1";
-        r1.owning = true;
+        r1.end.arrowStyle = ArrowStyle.AS_FILLED_TRIANGLE;
+        r1.start.arrowStyle = ArrowStyle.AS_DOUBLE_ANGLE;
         d.relations.add(r1);
 
         // Relation between two points.

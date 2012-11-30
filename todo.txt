@@ -5,7 +5,6 @@ Small:
 - copy+paste for sets of selected entities
 - entity grouping
 - better self-loop rendering
-- two or zero arrowheads for relations
 - choose relation line thickness
 - dashed lines for relations
 - specify initial size (etc.?) for new relations

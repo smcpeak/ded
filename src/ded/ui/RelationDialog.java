@@ -4,15 +4,13 @@
 package ded.ui;
 
 import java.awt.Component;
-import java.awt.event.KeyEvent;
-
 import javax.swing.Box;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 
 import util.swing.ModalDialog;
 
+import ded.model.ArrowStyle;
 import ded.model.Relation;
 import ded.model.RoutingAlgorithm;
 
@@ -27,7 +25,7 @@ public class RelationDialog extends ModalDialog {
     // Controls.
     private JTextField labelField;
     private JComboBox routingChooser;
-    private JCheckBox owningCheckbox;
+    private JComboBox startArrowStyleChooser, endArrowStyleChooser;
 
     // ------------------- methods ----------------------
     public RelationDialog(Component parent, Relation relation)
@@ -50,14 +48,21 @@ public class RelationDialog extends ModalDialog {
             this.relation.routingAlg);
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
-        {
-            Box hb = ModalDialog.makeHBox(vb);
-            hb.add(this.owningCheckbox =
-                new JCheckBox("Owning relation", this.relation.owning));
-            this.owningCheckbox.setMnemonic(KeyEvent.VK_O);
-            hb.add(Box.createHorizontalGlue());
-            vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
-        }
+        // Arrow styles.
+        this.startArrowStyleChooser = ModalDialog.makeEnumChooser(
+            vb,
+            "Start arrow style:",
+            's',
+            ArrowStyle.class,
+            this.relation.start.arrowStyle);
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+        this.endArrowStyleChooser = ModalDialog.makeEnumChooser(
+            vb,
+            "End arrow style:",
+            'e',
+            ArrowStyle.class,
+            this.relation.end.arrowStyle);
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
         // It might be nice to allow the endpoints to be edited, but
         // that is challenging due to the ability to connect them to
@@ -70,10 +75,13 @@ public class RelationDialog extends ModalDialog {
     public void okPressed()
     {
         RoutingAlgorithm ra = (RoutingAlgorithm)this.routingChooser.getSelectedItem();
+        ArrowStyle startStyle = (ArrowStyle)this.startArrowStyleChooser.getSelectedItem();
+        ArrowStyle endStyle = (ArrowStyle)this.endArrowStyleChooser.getSelectedItem();
 
         this.relation.label = this.labelField.getText();
         this.relation.routingAlg = ra;
-        this.relation.owning = this.owningCheckbox.isSelected();
+        this.relation.start.arrowStyle = startStyle;
+        this.relation.end.arrowStyle = endStyle;
 
         super.okPressed();
     }

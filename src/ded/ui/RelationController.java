@@ -32,6 +32,7 @@ import util.awt.HorizOrVert;
 import util.swing.MenuAction;
 import util.swing.SwingUtil;
 
+import ded.model.ArrowStyle;
 import ded.model.Diagram;
 import ded.model.Entity;
 import ded.model.Relation;
@@ -249,19 +250,20 @@ public class RelationController extends Controller {
         return null;         // Not reached.
     }
 
-    /** Draw an arrowhead and a line segment from 'start' to 'end'.  The
+    /** Draw an arrowhead for a line segment from 'start' to 'end'.  The
       * size of the arrowhead is fixed; the distance from 'start' to
       * 'end' is irrelevant.
       *
-      * If 'owning' is true, draw it as a double arrowhead; otherwise
-      * draw a single arrowhead. */
-    private static void drawArrow(Graphics g0, Point start, Point end, boolean owning)
+      * The shape of the arrowhead is determined by 'arrowStyle'.  If it
+      * is AS_NONE, do not draw anything. */
+    private static void drawArrowhead(Graphics g0, Point start, Point end, ArrowStyle arrowStyle)
     {
+        if (arrowStyle == ArrowStyle.AS_NONE) {
+            return;
+        }
+
         // Copy the Graphics object so settings changes are not persistent.
         Graphics2D g = (Graphics2D)g0.create();
-
-        // Draw the line segment.
-        g.drawLine(start.x, start.y, end.x, end.y);
 
         // Then the arrowhead.  First, calculate the main arrow body vector
         // with the origin at 'end', pointing towards 'start'.
@@ -287,7 +289,7 @@ public class RelationController extends Controller {
         //                                        /down      .
         //                                       V           .
 
-        if (!owning) {
+        if (arrowStyle == ArrowStyle.AS_FILLED_TRIANGLE) {
             // filled arrowhead:
             //                                       X           .
             //                                       XX          .
@@ -325,6 +327,8 @@ public class RelationController extends Controller {
         }
 
         else {
+            // For the moment there are no other styles.
+
             // double unfilled arrowhead:
             //                                 X     X           .
             //                                  X     X          .
@@ -384,13 +388,18 @@ public class RelationController extends Controller {
             Point a = points.get(i-1);
             Point b = points.get(i);
 
-            if (i == points.size()-1 && !this.relation.end.isInheritance()) {
-                // Draw last segment as an arrow.
-                drawArrow(g, a, b, this.relation.owning);
+            // Line segment.
+            g.drawLine(a.x, a.y, b.x, b.y);
+
+            // Possibly draw arrowhead at start.
+            if (i == 1) {
+                drawArrowhead(g, b, a, this.relation.start.arrowStyle);
             }
-            else {
-                // Not the last segment, or goes to an inheritance.
-                g.drawLine(a.x, a.y, b.x, b.y);
+
+            // Possibly draw arrowhead at end.  But if it ends on an
+            // inheritance, then don't.
+            if (i == points.size()-1 && !this.relation.end.isInheritance()) {
+                drawArrowhead(g, a, b, this.relation.end.arrowStyle);
             }
         }
 
@@ -781,7 +790,7 @@ public class RelationController extends Controller {
                     break;
 
                 case KeyEvent.VK_O:
-                    this.relation.owning = !this.relation.owning;
+                    this.relation.end.toggleOwning();
                     break;
 
                 default:
@@ -881,9 +890,9 @@ public class RelationController extends Controller {
                   45, 315);
 
         // Put an arrowhead at the 0 degree position.
-        drawArrow(g, GeomUtil.add(pt, new Point(radius, 0)),
+        drawArrowhead(g, GeomUtil.add(pt, new Point(radius, 0)),
                      GeomUtil.add(pt, new Point(radius, -1)),
-                     this.relation.owning);
+                     this.relation.end.arrowStyle);
 
         // Label above the circle.
         int arrowLabelOffset = 10;

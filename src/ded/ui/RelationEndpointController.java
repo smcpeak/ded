@@ -30,6 +30,14 @@ public class RelationEndpointController extends ResizeController {
     }
 
     @Override
+    public void edit()
+    {
+        // Similar to entity resize handles, delegate an edit
+        // request to the underlying relation.
+        this.rcontroller.edit();
+    }
+
+    @Override
     public Point getLoc()
     {
         return this.endpoint.getCenter();

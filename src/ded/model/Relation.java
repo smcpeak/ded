@@ -25,7 +25,7 @@ public class Relation {
         RoutingAlgorithm.RA_MANHATTAN_HORIZ;
 
     // ------------------ instance data -----------------------
-    /** Endpoints. */
+    /** Endpoints, including their arrow style. */
     public RelationEndpoint start, end;
 
     /** Intermediate control points, if any. */
@@ -36,10 +36,6 @@ public class Relation {
 
     /** Text label for the relation. */
     public String label = "";
-
-    /** True for an "owning" relation, drawn with the double arrowhead;
-      * false for an ordinary or "shared" relation.  Initially false. */
-    public boolean owning = false;
 
     // -------------------- methods ----------------------
     public Relation(RelationEndpoint start, RelationEndpoint end)
@@ -81,8 +77,7 @@ public class Relation {
                    this.end.equals(r.end) &&
                    this.controlPts.equals(r.controlPts) &&
                    this.routingAlg.equals(r.routingAlg) &&
-                   this.label.equals(r.label) &&
-                   this.owning == r.owning;
+                   this.label.equals(r.label);
         }
         return false;
     }
@@ -96,7 +91,6 @@ public class Relation {
         h = h*31 + Util.collectionHashCode(this.controlPts);
         h = h*31 + this.routingAlg.hashCode();
         h = h*31 + this.label.hashCode();
-        h = h*31 + (this.owning?1:0);
         return h;
     }
 
@@ -106,8 +100,10 @@ public class Relation {
     {
         JSONObject o = new JSONObject();
         try {
-            o.put("start", this.start.toJSON(entityToInteger, inheritanceToInteger));
-            o.put("end", this.end.toJSON(entityToInteger, inheritanceToInteger));
+            o.put("start", this.start.toJSON(entityToInteger,
+                inheritanceToInteger, ArrowStyle.AS_NONE));
+            o.put("end", this.end.toJSON(entityToInteger,
+                inheritanceToInteger, ArrowStyle.AS_FILLED_TRIANGLE));
 
             if (!this.controlPts.isEmpty()) {
                 JSONArray pts = new JSONArray();
@@ -124,10 +120,6 @@ public class Relation {
             if (!this.label.isEmpty()) {
                 o.put("label", this.label);
             }
-
-            if (this.owning) {
-                o.put("owning", this.owning);
-            }
         }
         catch (JSONException e) { assert(false); }
         return o;
@@ -136,13 +128,14 @@ public class Relation {
     public Relation(
         JSONObject o,
         ArrayList<Entity> integerToEntity,
-        ArrayList<Inheritance> integerToInheritance)
+        ArrayList<Inheritance> integerToInheritance,
+        int version)
         throws JSONException
     {
         this.start = new RelationEndpoint(o.getJSONObject("start"),
-                                          integerToEntity, integerToInheritance);
+            integerToEntity, integerToInheritance, ArrowStyle.AS_NONE, version);
         this.end = new RelationEndpoint(o.getJSONObject("end"),
-                                        integerToEntity, integerToInheritance);
+            integerToEntity, integerToInheritance, ArrowStyle.AS_FILLED_TRIANGLE, version);
 
         JSONArray pts = o.optJSONArray("controlPts");
         if (pts != null) {
@@ -157,7 +150,18 @@ public class Relation {
         }
 
         this.label = o.optString("label", "");
-        this.owning = o.optBoolean("owning", false);
+
+        if (version < 9) {
+            // The end arrowhead style was associated with the relation itself.
+            this.setLegacyOwning(o.optBoolean("owning", false));
+        }
+    }
+
+    /** Set 'end.arrowStyle' based on the value of the legacy 'owning' value. */
+    private void setLegacyOwning(boolean owning)
+    {
+        this.end.arrowStyle =
+            (owning? ArrowStyle.AS_DOUBLE_ANGLE : ArrowStyle.AS_FILLED_TRIANGLE);
     }
 
     // ------------------ legacy serialization -----------------
@@ -168,6 +172,7 @@ public class Relation {
         this.start = new RelationEndpoint(flat);
         this.end = new RelationEndpoint(flat);
         this.label = flat.readString();
+        this.setLegacyOwning(false);
 
         if (flat.version < 3) { return; }
 
@@ -193,7 +198,7 @@ public class Relation {
 
         if (flat.version < 8) { return; }
 
-        this.owning = flat.readBoolean();
+        this.setLegacyOwning(flat.readBoolean());
     }
 }
 

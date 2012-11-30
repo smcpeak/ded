@@ -27,6 +27,9 @@ public class RelationEndpoint {
     /** Otherwise, endpoint is an arbitrary point in space. */
     public Point pt;
 
+    /** Whether and how to draw an arrowhead. */
+    public ArrowStyle arrowStyle = ArrowStyle.AS_NONE;
+
     // -------------- methods ---------------
     public RelationEndpoint(Entity e)
     {
@@ -94,6 +97,21 @@ public class RelationEndpoint {
         }
     }
 
+
+    /** Toggle the "owningness" of this relation endpoint.  That is,
+      * if the arrow style is AS_DOUBLE_ANGLE, then change it to
+      * AS_FILLED_TRIANGLE.  If it is anything else, change it to
+      * AS_DOUBLE_ANGLE. */
+    public void toggleOwning()
+    {
+        if (this.arrowStyle == ArrowStyle.AS_DOUBLE_ANGLE) {
+            this.arrowStyle = ArrowStyle.AS_FILLED_TRIANGLE;
+        }
+        else {
+            this.arrowStyle = ArrowStyle.AS_DOUBLE_ANGLE;
+        }
+    }
+
     public void globalSelfCheck(Diagram d)
     {
         assert((this.entity==null?0:1) +
@@ -125,6 +143,7 @@ public class RelationEndpoint {
         else {
             this.pt = new Point(re.pt);
         }
+        this.arrowStyle = re.arrowStyle;
     }
 
     @Override
@@ -135,6 +154,9 @@ public class RelationEndpoint {
         }
         if (this.getClass() == obj.getClass()) {
             RelationEndpoint re = (RelationEndpoint)obj;
+            if (this.arrowStyle != re.arrowStyle) {
+                return false;
+            }
             if (this.isEntity()) {
                 return this.entity.equals(re.entity);
             }
@@ -151,20 +173,24 @@ public class RelationEndpoint {
     @Override
     public int hashCode()
     {
+        int h = 1;
+        h = h*31 + this.arrowStyle.hashCode();
+        h = h*31;
         if (this.isEntity()) {
-            return 1 + 31 * this.entity.hashCode();
+            return h + 1 + 31 * this.entity.hashCode();
         }
         else if (this.isInheritance()) {
-            return 2 + 31 * this.inheritance.hashCode();
+            return h + 2 + 31 * this.inheritance.hashCode();
         }
         else {
-            return 3 + 31 * this.pt.hashCode();
+            return h + 3 + 31 * this.pt.hashCode();
         }
     }
 
     // ------------------- serialization -----------------------
     public JSONObject toJSON(HashMap<Entity, Integer> entityToInteger,
-                             HashMap<Inheritance, Integer> inheritanceToInteger)
+                             HashMap<Inheritance, Integer> inheritanceToInteger,
+                             ArrowStyle defaultArrowStyle)
     {
         JSONObject o = new JSONObject();
         try {
@@ -177,6 +203,13 @@ public class RelationEndpoint {
             else {
                 o.put("pt", AWTJSONUtil.pointToJSON(this.pt));
             }
+
+            // To save space in the common case, use a context-sensitive
+            // default arrow style that matches how the UI creates
+            // arrows initially.
+            if (this.arrowStyle != defaultArrowStyle) {
+                o.put("arrowStyle", this.arrowStyle.name());
+            }
         }
         catch (JSONException e) { assert(false); }
         return o;
@@ -185,12 +218,21 @@ public class RelationEndpoint {
     public RelationEndpoint(
         JSONObject o,
         ArrayList<Entity> integerToEntity,
-        ArrayList<Inheritance> integerToInheritance)
+        ArrayList<Inheritance> integerToInheritance,
+        ArrowStyle defaultArrowStyle,
+        int version)
         throws JSONException
     {
         this.entity = null;
         this.inheritance = null;
         this.pt = null;
+
+        if (version >= 9 && o.has("arrowStyle")) {
+            this.arrowStyle = ArrowStyle.valueOf(ArrowStyle.class, o.getString("arrowStyle"));
+        }
+        else {
+            this.arrowStyle = defaultArrowStyle;
+        }
 
         if (o.has("entityRef")) {
             this.entity = Entity.fromJSONRef(integerToEntity, o.getLong("entityRef"));

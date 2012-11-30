@@ -48,7 +48,7 @@ public class Diagram implements JSONable {
       * should include a bump--even though the old code might be
       * able to read the file without choking, the semantics would
       * not be preserved. */
-    public static final int currentFileVersion = 8;
+    public static final int currentFileVersion = 9;
 
     // ---------- public data ------------
     /** Size of window to display diagram.  Some elements might not fit
@@ -242,7 +242,7 @@ public class Diagram implements JSONable {
             a = o.getJSONArray("relations");
             for (int i=0; i < a.length(); i++) {
                 Relation rel =
-                    new Relation(a.getJSONObject(i), integerToEntity, integerToInheritance);
+                    new Relation(a.getJSONObject(i), integerToEntity, integerToInheritance, ver);
                 this.relations.add(rel);
             }
         }
