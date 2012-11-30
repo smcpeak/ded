@@ -2,7 +2,6 @@ TODOs for Diagram Editor
 ------------------------
 
 Small:
-- add image load log
 - copy+paste for sets of selected entities
 - entity grouping
 - better self-loop rendering

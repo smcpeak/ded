@@ -169,7 +169,7 @@ public class Ded extends JFrame implements WindowListener {
         JMenu m = new JMenu("File");
         m.setMnemonic(KeyEvent.VK_F);
 
-        m.add(new MenuAction("New", KeyEvent.VK_N) {
+        m.add(new MenuAction("New diagram", KeyEvent.VK_N) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.newFile();
             }
@@ -181,7 +181,7 @@ public class Ded extends JFrame implements WindowListener {
             }
         });
 
-        m.add(new MenuAction("Save and export to PNG", KeyEvent.VK_S, KeyEvent.VK_S, ActionEvent.CTRL_MASK) {
+        m.add(new MenuAction("Save (and export to PNG)", KeyEvent.VK_S, KeyEvent.VK_S, ActionEvent.CTRL_MASK) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.saveCurrentFile();
             }
@@ -280,7 +280,7 @@ public class Ded extends JFrame implements WindowListener {
         });
         m.add(this.drawFileNameCheckbox);
 
-        m.add(new MenuAction("Reload entity images", KeyEvent.VK_R) {
+        m.add(new MenuAction("Reload entity images", KeyEvent.VK_R, KeyEvent.VK_F5, 0) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.reloadEntityImages();
             }
@@ -299,9 +299,15 @@ public class Ded extends JFrame implements WindowListener {
         // but it conflicts with the use of 'H' when a relation is
         // selected.  There does not appear to be a way for the menu
         // item to display an accelerator key but ignore it.
-        m.add(new MenuAction("Help ...", KeyEvent.VK_H) {
+        m.add(new MenuAction("Help ...", KeyEvent.VK_H, KeyEvent.VK_F1, 0) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.showHelpBox();
+            }
+        });
+
+        m.add(new MenuAction("Show log window...", KeyEvent.VK_L, KeyEvent.VK_L, ActionEvent.CTRL_MASK) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.showLogWindow();
             }
         });
 

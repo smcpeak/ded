@@ -20,7 +20,10 @@ import java.awt.event.MouseMotionListener;
 import java.awt.font.LineMetrics;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -55,7 +58,7 @@ public class DiagramController extends JPanel
     public static final int fileNameLabelMargin = 2;
 
     private static final String helpMessage =
-        "H - This message\n"+
+        "H or F1 - This message\n"+
         "Q - Quit\n"+
         "S - Select mode\n"+
         "C - Create entity mode\n"+
@@ -156,6 +159,9 @@ public class DiagramController extends JPanel
       * mapped to null, meaning we failed to load the image. */
     private HashMap<String, Image> imageCache;
 
+    /** Accumulated log messages. */
+    private StringBuilder logMessages;
+
     // ------------- public methods ---------------
     public DiagramController(Ded dedWindow)
     {
@@ -170,6 +176,9 @@ public class DiagramController extends JPanel
         this.dirty = false;
         this.importedFile = false;
         this.imageCache = new HashMap<String, Image>();
+
+        this.logMessages = new StringBuilder();
+        this.logMessages.append("Diagram Editor started at "+(new Date())+"\n");
 
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
@@ -468,6 +477,12 @@ public class DiagramController extends JPanel
         JOptionPane.showMessageDialog(this, helpMessage,
             "Diagram Editor Keybindings",
             JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /** Show a window with the log. */
+    public void showLogWindow()
+    {
+        SwingUtil.logFileMessageBox(this, this.logMessages.toString(), "Diagram Editor Log");
     }
 
     /** Clear the current diagram. */
@@ -1222,6 +1237,19 @@ public class DiagramController extends JPanel
             return this.imageCache.get(imageFileName);  // Might be null.
         }
 
+        // Try to load the image from disk.
+        Image image = this.innerGetImage(imageFileName);
+
+        // Cache the result, whatever it was, even if null.
+        this.imageCache.put(imageFileName, image);
+
+        return image;
+    }
+
+    /** Get an image for a file name, not using the cache.  If there
+      * is problem, log it and return null. */
+    private Image innerGetImage(String imageFileName)
+    {
         // What directory will we interpret a relative name as relative to?
         File relativeBase;
         if (this.fileName.isEmpty()) {
@@ -1237,26 +1265,42 @@ public class DiagramController extends JPanel
         File imageFile = Util.getFileRelativeTo(relativeBase, imageFileName);
 
         // Try to load the file.
+        FileInputStream is = null;
         try {
-            Image image = ImageIO.read(imageFile);
+            // I explicitly create my own InputStream because ImageIO
+            // does a poor job of reporting file read errors.
+            is = new FileInputStream(imageFile);
+            Image image = ImageIO.read(is);
+            if (image == null) {
+                this.logMessages.append(
+                    "no registered image reader for: "+imageFile+"\n");
+                return null;
+            }
 
-            // Success: cache and return.
-            this.imageCache.put(imageFileName, image);
+            this.logMessages.append("loaded: "+imageFileName+"\n");
             return image;
         }
         catch (Exception e) {
-            // Currently I have no way of reporting these to the user.
-            // I certainly do not want to pop up a message box because
-            // there could be lots of them.  So just record the failure
-            // and move on.
-            this.imageCache.put(imageFileName, null);
+            this.logMessages.append(
+                "while loading \""+imageFileName+"\": "+
+                e.getClass().getSimpleName()+": "+e.getMessage()+"\n");
             return null;
+        }
+        finally {
+            if (is != null) {
+                try {
+                    is.close();
+                }
+                catch (IOException e) {/*ignore*/}
+            }
         }
     }
 
     /** Clear the image cache and redraw so we reload the images. */
     public void reloadEntityImages()
     {
+        this.logMessages.append("image cache cleared at "+(new Date())+"\n");
+
         this.imageCache.clear();
 
         // Reloading images might alter size-locked entity sizes.

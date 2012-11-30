@@ -17,6 +17,8 @@ import java.awt.font.LineMetrics;
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 
 /** Miscellaneous Swing-related utililities. */
@@ -167,6 +169,23 @@ public class SwingUtil {
         else {
             return ((Integer)result).intValue();
         }
+    }
+
+    /** Show a message box with a long multi-line piece of text,
+      * like a log file. */
+    public static void logFileMessageBox(
+        Component parent,
+        String logMessage,
+        String title)
+    {
+        // A scrollable text area holds the text.
+        JTextArea textArea = new JTextArea(20, 80);
+        textArea.setText(logMessage);
+        textArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(textArea);
+
+        // Show it.
+        JOptionPane.showMessageDialog(parent, scrollPane, title, JOptionPane.INFORMATION_MESSAGE);
     }
 }
 
