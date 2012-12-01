@@ -17,6 +17,8 @@ import java.awt.font.LineMetrics;
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 
 /** Miscellaneous Swing-related utililities. */
@@ -45,7 +47,7 @@ public class SwingUtil {
     {
         return e.getModifiersEx() == 0;
     }
-    
+
     /** Send a message to close a window.
       *
       * I do not really understand whether or why this is better than
@@ -55,14 +57,14 @@ public class SwingUtil {
     {
         window.dispatchEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSING));
     }
-    
+
     /** An action to close a window or dialog. */
     public static class WindowCloseAction extends AbstractAction {
         private static final long serialVersionUID = -1615998248180527506L;
-        
+
         /** The window that will be closed. */
         public Window window;
-        
+
         public WindowCloseAction(Window window)
         {
             this.window = window;
@@ -74,7 +76,7 @@ public class SwingUtil {
             closeWindow(this.window);
         }
     }
-    
+
     /** Draw 'str' centered at 'p'. */
     public static void drawCenteredText(Graphics g, Point p, String str)
     {
@@ -86,7 +88,7 @@ public class SwingUtil {
         // regard to descenders.
         int baseY = p.y + (int)(lm.getAscent()/2);
         int baseX = p.x - fm.stringWidth(str)/2;
-        
+
         g.drawString(str, baseX, baseY);
     }
 
@@ -101,7 +103,7 @@ public class SwingUtil {
             y += lineHeight;
         }
     }
-    
+
     /** Create a JOptionPane instance that word-wraps its message. */
     public static JOptionPane makeWordWrapJOptionPane()
     {
@@ -111,18 +113,18 @@ public class SwingUtil {
         //
         // The workaround there requires adding a scrollbar to the
         // message, which I do not want to do.
-        
+
         // I tried these solutions, but they do not work (anymore?):
         //
         //   http://stackoverflow.com/questions/4330076/joptionpane-showmessagedialog-truncates-jtextarea-message
         //   http://www.coderanch.com/t/339970/GUI/java/wrap-large-message-JOptionPane-showConfirmDialog
         //
         // Most other solutions involve manually inserting newlines.
-        
+
         // Thankfully, this one actually does work:
         //
         //   http://www.jroller.com/Fester/entry/joptionpane_with_word_wrapping
-        
+
         @SuppressWarnings("serial")
         JOptionPane pane = new JOptionPane() {
             @Override
@@ -133,33 +135,33 @@ public class SwingUtil {
         };
         return pane;
     }
-    
+
     /** Show an error message dialog box with message word wrapping. */
     public static void errorMessageBox(Component parent, String message)
     {
         JOptionPane pane = makeWordWrapJOptionPane();
         pane.setMessage(message);
         pane.setMessageType(JOptionPane.ERROR_MESSAGE);
-        
+
         JDialog dialog = pane.createDialog(parent, "Error");
         dialog.setVisible(true);
     }
-    
+
     /** Show a confirmation message box with line wrapped message. */
     public static int confirmationBox(
-        Component parent, 
-        String message, 
-        String title, 
+        Component parent,
+        String message,
+        String title,
         int optionType)
     {
         JOptionPane pane = makeWordWrapJOptionPane();
         pane.setMessage(message);
         pane.setMessageType(JOptionPane.QUESTION_MESSAGE);
         pane.setOptionType(optionType);
-        
+
         JDialog dialog = pane.createDialog(parent, "Error");
         dialog.setVisible(true);
-        
+
         Object result = pane.getValue();
         if (result == null || !(result instanceof Integer)) {
             return JOptionPane.CLOSED_OPTION;
@@ -167,6 +169,23 @@ public class SwingUtil {
         else {
             return ((Integer)result).intValue();
         }
+    }
+
+    /** Show a message box with a long multi-line piece of text,
+      * like a log file. */
+    public static void logFileMessageBox(
+        Component parent,
+        String logMessage,
+        String title)
+    {
+        // A scrollable text area holds the text.
+        JTextArea textArea = new JTextArea(20, 80);
+        textArea.setText(logMessage);
+        textArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(textArea);
+
+        // Show it.
+        JOptionPane.showMessageDialog(parent, scrollPane, title, JOptionPane.INFORMATION_MESSAGE);
     }
 }
 

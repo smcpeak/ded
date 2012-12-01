@@ -20,26 +20,26 @@ public class RelationControlPointDialog extends ModalDialog {
     // ----------------- instance data ------------------
     /** Relation we are editing. */
     private Relation relation;
-    
+
     /** The index of the control point to edit. */
     private int whichCP;
-    
+
     // Controls.
     private JTextField xText, yText;
-    
+
     // ------------------- methods ----------------------
     public RelationControlPointDialog(Component parent, Relation relation, int whichCP)
     {
         super(parent, "Edit Control Point");
-        
+
         this.relation = relation;
         this.whichCP = whichCP;
-        
+
         Box vb = ModalDialog.makeMarginVBox(this, ModalDialog.OUTER_MARGIN);
 
         // Don't let the dialog layout get too small.
         vb.add(Box.createHorizontalStrut(200));
-        
+
         // x, y
         {
             Point curPt = this.relation.controlPts.get(this.whichCP);
@@ -53,7 +53,7 @@ public class RelationControlPointDialog extends ModalDialog {
 
         this.finishBuildingDialog(vb);
     }
-    
+
     @Override
     public void okPressed()
     {
@@ -64,7 +64,7 @@ public class RelationControlPointDialog extends ModalDialog {
             y = Integer.valueOf(this.yText.getText());
         }
         catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, 
+            JOptionPane.showMessageDialog(this,
                 "At least one of x or y is not a valid integer.",
                 "Input Validation Error",
                 JOptionPane.ERROR_MESSAGE);
@@ -74,7 +74,7 @@ public class RelationControlPointDialog extends ModalDialog {
         Point pt = this.relation.controlPts.get(this.whichCP);
         pt.x = x;
         pt.y = y;
-        
+
         super.okPressed();
     }
 }

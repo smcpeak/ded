@@ -501,10 +501,7 @@
       }],
       "end": {"entityRef": 1},
       "label": "start",
-      "start": {
-        "arrowStyle": "AS_FILLED_TRIANGLE",
-        "entityRef": 4
-      }
+      "start": {"entityRef": 4}
     },
     {
       "end": {"pt": {
@@ -518,13 +515,11 @@
       }}
     },
     {
-      "end": {
-        "arrowStyle": "AS_DOUBLE_ANGLE",
-        "pt": {
-          "x": 75,
-          "y": 410
-        }
-      },
+      "end": {"pt": {
+        "x": 75,
+        "y": 410
+      }},
+      "owning": true,
       "routingAlg": "RA_DIRECT",
       "start": {"pt": {
         "x": 40,
@@ -821,37 +816,10 @@
     {
       "end": {"inheritanceRef": 0},
       "start": {"entityRef": 29}
-    },
-    {
-      "controlPts": [
-        {
-          "x": 90,
-          "y": 275
-        },
-        {
-          "x": 105,
-          "y": 300
-        }
-      ],
-      "end": {
-        "arrowStyle": "AS_DOUBLE_ANGLE",
-        "pt": {
-          "x": 110,
-          "y": 265
-        }
-      },
-      "routingAlg": "RA_DIRECT",
-      "start": {
-        "arrowStyle": "AS_FILLED_TRIANGLE",
-        "pt": {
-          "x": 125,
-          "y": 290
-        }
-      }
     }
   ],
   "type": "Diagram Editor Diagram",
-  "version": 9,
+  "version": 8,
   "windowSize": {
     "h": 505,
     "w": 725

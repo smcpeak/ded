@@ -31,43 +31,43 @@ import javax.swing.SwingUtilities;
 public class ModalDialog extends JDialog {
     // --------------- constants ---------------
     private static final long serialVersionUID = -5968176808231360009L;
-    
+
     /** Size of outer margin in a dialog box. */
     public static final int OUTER_MARGIN = 11;
-    
+
     /** Space between controls. */
     public static final int CONTROL_PADDING = 5;
-    
+
     // -------------- public data --------------
     /** Initially false, this is set to true if the dialog is closed
       * by pressing the OK button. */
     public boolean okWasPressed;
-   
+
     // ---------------- methods ----------------
     /** Create a new dialog.  'documentParent' is a Component that
       * originated the request; the top-level window that contains
-      * it will be blocked from interaction until this dialog closes. */ 
+      * it will be blocked from interaction until this dialog closes. */
     public ModalDialog(Component documentParent, String title)
     {
         super(documentParent!=null? SwingUtilities.getWindowAncestor(documentParent) : null,
               title, Dialog.ModalityType.DOCUMENT_MODAL);
-        
+
         this.okWasPressed = false;
-        
+
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         installEscapeCloseOperation(this);
     }
-    
+
     /** Run the dialog, blocking until it is dismissed.  Returns true
       * if the user pressed OK, false if Cancel. */
     public boolean exec()
     {
         // This blocks until the dialog is dismissed.
         this.setVisible(true);
-        
+
         return this.okWasPressed;
     }
-    
+
     /** Print component sizes for debugging. */
     public static void printSizes(String label, Component c)
     {
@@ -84,7 +84,7 @@ public class ModalDialog extends JDialog {
         cancelButton.addActionListener(new SwingUtil.WindowCloseAction(this));
         return cancelButton;
     }
-    
+
     /** Create an OK button and set its action to close the dialog,
       * indicating that changes should be preserved. */
     public JButton makeOKButton()
@@ -103,7 +103,7 @@ public class ModalDialog extends JDialog {
       * implementation remembers that it was pressed and closes the dialog.
       * Derived classes should copy data from controls into the object that
       * the dialog is meant to edit, then call super.okPressed().
-      * 
+      *
       * If some inputs need to be validated, do so before calling
       * super.okPressed(); and if validation fails, do not call it at
       * all, so the dialog will remain open. */
@@ -134,15 +134,15 @@ public class ModalDialog extends JDialog {
     {
         Box hb = ModalDialog.makeHBox(parent);
         hb.add(Box.createHorizontalStrut(margin));
-        
+
         Box vb = ModalDialog.makeVBox(hb);
         vb.add(Box.createVerticalStrut(margin));
-        
+
         Box ret = ModalDialog.makeVBox(vb);
-        
+
         vb.add(Box.createVerticalStrut(margin));
         hb.add(Box.createHorizontalStrut(margin));
-    
+
         return ret;
     }
 
@@ -154,13 +154,13 @@ public class ModalDialog extends JDialog {
         JLabel labelControl = new JLabel(label);
         labelControl.setDisplayedMnemonic(mnemonic);
         hbox.add(labelControl);
-        
+
         hbox.add(Box.createHorizontalStrut(5));
-        
+
         final JTextField ret = new JTextField(initialValue);
         hbox.add(ret);
         labelControl.setLabelFor(ret);
-    
+
         // Arrange to select all the text when the box receives focus.
         // http://stackoverflow.com/questions/1178312/how-to-select-all-text-in-a-jformattedtextfield-when-it-gets-focus
         ret.addFocusListener(new FocusAdapter() {
@@ -172,7 +172,7 @@ public class ModalDialog extends JDialog {
                     }
                 });
             }
-            
+
             // This refinement removes focus when we leave.  The Swing
             // text controls draw the selected text with the selection
             // background even when the control does not have the focus,
@@ -189,9 +189,9 @@ public class ModalDialog extends JDialog {
                 });
             }
         });
-        
+
         disallowVertStretch(hbox);
-        
+
         return ret;
     }
 
@@ -206,7 +206,7 @@ public class ModalDialog extends JDialog {
             // null I'll just skip trying to disable vertical stretch.
             return;
         }
-        
+
         Dimension max = c.getMaximumSize();
         Dimension min = c.getMinimumSize();
         max.height = pref.height;
@@ -228,18 +228,18 @@ public class ModalDialog extends JDialog {
             KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
             JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
-    
+
     /** Build a dropdown control for choosing among elements of an
       * enumeration.
-      * 
+      *
       * 'containingBox' is the Box into which we will put an hbox
       * to contain the combo box and its label.
-      * 
+      *
       * 'label' labels the combo box, and should end in a colon (":").
       * 'labelMnemonic' is its keyboard shortcut.
-      * 
+      *
       * 'elementType' is the enumeration type.
-      *  
+      *
       * 'initialValue' what to initially set the box to. */
     public static <E extends Enum<E>> JComboBox makeEnumChooser(
         Box containingBox,
@@ -252,22 +252,22 @@ public class ModalDialog extends JDialog {
         EnumSet<E> eSet = EnumSet.allOf(elementType);
         Vector<E> eVector = new Vector<E>();
         eVector.addAll(eSet);
-        
-        return makeVectorChooser(containingBox, label, labelMnemonic, 
+
+        return makeVectorChooser(containingBox, label, labelMnemonic,
                                  eVector, initialValue);
     }
-    
+
     /** Build a dropdown control for choosing among elements of a
       * vector.
-      * 
+      *
       * 'containingBox' is the Box into which we will put an hbox
       * to contain the combo box and its label.
-      * 
+      *
       * 'label' labels the combo box, and should end in a colon (":").
       * 'labelMnemonic' is its keyboard shortcut.
-      * 
+      *
       * 'elements' is the vector of choices.
-      *  
+      *
       * 'initialValue' what to initially set the box to. */
     public static <E> JComboBox makeVectorChooser(
         Box containingBox,
@@ -277,42 +277,42 @@ public class ModalDialog extends JDialog {
         E initialValue)
     {
         Box hbox = ModalDialog.makeHBox(containingBox);
-        
+
         JLabel lbl = new JLabel(label);
         lbl.setDisplayedMnemonic(labelMnemonic);
         hbox.add(lbl);
         hbox.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
-        
+
         // Build the combo box.
         JComboBox comboBox = new JComboBox(elements);
         comboBox.setSelectedItem(initialValue);
         lbl.setLabelFor(comboBox);
         hbox.add(comboBox);
-        
+
         ModalDialog.disallowVertStretch(hbox);
 
         return comboBox;
     }
-    
+
     /** Create Cancel and OK buttons and add them to 'containingVBox'. */
     public void createCancelAndOkButtons(Box containingVBox)
     {
         Box btnBox = ModalDialog.makeHBox(containingVBox);
-        
+
         // Buttons will be on the right side of the dialog.
         btnBox.add(Box.createHorizontalGlue());
-        
+
         JButton cancelButton = this.makeCancelButton();
         btnBox.add(cancelButton);
-        
+
         btnBox.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
-        
+
         JButton okButton = this.makeOKButton();
         btnBox.add(okButton);
-        
+
         ModalDialog.disallowVertStretch(btnBox);
     }
-    
+
     /** Do the usual final actions to create the dialog: create the
       * Cancel and OK buttons, pack the dialog, and set the location
       * relative to the parent. */

@@ -18,20 +18,20 @@ public class RelationControlPointController extends ResizeController {
     // -------------------- instance data --------------------
     /** Relation controller we're a part of. */
     public RelationController rcontroller;
-    
+
     /** Which control point is this for? */
     public int which;
-    
+
     // ----------------------- methods -----------------------
     public RelationControlPointController(
         DiagramController diagramController,
-        RelationController relationController, 
+        RelationController relationController,
         int w)
     {
         super(diagramController);
         this.rcontroller = relationController;
         this.which = w;
-        
+
         this.selfCheck();
     }
 
@@ -40,7 +40,7 @@ public class RelationControlPointController extends ResizeController {
     {
         return this.rcontroller.relation.controlPts.get(this.which);
     }
-    
+
     @Override
     public void dragTo(Point pt)
     {
@@ -55,51 +55,51 @@ public class RelationControlPointController extends ResizeController {
         assert(0 <= this.which);
         assert(     this.which < this.rcontroller.relation.controlPts.size());
     }
-    
+
     @SuppressWarnings("serial")
     @Override
     public void mousePressed(MouseEvent ev)
     {
         super.mousePressed(ev);
-        
+
         if (SwingUtilities.isRightMouseButton(ev)) {
             final RelationControlPointController thisController = this;
-            
+
             // Construct menu.
             JPopupMenu menu = new JPopupMenu("Relation Control Point");
-            
+
             menu.add(new MenuAction("Properties", KeyEvent.VK_P) {
                 public void actionPerformed(ActionEvent e) {
                     thisController.showProperties();
                 }
             });
-            
+
             menu.add(new MenuAction("Delete", KeyEvent.VK_D) {
                 public void actionPerformed(ActionEvent e) {
                     thisController.deleteControlPoint();
                 }
             });
-            
-            // Show the popup menu.  This does *not* wait for the choice to be made. 
+
+            // Show the popup menu.  This does *not* wait for the choice to be made.
             menu.show(this.diagramController, ev.getPoint().x, ev.getPoint().y);
         }
     }
-    
+
     /** Show the properties dialog for the control point. */
     private void showProperties()
     {
-        if ((new RelationControlPointDialog(this.diagramController, 
-                                            this.rcontroller.relation, 
+        if ((new RelationControlPointDialog(this.diagramController,
+                                            this.rcontroller.relation,
                                             this.which)).exec()) {
             this.diagramController.diagramChanged();
         }
     }
-    
+
     /** Delete this control point. */
     private void deleteControlPoint()
     {
         this.rcontroller.deleteControlPoint(this.which);
-        
+
         // Careful: 'this' has been removed from the DiagramController.
     }
 }

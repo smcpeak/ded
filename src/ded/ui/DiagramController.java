@@ -20,7 +20,10 @@ import java.awt.event.MouseMotionListener;
 import java.awt.font.LineMetrics;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -50,12 +53,12 @@ public class DiagramController extends JPanel
 {
     // ------------- constants ---------------
     private static final long serialVersionUID = 1266678840598864303L;
-    
+
     /** Pixels from left/top edge to draw the file name label. */
     public static final int fileNameLabelMargin = 2;
-    
+
     private static final String helpMessage =
-        "H - This message\n"+
+        "H or F1 - This message\n"+
         "Q - Quit\n"+
         "S - Select mode\n"+
         "C - Create entity mode\n"+
@@ -71,6 +74,7 @@ public class DiagramController extends JPanel
         "Left click+drag - multiselect rectangle\n"+
         "Right click - properties\n"+
         "\n"+
+        "When entity selected, F/B to move to front/back.\n"+
         "When relation selected, H/V/D to change routing,\n"+
         "and O to toggle owned/shared.\n"+
         "When inheritance selected, O to change open/closed.\n"+
@@ -81,7 +85,7 @@ public class DiagramController extends JPanel
     // ------------- static data ---------------
     /** Granularity of drag/move snap action. */
     public static final int SNAP_DIST = 5;
-    
+
     // ------------- private types ---------------
     /** Primary "mode" of the editing interface, indicating what happens
       * when the left mouse button is clicked or released. */
@@ -98,11 +102,11 @@ public class DiagramController extends JPanel
             ("Dragging"),
         DCM_RECT_LASSO                 // currently drag-lasso selecting
             ("Rectangle lasso selecting");
-        
+
         /** User-visible description of the mode. */
         public final String description;
-        
-        private Mode(String d) 
+
+        private Mode(String d)
         {
             this.description = d;
         }
@@ -111,16 +115,16 @@ public class DiagramController extends JPanel
     // ------------- instance data ---------------
     /** Parent diagram editor window. */
     private Ded dedWindow;
-    
+
     /** The diagram we are editing. */
     public Diagram diagram;
-    
+
     /** Set of controllers for elements of the diagram.  For the moment, the order
       * is supposed to be the same as the corresponding 'diagram' model elements,
       * but I'm not sure how I'm going to maintain that invariant or if it is
       * really what I want. */
     private ArrayList<Controller> controllers;
-    
+
     /** Current primary editing mode. */
     private Mode mode;
 
@@ -134,33 +138,36 @@ public class DiagramController extends JPanel
     private Controller dragging;
 
     /** If CFM_DRAGGING, this is the vector from the original mouse click point
-      * to the Controller's original getLoc(). */ 
+      * to the Controller's original getLoc(). */
     private Point dragOffset;
-    
+
     /** Most recently used file name, or "" if there is none. */
     private String fileName;
-    
+
     /** Most recently used directory for loading/saving files. */
     private File currentFileChooserDirectory;
-    
+
     /** When true, the in-memory Diagram has been modified since the
       * last time it was saved. */
     private boolean dirty;
-    
+
     /** When true, the in-memory Diagram was loaded from a file that
       * was in the ER format.  This matters because we cannot *save*
       * the file in that format. */
     private boolean importedFile;
-    
+
     /** Map from image file name to cached image.  A name can be
       * mapped to null, meaning we failed to load the image. */
     private HashMap<String, Image> imageCache;
-    
+
+    /** Accumulated log messages. */
+    private StringBuilder logMessages;
+
     // ------------- public methods ---------------
     public DiagramController(Ded dedWindow)
     {
         this.setBackground(Color.WHITE);
-        
+
         this.dedWindow = dedWindow;
         this.diagram = new Diagram();
         this.controllers = new ArrayList<Controller>();
@@ -170,20 +177,23 @@ public class DiagramController extends JPanel
         this.dirty = false;
         this.importedFile = false;
         this.imageCache = new HashMap<String, Image>();
-        
+
+        this.logMessages = new StringBuilder();
+        this.logMessages.append("Diagram Editor started at "+(new Date())+"\n");
+
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
         this.addKeyListener(this);
         this.addComponentListener(this);
-        
+
         this.setFocusable(true);
     }
-    
+
     public Diagram getDiagram()
     {
         return this.diagram;
     }
-    
+
     @Override
     public void paint(Graphics g)
     {
@@ -195,7 +205,7 @@ public class DiagramController extends JPanel
         // seems to work; but note that I have to do this *after*
         // calling super.paint().
         g.setFont(this.dedWindow.diagramFont);
-        
+
         // Filename label.
         if (this.diagram.drawFileName && !this.fileName.isEmpty()) {
             String name = new File(this.fileName).getName();
@@ -207,10 +217,13 @@ public class DiagramController extends JPanel
             y += (int)lm.getUnderlineOffset() + 1 /*...*/;
             g.drawLine(x, y, x + fm.stringWidth(name), y);
         }
-        
+
         // Controllers.
         for (Controller c : this.controllers) {
-            c.paint(this.diagram, g);
+            if (c.isSelected()) {
+                c.paintSelectionBackground(g);
+            }
+            c.paint(g);
         }
 
         // Lasso rectangle.
@@ -230,17 +243,17 @@ public class DiagramController extends JPanel
     {
         // Change state after iterating.
         HashSet<Controller> toDeselect = new HashSet<Controller>();
-        
+
         for (Controller c : this.controllers) {
             if (c.isSelected()) {
                 toDeselect.add(c);
             }
         }
-        
+
         for (Controller c : toDeselect) {
             c.setSelected(SelectionState.SS_UNSELECTED);
         }
-        
+
         return toDeselect.size();
     }
 
@@ -251,11 +264,11 @@ public class DiagramController extends JPanel
         // Go backwards for top-down order.
         for (int i = this.controllers.size()-1; i >= 0; i--) {
             Controller c = this.controllers.get(i);
-            
+
             if (filter != null && filter.satisfies(c) == false) {
                 continue;
             }
-            
+
             if (c.boundsContains(point)) {
                 return c;
             }
@@ -272,7 +285,7 @@ public class DiagramController extends JPanel
             }
         });
     }
-    
+
     /** Hit test restricted to Inheritances. */
     private InheritanceController hitTestInheritance(Point pt)
     {
@@ -298,7 +311,7 @@ public class DiagramController extends JPanel
                         if (this.deselectAll() > 0) {
                             this.repaint();
                         }
-                        
+
                         if (SwingUtilities.isLeftMouseButton(e)) {
                             // Enter lasso mode.
                             setMode(Mode.DCM_RECT_LASSO);
@@ -311,32 +324,32 @@ public class DiagramController extends JPanel
                 }
                 break;
             }
-            
+
             case DCM_CREATE_RELATION: {
                 // Make a Relation that starts and ends at the current location.
                 RelationEndpoint endpt = this.getRelationEndpoint(e.getPoint());
                 Relation r = new Relation(endpt, new RelationEndpoint(endpt));
                 this.diagram.relations.add(r);
                 this.setDirty();
-                
+
                 // Build a controller and select it.
                 RelationController rc = this.buildRelationController(r);
                 this.selectOnly(rc);
-                
+
                 // Drag the end point while the mouse button is held.
                 this.beginDragging(rc.getEndHandle(), e.getPoint());
-                
+
                 this.repaint();
                 break;
             }
-            
+
             case DCM_CREATE_ENTITY: {
                 EntityController.createEntityAt(this, e.getPoint());
                 this.setMode(Mode.DCM_SELECT);
                 this.setDirty();
                 break;
             }
-            
+
             case DCM_CREATE_INHERITANCE: {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     this.createInheritanceAt(e.getPoint());
@@ -352,23 +365,23 @@ public class DiagramController extends JPanel
     {
         if (this.mode == Mode.DCM_DRAGGING) {
             this.selfCheck();
-            
+
             // Where are we going to move the dragged object's main point?
             Point destLoc = GeomUtil.subtract(e.getPoint(), this.dragOffset);
-            
+
             // Snap if Shift not held.
             if (!SwingUtil.shiftPressed(e)) {
                 destLoc = GeomUtil.snapPoint(destLoc, SNAP_DIST);
             }
-            
+
             if (this.dragging.isSelected()) {
                 // How far are we going to move the dragged object?
                 Point delta = GeomUtil.subtract(destLoc, this.dragging.getLoc());
-                
+
                 // Move all selected controls by that amount.
                 for (Controller c : this.controllers) {
                     if (!c.isSelected()) { continue; }
-                    
+
                     Point cur = c.getLoc();
                     c.dragTo(GeomUtil.add(cur, delta));
                 }
@@ -377,10 +390,10 @@ public class DiagramController extends JPanel
                 // Dragging item is not selected; must be a resize handle.
                 this.dragging.dragTo(destLoc);
             }
-            
+
             this.repaint();
         }
-        
+
         if (this.mode == Mode.DCM_RECT_LASSO) {
             this.lassoEnd = e.getPoint();
             this.selectAccordingToLasso();
@@ -389,21 +402,21 @@ public class DiagramController extends JPanel
     }
 
     @Override
-    public void mouseReleased(MouseEvent e) 
+    public void mouseReleased(MouseEvent e)
     {
         // Click+drag should only be initiated with left mouse button, so ignore
         // release of others.
         if (!SwingUtilities.isLeftMouseButton(e)) {
             return;
         }
-        
+
         if (this.mode == Mode.DCM_DRAGGING || this.mode == Mode.DCM_RECT_LASSO) {
             this.setMode(Mode.DCM_SELECT);
         }
     }
-    
+
     @Override
-    public void mouseClicked(MouseEvent e) 
+    public void mouseClicked(MouseEvent e)
     {
         // Double-click on control to edit it.
         if (SwingUtilities.isLeftMouseButton(e) && (e.getClickCount() == 2)) {
@@ -413,24 +426,24 @@ public class DiagramController extends JPanel
             }
         }
     }
-    
+
     // MouseListener methods I do not care about.
     @Override public void mouseEntered(MouseEvent e) {}
     @Override public void mouseExited(MouseEvent e) {}
 
     // MouseMotionListener events I do not care about.
     @Override public void mouseMoved(MouseEvent e) {}
-    
+
     @Override
     public void keyPressed(KeyEvent e)
     {
         // Note: Some of the key bindings shown in the help dialog
         // have been moved to the menu created in Ded.java.
-        
+
         if (SwingUtil.controlPressed(e) || SwingUtil.altPressed(e)) {
             return;
         }
-        
+
         // See if the selected controller wants this keypress.
         Controller sel = this.getUniqueSelected();
         if (sel != null) {
@@ -438,7 +451,7 @@ public class DiagramController extends JPanel
                 return;
             }
         }
-        
+
         switch (e.getKeyCode()) {
             case KeyEvent.VK_X:
                 if (SwingUtil.shiftPressed(e)) {
@@ -448,7 +461,7 @@ public class DiagramController extends JPanel
                     throw new RuntimeException("Test exception/error message.");
                 }
                 break;
-                
+
             case KeyEvent.VK_H:
                 this.showHelpBox();
                 break;
@@ -458,27 +471,33 @@ public class DiagramController extends JPanel
     /** Show the box with the key bindings. */
     public void showHelpBox()
     {
-        JOptionPane.showMessageDialog(this, helpMessage, 
+        JOptionPane.showMessageDialog(this, helpMessage,
             "Diagram Editor Keybindings",
             JOptionPane.INFORMATION_MESSAGE);
     }
-    
+
+    /** Show a window with the log. */
+    public void showLogWindow()
+    {
+        SwingUtil.logFileMessageBox(this, this.logMessages.toString(), "Diagram Editor Log");
+    }
+
     /** Clear the current diagram. */
     public void newFile()
     {
         if (this.isDirty()) {
-            int res = JOptionPane.showConfirmDialog(this, 
+            int res = JOptionPane.showConfirmDialog(this,
                 "There are unsaved changes.  Create new diagram anyway?",
                 "New Diagram Confirmation", JOptionPane.YES_NO_OPTION);
             if (res != JOptionPane.YES_OPTION) {
                 return;
             }
         }
-        
+
         // Reset file status.
         this.dirty = false;
         this.setFileName("");
-        
+
         // Clear the diagram.
         this.setDiagram(new Diagram());
     }
@@ -487,24 +506,24 @@ public class DiagramController extends JPanel
     private void setDiagram(Diagram newDiagram)
     {
         this.diagram = newDiagram;
-        
+
         this.rebuildControllers();
         this.dedWindow.updateMenuState();
         this.repaint();
     }
-    
+
     /** Prompt for a file name to load, then replace the current diagram with it. */
     public void loadFromFile()
     {
         if (this.isDirty()) {
-            int res = JOptionPane.showConfirmDialog(this, 
+            int res = JOptionPane.showConfirmDialog(this,
                 "There are unsaved changes.  Load new diagram anyway?",
                 "Load Confirmation", JOptionPane.YES_NO_OPTION);
             if (res != JOptionPane.YES_OPTION) {
                 return;
             }
         }
-        
+
         JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(this.currentFileChooserDirectory);
         chooser.addChoosableFileFilter(
@@ -515,7 +534,7 @@ public class DiagramController extends JPanel
             this.loadFromNamedFile(chooser.getSelectedFile().getAbsolutePath());
         }
     }
-    
+
     /** Load from the given file, replacing the current diagram. */
     public void loadFromNamedFile(String name)
     {
@@ -534,11 +553,11 @@ public class DiagramController extends JPanel
                 d = Diagram.readFromFile(name);
                 this.importedFile = false;
             }
-            
+
             // Success.  First, update file name.
             this.dirty = false;
             this.setFileName(name);
-            
+
             // Sizing is achieved by specifying a preferred size for
             // the content pane, then packing other controls and the
             // window border stuff around it.
@@ -552,24 +571,24 @@ public class DiagramController extends JPanel
             this.exnErrorMessageBox("Error while reading \""+name+"\"", e);
         }
     }
-    
+
     /** Rebuild all the controllers from 'diagram'. */
     private void rebuildControllers()
     {
         this.controllers.clear();
-        
+
         for (Entity e : this.diagram.entities) {
             this.add(new EntityController(this, e));
         }
-        
+
         for (Relation r : this.diagram.relations) {
             buildRelationController(r);
         }
-        
+
         for (Inheritance inh : this.diagram.inheritances) {
             buildInheritanceController(inh);
         }
-        
+
         this.setMode(Mode.DCM_SELECT);
     }
 
@@ -589,7 +608,7 @@ public class DiagramController extends JPanel
             }
             this.currentFileChooserDirectory = chooser.getCurrentDirectory();
             result = chooser.getSelectedFile().getAbsolutePath();
-            
+
             if (new File(result).exists()) {
                 res = JOptionPane.showConfirmDialog(
                     this,
@@ -600,7 +619,7 @@ public class DiagramController extends JPanel
                     continue;      // Ask again.
                 }
             }
-            
+
             break;
         }
 
@@ -632,22 +651,22 @@ public class DiagramController extends JPanel
                     return;
                 }
             }
-            
+
             this.saveToNamedFile(this.fileName);
         }
     }
-    
+
     /** Save to the specified file. */
     private void saveToNamedFile(String fname)
     {
         try {
             this.diagram.saveToFile(fname);
-            
+
             // If it worked, remember the new name.
             this.dirty = false;
             this.importedFile = false;
             this.setFileName(fname);
-            
+
             // Additionally, always export to PNG.
             writeToPNG(new File(fname+".png"));
         }
@@ -661,7 +680,7 @@ public class DiagramController extends JPanel
     {
         this.fileName = name;
         this.updateWindowTitle();
-        
+
         // Changing the file name affects the drawn name in the
         // main editing area (if enabled).
         this.repaint();
@@ -679,18 +698,18 @@ public class DiagramController extends JPanel
         // time, they don't in the meantime go copy or view the partially
         // written image.
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        
+
         // Based on code from:
         // http://stackoverflow.com/questions/5655908/export-jpanel-graphics-to-png-or-gif-or-jpg
-        
+
         // First, render the image to an in-memory image buffer.
         BufferedImage bi =
             new BufferedImage(this.getSize().width, this.getSize().height,
-                              BufferedImage.TYPE_INT_ARGB); 
+                              BufferedImage.TYPE_INT_ARGB);
         Graphics g = bi.createGraphics();
         this.paint(g);
         g.dispose();
-        
+
         // Now, write that image to a file in PNG format.
         try {
             // This is a very convenient call, but it has many flaws.
@@ -722,10 +741,10 @@ public class DiagramController extends JPanel
                 "good luck figuring out the real problem "+
                 "(maybe check stderr)", e);
         }
-        
+
         this.setCursor(Cursor.getDefaultCursor());
     }
-    
+
     /** Called when the diagram has been changed.  This does a repaint
       * and sets the dirty bit. */
     public void diagramChanged()
@@ -733,7 +752,7 @@ public class DiagramController extends JPanel
         this.setDirty();
         this.repaint();
     }
-    
+
     /** Set 'dirty' to true. */
     public void setDirty()
     {
@@ -742,7 +761,7 @@ public class DiagramController extends JPanel
             this.updateWindowTitle();
         }
     }
-    
+
     /** Clear the dirty bit. */
     public void clearDirty()
     {
@@ -751,31 +770,31 @@ public class DiagramController extends JPanel
             this.updateWindowTitle();
         }
     }
-    
+
     /** Return true if 'dirty'. */
     public boolean isDirty()
     {
         return this.dirty;
     }
-    
+
     /** Set the window title to match current state. */
     private void updateWindowTitle()
     {
         String title = Ded.windowTitle;
-        
+
         if (!this.fileName.isEmpty()) {
             // Do not include the directory here.
             title += ": " + new File(this.fileName).getName();
         }
-        
+
         if (this.importedFile) {
             title += " (imported)";
         }
-        
+
         if (this.dirty) {
             title += " *";
         }
-        
+
         this.dedWindow.setTitle(title);
     }
 
@@ -787,16 +806,16 @@ public class DiagramController extends JPanel
     public void setMode(Mode m)
     {
         this.mode = m;
-        
+
         if (m != Mode.DCM_DRAGGING) {
             this.dragging = null;
             this.dragOffset = new Point(0,0);
         }
-        
+
         if (m != Mode.DCM_RECT_LASSO) {
             this.lassoStart = this.lassoEnd = new Point(0,0);
         }
-        
+
         switch (m) {
             default:
                 // I tried crosshair for lasso, but that is too annoying
@@ -813,7 +832,7 @@ public class DiagramController extends JPanel
                 // mouse is fairly obvious already.
                 this.setCursor(Cursor.getDefaultCursor());
                 break;
-                
+
             case DCM_CREATE_ENTITY:
             case DCM_CREATE_INHERITANCE:
             case DCM_CREATE_RELATION:
@@ -823,7 +842,7 @@ public class DiagramController extends JPanel
                 this.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
                 break;
         }
-        
+
         this.selfCheck();
         this.repaint();
     }
@@ -835,7 +854,7 @@ public class DiagramController extends JPanel
         this.add(rc);
         return rc;
     }
-    
+
     /** Construct a controller for 'inh' and add it to 'this'. */
     private InheritanceController buildInheritanceController(Inheritance inh)
     {
@@ -843,13 +862,13 @@ public class DiagramController extends JPanel
         this.add(ic);
         return ic;
     }
-    
+
     /** If there is exactly one controller selected, return it; otherwise
       * return null. */
     public Controller getUniqueSelected()
     {
         Controller ret = null;
-        
+
         for (Controller c : this.controllers) {
             if (c.isSelected()) {
                 if (ret != null) {
@@ -858,10 +877,10 @@ public class DiagramController extends JPanel
                 ret = c;
             }
         }
-        
+
         return ret;
     }
-    
+
     /** Get all selected controllers. */
     public Set<Controller> getAllSelected()
     {
@@ -871,7 +890,7 @@ public class DiagramController extends JPanel
             }
         });
     }
-    
+
     /** Edit the selected controller and associated entity, if any. */
     public void editSelected()
     {
@@ -886,7 +905,7 @@ public class DiagramController extends JPanel
             }
         }
     }
-    
+
     /** Delete the selected controllers and associated entities, if any. */
     public void deleteSelected()
     {
@@ -894,8 +913,8 @@ public class DiagramController extends JPanel
             Set<Controller> sel = this.getAllSelected();
             int n = sel.size();
             if (n > 1) {
-                int choice = JOptionPane.showConfirmDialog(this, 
-                    "Delete "+n+" elements?", "Confirm Deletion", 
+                int choice = JOptionPane.showConfirmDialog(this,
+                    "Delete "+n+" elements?", "Confirm Deletion",
                     JOptionPane.OK_CANCEL_OPTION);
                 if (choice != JOptionPane.OK_OPTION) {
                     return;
@@ -905,7 +924,7 @@ public class DiagramController extends JPanel
             this.deleteControllers(sel);
         }
     }
-    
+
     /** Insert a new control point into the selected controller and
       * associated entity, if any and applicable. */
     public void insertControlPoint()
@@ -921,7 +940,7 @@ public class DiagramController extends JPanel
             }
         }
     }
-    
+
     /** Toggle selection state of one controller. */
     public void toggleSelection(Controller c)
     {
@@ -973,12 +992,12 @@ public class DiagramController extends JPanel
         else {
             assert(this.dragging == null);
         }
-        
+
         for (Controller c : this.controllers) {
             c.globalSelfCheck(this.diagram);
         }
     }
-    
+
     /** Return the current lasso rectangle. */
     protected Rectangle getLassoRect()
     {
@@ -988,7 +1007,7 @@ public class DiagramController extends JPanel
             Math.abs(this.lassoEnd.x - this.lassoStart.x),
             Math.abs(this.lassoEnd.y - this.lassoStart.y));
     }
-    
+
     /** Set the set of selected controllers according to the filter. */
     protected void selectAccordingToFilter(ControllerFilter filter)
     {
@@ -999,7 +1018,7 @@ public class DiagramController extends JPanel
         // state of a controller can add or remove resize handles.
         HashSet<Controller> toSelect = new HashSet<Controller>();
         HashSet<Controller> toDeselect = new HashSet<Controller>();
-        
+
         for (Controller c : this.controllers) {
             if (filter.satisfies(c)) {
                 toSelect.add(c);
@@ -1018,7 +1037,7 @@ public class DiagramController extends JPanel
         for (Controller c : toDeselect) {
             c.setSelected(SelectionState.SS_UNSELECTED);
         }
-        
+
         if (toSelect.size() == 1) {
             // Exclusively select the one lasso'd controller.  (Using
             // a 'for' loop is merely syntactically convenient.)
@@ -1034,12 +1053,12 @@ public class DiagramController extends JPanel
             }
         }
     }
-    
+
     /** Set the set of selected controllers according to the lasso. */
     protected void selectAccordingToLasso()
     {
         final Rectangle lasso = this.getLassoRect();
-        
+
         this.selectAccordingToFilter(new ControllerFilter() {
             public boolean satisfies(Controller c)
             {
@@ -1053,7 +1072,7 @@ public class DiagramController extends JPanel
                     // effect.  I do not see any avoidance in the code...
                     return false;
                 }
-                
+
                 return c.boundsIntersects(lasso);
             }
         });
@@ -1065,7 +1084,7 @@ public class DiagramController extends JPanel
         this.controllers.add(c);
         this.repaint();
     }
-    
+
     /** Remove an active controller. */
     public void remove(Controller c)
     {
@@ -1090,17 +1109,17 @@ public class DiagramController extends JPanel
         }
         return ret;
     }
-    
+
     /** Delete matching controllers. */
     public void deleteControllers(ControllerFilter filter)
     {
         // Get the set of matching controllers first; we cannot remove
         // them while searching due to iterator invalidation issues.
         Set<Controller> ctls = this.findControllers(filter);
-        
+
         this.deleteControllers(ctls);
     }
-    
+
     /** Delete specified controllers. */
     public void deleteControllers(Set<Controller> ctls)
     {
@@ -1114,7 +1133,7 @@ public class DiagramController extends JPanel
             this.setDirty();
         }
     }
-    
+
     /** Map a Point to a RelationEndpoint: either an Entity or Inheritance
       * that contains the Point, or else just the point itself. */
     public RelationEndpoint getRelationEndpoint(Point pt)
@@ -1124,7 +1143,7 @@ public class DiagramController extends JPanel
         if (ec != null) {
             return new RelationEndpoint(ec.entity);
         }
-        
+
         // Inheritance?
         InheritanceController ic = this.hitTestInheritance(pt);
         if (ic != null) {
@@ -1134,7 +1153,7 @@ public class DiagramController extends JPanel
         // No suitable intersecting controller, use the point itself.
         return new RelationEndpoint(pt);
     }
-    
+
     /** Create an inheritance based on the user's click on 'point'. */
     private void createInheritanceAt(Point point)
     {
@@ -1146,20 +1165,20 @@ public class DiagramController extends JPanel
                 "and dragging on the parent Entity.");
             return;
         }
-        
+
         // Make an Inheritance connected to 'parent' and
         // current location.
         Inheritance inh = new Inheritance(parent.entity, false /*open*/, point);
         this.diagram.inheritances.add(inh);
         this.setDirty();
-        
+
         // Build and select a controller.
         InheritanceController ic = buildInheritanceController(inh);
         this.selectOnly(ic);
-        
+
         // Drag it while the mouse button is pressed.
         this.beginDragging(ic, point);
-        
+
         this.repaint();
     }
 
@@ -1173,7 +1192,7 @@ public class DiagramController extends JPanel
                 ec.entity.setFillColor(colorName);
             }
         }
-        
+
         this.diagramChanged();
     }
 
@@ -1186,16 +1205,16 @@ public class DiagramController extends JPanel
                 ec.entity.setShape(shape);
             }
         }
-        
+
         this.diagramChanged();
     }
-    
+
     /** Show an error message dialog box with 'message'. */
     public void errorMessageBox(String message)
     {
         SwingUtil.errorMessageBox(this, message);
     }
-    
+
     /** Show an error message arising from Exception 'e'. */
     public void exnErrorMessageBox(String context, Exception e)
     {
@@ -1214,7 +1233,20 @@ public class DiagramController extends JPanel
         if (this.imageCache.containsKey(imageFileName)) {
             return this.imageCache.get(imageFileName);  // Might be null.
         }
-        
+
+        // Try to load the image from disk.
+        Image image = this.innerGetImage(imageFileName);
+
+        // Cache the result, whatever it was, even if null.
+        this.imageCache.put(imageFileName, image);
+
+        return image;
+    }
+
+    /** Get an image for a file name, not using the cache.  If there
+      * is problem, log it and return null. */
+    private Image innerGetImage(String imageFileName)
+    {
         // What directory will we interpret a relative name as relative to?
         File relativeBase;
         if (this.fileName.isEmpty()) {
@@ -1225,40 +1257,108 @@ public class DiagramController extends JPanel
             // Use the directory containing the diagram file.
             relativeBase = new File(this.fileName).getParentFile();
         }
-        
+
         // Combine the base with the specified file.
         File imageFile = Util.getFileRelativeTo(relativeBase, imageFileName);
-        
+
         // Try to load the file.
+        FileInputStream is = null;
         try {
-            Image image = ImageIO.read(imageFile);
-            
-            // Success: cache and return.
-            this.imageCache.put(imageFileName, image);
+            // I explicitly create my own InputStream because ImageIO
+            // does a poor job of reporting file read errors.
+            is = new FileInputStream(imageFile);
+            Image image = ImageIO.read(is);
+            if (image == null) {
+                this.logMessages.append(
+                    "no registered image reader for: "+imageFile+"\n");
+                return null;
+            }
+
+            this.logMessages.append("loaded: "+imageFileName+"\n");
             return image;
         }
         catch (Exception e) {
-            // Currently I have no way of reporting these to the user.
-            // I certainly do not want to pop up a message box because
-            // there could be lots of them.  So just record the failure
-            // and move on.
-            this.imageCache.put(imageFileName, null);
+            this.logMessages.append(
+                "while loading \""+imageFileName+"\": "+
+                e.getClass().getSimpleName()+": "+e.getMessage()+"\n");
             return null;
         }
+        finally {
+            if (is != null) {
+                try {
+                    is.close();
+                }
+                catch (IOException e) {/*ignore*/}
+            }
+        }
     }
-    
+
     /** Clear the image cache and redraw so we reload the images. */
     public void reloadEntityImages()
     {
+        this.logMessages.append("image cache cleared at "+(new Date())+"\n");
+
         this.imageCache.clear();
+
+        // Reloading images might alter size-locked entity sizes.
+        for (Controller c : this.controllers) {
+            c.updateAfterImageReload();
+        }
+
         this.repaint();
     }
-    
+
+    /** If 'front' is true, make selected entities top-most so they
+      * are displayed on top of all others, preserving the relative
+      * order of the selected entities.  If 'front' is false, move
+      * them to the bottom. */
+    public void moveSelectedEntitiesToFrontOrBack(boolean front)
+    {
+        // Collect the selected entities and controllers in their
+        // current relative order.  I need 'selEntities' so I can
+        // call 'removeAll' and 'addAll' with them.
+        ArrayList<Entity> selEntities = new ArrayList<Entity>();
+        ArrayList<EntityController> selControllers = new ArrayList<EntityController>();
+        for (Controller c : this.controllers) {
+            if (c.isSelected() && c instanceof EntityController) {
+                EntityController ec = (EntityController)c;
+                selEntities.add(ec.entity);
+                selControllers.add(ec);
+            }
+        }
+
+        if (selEntities.isEmpty()) {
+            this.errorMessageBox("There are no selected entities to move.");
+            return;
+        }
+
+        // Move the entities in the diagram.
+        this.diagram.entities.removeAll(selEntities);
+        if (front) {
+            this.diagram.entities.addAll(selEntities);
+        }
+        else {
+            this.diagram.entities.addAll(0, selEntities);
+        }
+
+        // Move the controller as well.
+        this.controllers.removeAll(selControllers);
+        if (front) {
+            this.controllers.addAll(selControllers);
+        }
+        else {
+            this.controllers.addAll(0, selControllers);
+        }
+
+        this.selfCheck();
+        this.diagramChanged();
+    }
+
     @Override
     public void componentResized(ComponentEvent e)
     {
         this.diagram.windowSize = this.getSize();
-        
+
         // I do not set the dirty bit here because resizing is not a
         // very important action, and I'm having some trouble avoiding
         // making things dirty on startup.

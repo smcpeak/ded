@@ -4,13 +4,13 @@
 package ded.ui;
 
 import java.awt.Component;
-
 import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 
 import util.swing.ModalDialog;
 
+import ded.model.ArrowStyle;
 import ded.model.Relation;
 import ded.model.RoutingAlgorithm;
 
@@ -21,18 +21,19 @@ public class RelationDialog extends ModalDialog {
     // ----------------- instance data ------------------
     /** Relation we are editing. */
     private Relation relation;
-    
+
     // Controls.
     private JTextField labelField;
     private JComboBox routingChooser;
-    
+    private JComboBox startArrowStyleChooser, endArrowStyleChooser;
+
     // ------------------- methods ----------------------
     public RelationDialog(Component parent, Relation relation)
     {
         super(parent, "Edit Relation");
-        
+
         this.relation = relation;
-        
+
         Box vb = ModalDialog.makeMarginVBox(this, ModalDialog.OUTER_MARGIN);
 
         this.labelField = ModalDialog.makeLineEdit(vb, "Label:", 'l', this.relation.label);
@@ -47,27 +48,48 @@ public class RelationDialog extends ModalDialog {
             this.relation.routingAlg);
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
+        // Arrow styles.
+        this.startArrowStyleChooser = ModalDialog.makeEnumChooser(
+            vb,
+            "Start arrow style:",
+            's',
+            ArrowStyle.class,
+            this.relation.start.arrowStyle);
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+        this.endArrowStyleChooser = ModalDialog.makeEnumChooser(
+            vb,
+            "End arrow style:",
+            'e',
+            ArrowStyle.class,
+            this.relation.end.arrowStyle);
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+
         // It might be nice to allow the endpoints to be edited, but
         // that is challenging due to the ability to connect them to
         // Entities and Inheritances.
-        
+
         this.finishBuildingDialog(vb);
     }
-    
+
     @Override
     public void okPressed()
     {
+        RoutingAlgorithm ra = (RoutingAlgorithm)this.routingChooser.getSelectedItem();
+        ArrowStyle startStyle = (ArrowStyle)this.startArrowStyleChooser.getSelectedItem();
+        ArrowStyle endStyle = (ArrowStyle)this.endArrowStyleChooser.getSelectedItem();
+
         this.relation.label = this.labelField.getText();
-        this.relation.routingAlg = 
-            (RoutingAlgorithm)this.routingChooser.getSelectedItem();
-        
+        this.relation.routingAlg = ra;
+        this.relation.start.arrowStyle = startStyle;
+        this.relation.end.arrowStyle = endStyle;
+
         super.okPressed();
     }
-    
+
     /** Launch the dialog, blocking until the dialog is dismissed.
       * If the user presses OK, 'relation' will be updated and true
       * returned.  Otherwise, false is returned and 'relation' is
-      * not modified. */ 
+      * not modified. */
     public static boolean exec(Component parent, Relation relation)
     {
         return (new RelationDialog(parent, relation)).exec();

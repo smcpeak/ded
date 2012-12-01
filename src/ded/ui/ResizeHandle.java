@@ -13,15 +13,15 @@ public enum ResizeHandle {
     RH_BOTTOM           (1,2),
     RH_BOTTOM_LEFT      (0,2),
     RH_LEFT             (0,1);
-    
+
     public static final int NUM_RESIZE_HANDLES = 8;
-    
+
     /** Entity-relative location of this handle: 0=left, 1=mid, 2=right. */
     public final int handleX;
-    
+
     /** 0=top, 1=mid, 2=bottom. */
     public final int handleY;
-    
+
     ResizeHandle(int handleX, int handleY)
     {
         this.handleX = handleX;

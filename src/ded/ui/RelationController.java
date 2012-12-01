@@ -32,6 +32,7 @@ import util.awt.HorizOrVert;
 import util.swing.MenuAction;
 import util.swing.SwingUtil;
 
+import ded.model.ArrowStyle;
 import ded.model.Diagram;
 import ded.model.Entity;
 import ded.model.Relation;
@@ -42,24 +43,24 @@ import ded.model.RoutingAlgorithm;
 public class RelationController extends Controller {
     // ---------------------- constants -------------------------
     public static final Color arrowFillColor = Color.BLACK;
-    
+
     public static final int selfRelationRadius = 20;
     public static final int arrowHeadLength = 10;
     public static final int relationBoundsSlop = 10;
     public static final int relationLabelOffset = 4;
-    
+
     // -------------------- instance data -----------------------
     /** The Relation we are controlling. */
     public Relation relation;
-    
+
     /** If 'selState' is SS_EXCLUSIVE, these are handles to the endpoints.
-      * Otherwise, they are null. */ 
+      * Otherwise, they are null. */
     public RelationEndpointController startHandle, endHandle;
-    
+
     /** If 'selState' is SS_EXCLUSIVE, this contains controllers for
       * all of the interior control points.  Otherwise it is null. */
     public RelationControlPointController[] controlPointHandle;
-    
+
     // ----------------------- methods -------------------------
     public RelationController(DiagramController dc, Relation r)
     {
@@ -67,7 +68,7 @@ public class RelationController extends Controller {
         this.relation = r;
         this.startHandle = this.endHandle = null;
         this.controlPointHandle = null;
-        
+
         this.selfCheck();
     }
 
@@ -89,7 +90,7 @@ public class RelationController extends Controller {
         double sy = r.y;
         double ex = r.x + r.width;
         double ey = r.y + r.height;
-        
+
         // Move one of the points to an adjacent point so that the
         // two points are the desired line segment.
         switch (which) {
@@ -98,7 +99,7 @@ public class RelationController extends Controller {
             case 2: sy += r.height; break;
             case 3: sx += r.width; break;
         }
-        
+
         return new Line2D.Double(sx, sy, ex, ey);
     }
 
@@ -107,16 +108,16 @@ public class RelationController extends Controller {
       * inside the bounds of 'entity' (although I'm not sure if that is
       * guaranteed), so there should be at most one intersection point.
       * If one is found, return it.
-      * 
+      *
       * If no intersection is found, look for a point on the edge that
       * intersects the infinite line through 'segment' and is "near"
       * the segment (using a somewhat unusual definition of proximity;
       * see the code).
-      * 
+      *
       * If no such intersection can be found, meaning that the segment
       * is degenerate, or somehow almost parallel to all of the edges,
       * return null.
-      * 
+      *
       * The purpose of this code is to decide where on the edge of
       * 'entity' to begin drawing a relation that connects to it, where
       * 'segment' is what we would draw if we just let it go inside
@@ -127,16 +128,16 @@ public class RelationController extends Controller {
     {
         // Best intersection distance so far.
         double bestDistance = 1000.0;
-        
+
         // Point where the best intersection is.
         Point2D.Double bestIntersection = null;
-        
+
         // Try intersecting the line segment with each segment of the
         // entity edge.
         for (int i=0; i<4; i++) {
             // Line segment on border of entity.
             Line2D.Double entitySeg = getEntitySegment(entity, i);
-            
+
             // Intersect with the given segments, yielding parameters
             // that indicate how far along each segment to go to reach
             // the intersection point.
@@ -145,7 +146,7 @@ public class RelationController extends Controller {
             if (Util.isSpecialDouble(t) || Util.isSpecialDouble(t2)) {
                 continue;
             }
-            
+
             // Compute "distance" to perfect intersection: the amount
             // that 't' or 't2' is beyond the range [0,1], using the
             // larger distance if both are outside that range.  It is
@@ -169,14 +170,14 @@ public class RelationController extends Controller {
             if (distance == 0.0) {
                 return GeomUtil.pointOnLine2D(entitySeg, t);
             }
-            
+
             // Best so far?
             if (distance < bestDistance) {
                 bestDistance = distance;
                 bestIntersection = GeomUtil.pointOnLine2D(entitySeg, t);
             }
         }
-        
+
         // We might not have a true intersection, but we'll use it anyway.
         // Non-intersections seem to happen fairly frequently when the
         // intersection point is near a corner of the entity rectangle.
@@ -190,13 +191,13 @@ public class RelationController extends Controller {
         return GeomUtil.midPoint(this.relation.start.getCenter(),
                                   this.relation.end.getCenter());
     }
-    
+
     @Override
     public void dragTo(Point pt)
     {
         // Convert to a delta relative to 'getLoc()'.
         Point delta = GeomUtil.subtract(pt, this.getLoc());
-        
+
         // Apply the delta to the endpoints if they are specified as
         // points rather than Entities or Inheritances.
         if (this.relation.start.isPoint()) {
@@ -205,25 +206,25 @@ public class RelationController extends Controller {
         if (this.relation.end.isPoint()) {
             this.relation.end.pt = GeomUtil.add(this.relation.end.pt, delta);
         }
-        
+
         // Apply the delta to all control points.
         for (int i=0; i < this.relation.controlPts.size(); i++) {
             Point cp = this.relation.controlPts.get(i);
             this.relation.controlPts.set(i, GeomUtil.add(cp, delta));
         }
-        
+
         this.diagramController.setDirty();
     }
-    
+
     @Override
     public Set<Polygon> getBounds()
     {
         ArrayList<Point> points = this.computePoints();
-        
+
         if (points.size() == 1) {
             return getSelfLoopBounds(points.get(0));
         }
-        
+
         // Enclose each segment with a rectangle.
         HashSet<Polygon> bounds = new HashSet<Polygon>();
         for (int i=1; i < points.size(); i++) {
@@ -233,13 +234,13 @@ public class RelationController extends Controller {
     }
 
     /** Compute the sequence of points that determine the line segments
-      * we will draw to represent the relation.  The start and end points 
+      * we will draw to represent the relation.  The start and end points
       * are adjusted to not go inside the Entity or Inheritance they
       * connect to, if they do connect.  This does not include the points
       * that make up the arrowhead; on an end with an arrowhead, this
       * just has the single point that will be the tip of the arrowhead. */
     private ArrayList<Point> computePoints()
-    { 
+    {
         switch (this.relation.routingAlg) {
             case RA_DIRECT:          return this.direct_computePoints();
             case RA_MANHATTAN_HORIZ:
@@ -249,28 +250,29 @@ public class RelationController extends Controller {
         return null;         // Not reached.
     }
 
-    /** Draw an arrowhead and a line segment from 'start' to 'end'.  The
+    /** Draw an arrowhead for a line segment from 'start' to 'end'.  The
       * size of the arrowhead is fixed; the distance from 'start' to
       * 'end' is irrelevant.
-      * 
-      * If 'owning' is true, draw it as a double arrowhead; otherwise
-      * draw a single arrowhead. */
-    private static void drawArrow(Graphics g0, Point start, Point end, boolean owning)
+      *
+      * The shape of the arrowhead is determined by 'arrowStyle'.  If it
+      * is AS_NONE, do not draw anything. */
+    private static void drawArrowhead(Graphics g0, Point start, Point end, ArrowStyle arrowStyle)
     {
+        if (arrowStyle == ArrowStyle.AS_NONE) {
+            return;
+        }
+
         // Copy the Graphics object so settings changes are not persistent.
         Graphics2D g = (Graphics2D)g0.create();
-        
-        // Draw the line segment.
-        g.drawLine(start.x, start.y, end.x, end.y);
-        
+
         // Then the arrowhead.  First, calculate the main arrow body vector
         // with the origin at 'end', pointing towards 'start'.
-        Point2D.Double body = 
+        Point2D.Double body =
             new Point2D.Double(start.x-end.x, start.y-end.y);
-        
+
         // Scale it to 'arrowHeadLength' pixels.
         body = GeomUtil.scale2DVectorTo(body, arrowHeadLength);
-        
+
         // Make versions rotated up and down by 30 degrees, this
         // creating a separation of 60 degrees, which will make the
         // triangle equilateral.
@@ -287,7 +289,7 @@ public class RelationController extends Controller {
         //                                        /down      .
         //                                       V           .
 
-        if (!owning) {
+        if (arrowStyle == ArrowStyle.AS_FILLED_TRIANGLE) {
             // filled arrowhead:
             //                                       X           .
             //                                       XX          .
@@ -302,14 +304,14 @@ public class RelationController extends Controller {
             // I do this using floating-point coordinates and Graphics2D
             // because if I use the integer API, the arrowhead has a
             // very unaesthetic asymmetry.  (That was not the case with Qt.)
-            
+
             // Endpoint.  Get a small offset in the '-body' direction to fix
             // the extra pixel, then add the actual end.  The offset has
             // been tuned to make arrows that look reasonable both alone
             // and in contact with an entity.
             Point2D.Double endFloat = GeomUtil.scale2DVectorTo(body, -0.7);
             endFloat = GeomUtil.add(endFloat, GeomUtil.toPoint2D_Double(end));
-            
+
             // Vertices of the arrowhead that are not on the main line.
             Point2D.Double upPoint = GeomUtil.add(endFloat, up);
             Point2D.Double downPoint = GeomUtil.add(endFloat, down);
@@ -323,8 +325,10 @@ public class RelationController extends Controller {
             pts.closePath();
             g.fill(pts);
         }
-        
+
         else {
+            // For the moment there are no other styles.
+
             // double unfilled arrowhead:
             //                                 X     X           .
             //                                  X     X          .
@@ -337,13 +341,13 @@ public class RelationController extends Controller {
             //                                 X     X           .
 
             // For this code, the integer API seems adequate.
-            
+
             // Arrowhead nearest 'end'.
             Point upPoint = GeomUtil.add(end, GeomUtil.toPoint(up));
             Point downPoint = GeomUtil.add(end, GeomUtil.toPoint(down));
             g.drawLine(end.x, end.y, upPoint.x, upPoint.y);
             g.drawLine(end.x, end.y, downPoint.x, downPoint.y);
-            
+
             // Second arrowhead.
             //
             // Scale factor 2/3 chosen by trial and error based on
@@ -358,56 +362,61 @@ public class RelationController extends Controller {
     }
 
     @Override
-    public void paint(Diagram diagram, Graphics g0)
+    public void paint(Graphics g0)
     {
-        super.paint(diagram, g0);
+        super.paint(g0);
         Graphics2D g = (Graphics2D)g0.create();
-        
+
         ArrayList<Point> points = computePoints();
-        
+
         if (points.size() == 1) {
             this.paintSelfLoop(g, points.get(0));
             return;
         }
-        
+
         // Special lines for inheritacne.
         if (this.relation.end.isInheritance()) {
             g.setStroke(new BasicStroke(
-                InheritanceController.inheritLineWidth, 
-                BasicStroke.CAP_BUTT, 
+                InheritanceController.inheritLineWidth,
+                BasicStroke.CAP_BUTT,
                 BasicStroke.JOIN_MITER));
             g.setColor(InheritanceController.inheritLineColor);
         }
-        
+
         // Draw each segment.
         for (int i=1; i < points.size(); i++) {
             Point a = points.get(i-1);
             Point b = points.get(i);
-            
-            if (i == points.size()-1 && !this.relation.end.isInheritance()) {
-                // Draw last segment as an arrow.
-                drawArrow(g, a, b, this.relation.owning);
+
+            // Line segment.
+            g.drawLine(a.x, a.y, b.x, b.y);
+
+            // Possibly draw arrowhead at start.
+            if (i == 1) {
+                drawArrowhead(g, b, a, this.relation.start.arrowStyle);
             }
-            else {
-                // Not the last segment, or goes to an inheritance.
-                g.drawLine(a.x, a.y, b.x, b.y);
+
+            // Possibly draw arrowhead at end.  But if it ends on an
+            // inheritance, then don't.
+            if (i == points.size()-1 && !this.relation.end.isInheritance()) {
+                drawArrowhead(g, a, b, this.relation.end.arrowStyle);
             }
         }
-        
+
         // Label near midpoint of first segment.
         this.drawLabelAtSegment(g, points.get(0), points.get(1), this.relation.label);
     }
-    
+
     /** Return the angle of a line that goes from the center of an
       * ellipse with horizontal radius 'a' and vertical radius 'b'
       * to a point on it that is tangent to a line that is parallel
       * to the ray from the origin to point 'pq'.
-      * 
+      *
       * I struggled a bit to figure out how to do this, but then found
       * this site, which provides the essence of the solution:
-      * 
+      *
       * http://mathforum.org/library/drmath/view/55356.html
-      * 
+      *
       * I think the way I did this is more complicated than it needs
       * to be since I could bypass the angle stuff, but for now I am
       * just going to port it to Java as-is. */
@@ -416,29 +425,29 @@ public class RelationController extends Controller {
         // Slope of the line from the origin to 'pq'.
         assert(pq.x != 0);
         double slopePQ = (double)pq.y / (double)pq.x;
-        
+
         // Scale the slope by the same amount that would be required to
         // scale the ellipse vertically to become a circle.
         assert(b != 0.0);
         double scaledSlopePQ = slopePQ * a / b;
-        
+
         // Convert that slope to an angle (radians) from the x-axis.
         double scaledAnglePQ = Math.atan(scaledSlopePQ);
-        
+
         // Subtract 90 degrees, yield the angle (theta) from the origin
         // to the tangent point on the circle.
         double scaledAngleTheta = scaledAnglePQ - (Math.PI / 2.0);
-        
+
         // Convert that to a slope.
         double scaledSlopeTheta = Math.tan(scaledAngleTheta);
-        
+
         // Scale that vertically, reversing the scaling that made the
         // ellipse a circle.
         double slopeTheta = scaledSlopeTheta * b / a;
-        
+
         // Finally, convert that back to an angle.
         double theta = Math.atan(slopeTheta);
-        
+
         // 'atan' always returns an angle in quadrant 1 or 4, but if the
         // original PQ angle was in Q3 or 4, then theta should be in Q2
         // or 3 (because we subtract 90 degrees).
@@ -448,7 +457,7 @@ public class RelationController extends Controller {
         else if (pq.y == 0 && pq.x < 0) {
             theta += Math.PI;      // Strange boundary case, don't quite understand.
         }
-        
+
         return theta;
     }
 
@@ -465,7 +474,7 @@ public class RelationController extends Controller {
     }
 
     /** Draw 'label' near the midpoint of 'p' and 'q'.
-      * 
+      *
       * What I want:
       *   - Compute a bounding rectangle for 'label'.
       *   - Inscribe an ellipse.
@@ -475,10 +484,10 @@ public class RelationController extends Controller {
       *       PQ's midpoint.
       *     - The closest point to the line on the ellipse is
       *       'relationLabelOffset' pixels from the midpoint.
-      *       
+      *
       * Though this is a fair bit of work to accomplish, I coudn't think
       * of any quick hacks that seemed likely to be good enough.
-      * 
+      *
       * This code was difficult to get right!  */
     private void drawLabelAtSegment(
         Graphics g,
@@ -488,22 +497,22 @@ public class RelationController extends Controller {
     {
         Point p = new Point(origP);
         Point q = new Point(origQ);
-        
+
         // Get the bounding rectangle dimensions.
         FontMetrics fm = g.getFontMetrics();
         LineMetrics lm = fm.getLineMetrics(label, g);
         int labelWidth = fm.stringWidth(label);
-        
+
         // Compute dimensions of an inscribed ellipse.
         double a = (double)labelWidth / 2;                           // horizontal radius
         double b = (double)(lm.getAscent() + lm.getDescent()) / 2;   // vertical radius
         if (a <= 0 || b <= 0) {
             return;                    // Degenerate, bail.
         }
-        
+
         // Midpoint of PQ.
         Point m = GeomUtil.midPoint(p, q);
-        
+
         // Vertical segment?
         if (p.x == q.x) {
             // Must handle this specially because the 'ellipseTangent'
@@ -519,46 +528,46 @@ public class RelationController extends Controller {
             SwingUtil.drawCenteredText(g, m, label);
             return;
         }
-        
+
         // I'm having a hard time working out the following code in the
         // inverted coord system, so just flip the y coords of the inputs
         // so I can work in the usual cartesian coord system.
         p.y = -p.y;
         q.y = -q.y;
         m.y = -m.y;
-        
+
         // Compute an angle that points from the ellipse center to the
         // point on its edge tangent to PQ.
         double theta = ellipseTangentAngle(a, b, GeomUtil.subtract(q, p));
-        
+
         // Compute the vector from the ellipse center to the tangent point.
         Point2D.Double edge = computeEllipsePointFromAngle(a, b, theta);
-        
+
         // Vector PQ.
         Point2D.Double v = new Point2D.Double(q.x-p.x, q.y-p.y);
-        
+
         // Rotate 90, normalize length to 'relationLabelOffset'.
         v = GeomUtil.rot2DVector90(v);
         v = GeomUtil.scale2DVectorTo(v, relationLabelOffset);
-        
+
         // Compute desired center of ellipse: midpt + v - edge
         Point2D.Double center = GeomUtil.toPoint2D_Double(m);
         center = GeomUtil.add(center, v);
         center = GeomUtil.subtract(center, edge);
-        
+
         // Return to usual AWT coordinate system.
         Point printSpot = GeomUtil.toPoint(center);
         printSpot.y = -printSpot.y;
-        
+
         // Draw the label.
         SwingUtil.drawCenteredText(g, printSpot, label);
     }
-    
+
     @Override
     public void selfCheck()
     {
         super.selfCheck();
-        
+
         // Handles exist iff SS_EXCLUSIVE.
         if (this.selState != SelectionState.SS_EXCLUSIVE) {
             assert(this.startHandle == null);
@@ -569,10 +578,10 @@ public class RelationController extends Controller {
             assert(this.startHandle != null);
             assert(this.endHandle != null);
             assert(this.controlPointHandle != null);
-            
+
             assert(this.diagramController.contains(this.startHandle));
             assert(this.diagramController.contains(this.endHandle));
-            
+
             int npts = this.relation.controlPts.size();
             for (int i=0; i<npts; i++) {
                 assert(this.diagramController.contains(this.controlPointHandle[i]));
@@ -586,21 +595,21 @@ public class RelationController extends Controller {
         this.selfCheck();
 
         // If transition away from exclusive, destroy handles.
-        if (this.selState == SelectionState.SS_EXCLUSIVE && 
-            ss != SelectionState.SS_EXCLUSIVE) 
+        if (this.selState == SelectionState.SS_EXCLUSIVE &&
+            ss != SelectionState.SS_EXCLUSIVE)
         {
             this.diagramController.remove(this.startHandle);
             this.diagramController.remove(this.endHandle);
             this.startHandle = null;
             this.endHandle = null;
-            
+
             int npts = this.relation.controlPts.size();
             for (int i=0; i<npts; i++) {
                 this.diagramController.remove(this.controlPointHandle[i]);
             }
             this.controlPointHandle = null;
         }
-        
+
         // Transition to exclusive: create handles.
         if (this.selState != SelectionState.SS_EXCLUSIVE &&
             ss == SelectionState.SS_EXCLUSIVE)
@@ -611,7 +620,7 @@ public class RelationController extends Controller {
                 this.diagramController, this, this.relation.end);
             this.diagramController.add(this.startHandle);
             this.diagramController.add(this.endHandle);
-            
+
             int npts = this.relation.controlPts.size();
             this.controlPointHandle = new RelationControlPointController[npts];
             for (int i=0; i<npts; i++) {
@@ -619,9 +628,9 @@ public class RelationController extends Controller {
                     new RelationControlPointController(this.diagramController, this, i));
             }
         }
-        
+
         super.setSelected(ss);
-        
+
         this.selfCheck();
     }
 
@@ -632,7 +641,7 @@ public class RelationController extends Controller {
         assert(this.endHandle != null);
         return this.endHandle;
     }
-    
+
     @Override
     public void edit()
     {
@@ -647,13 +656,13 @@ public class RelationController extends Controller {
     public void deleteSelfAndData(Diagram diagram)
     {
         this.selfCheck();
-        
+
         // Unselect myself to get rid of handles.
         this.setSelected(SelectionState.SS_UNSELECTED);
-        
+
         // Remove the relation from the diagram.
         diagram.relations.remove(this.relation);
-        
+
         // Remove myself as a controller.
         this.diagramController.remove(this);
 
@@ -669,7 +678,7 @@ public class RelationController extends Controller {
                               this.relation.end.getCenter())),
             0);
     }
-    
+
     /** Insert a new control point at 'p', so it becomes number 'where'
       * in the control point sequence. */
     private void insertControlPointAtWhere(Point p, int where)
@@ -678,14 +687,14 @@ public class RelationController extends Controller {
         // if needed.
         SelectionState oldSel = this.getSelState();
         this.setSelected(SelectionState.SS_UNSELECTED);
-        
+
         this.relation.controlPts.add(where, p);
-        
+
         this.setSelected(oldSel);
-        
+
         this.diagramController.diagramChanged();
     }
-    
+
     /** Insert a new control point at the specified location, putting
       * it between the nearest pair of existing points. */
     private void insertControlPointAt(Point point)
@@ -695,7 +704,7 @@ public class RelationController extends Controller {
             this.insertControlPointAtWhere(point, 0);
             return;
         }
-        
+
         // Consider putting it before each existing control point.  In
         // each case, calculate the distance from the existing segment
         // to the new point.  Select the position that leads to the
@@ -706,7 +715,7 @@ public class RelationController extends Controller {
         // enough.
         int bestPosition = -1;
         double bestDistance = Double.MAX_VALUE;
-        
+
         for (int pos=0; pos <= this.relation.controlPts.size(); pos++) {
             Point before = (pos == 0) ?
                 this.relation.start.getCenter() :
@@ -714,18 +723,18 @@ public class RelationController extends Controller {
             Point after = (pos == this.relation.controlPts.size()) ?
                 this.relation.end.getCenter() :
                 this.relation.controlPts.get(pos);
-                
+
             double dist = GeomUtil.distance2DPointLineSeg(
                 GeomUtil.toPoint2D_Double(point),
                 new Line2D.Double(GeomUtil.toPoint2D_Double(before),
                                   GeomUtil.toPoint2D_Double(after)));
-                
+
             if (dist < bestDistance) {
                 bestPosition = pos;
                 bestDistance = dist;
             }
         }
-        
+
         assert(bestPosition >= 0);
         this.insertControlPointAtWhere(point, bestPosition);
     }
@@ -737,14 +746,14 @@ public class RelationController extends Controller {
         // As above, temporarily unselect.
         SelectionState oldSel = this.getSelState();
         this.setSelected(SelectionState.SS_UNSELECTED);
-        
+
         this.relation.controlPts.remove(which);
-        
+
         this.setSelected(oldSel);
-        
+
         this.diagramController.diagramChanged();
     }
-    
+
     @Override
     public void mousePressed(final MouseEvent ev)
     {
@@ -762,7 +771,7 @@ public class RelationController extends Controller {
             }
         });
     }
-    
+
     @Override
     public boolean keyPressed(KeyEvent ev)
     {
@@ -771,31 +780,31 @@ public class RelationController extends Controller {
                 case KeyEvent.VK_D:
                     this.relation.routingAlg = RoutingAlgorithm.RA_DIRECT;
                     break;
-                    
+
                 case KeyEvent.VK_H:
                     this.relation.routingAlg = RoutingAlgorithm.RA_MANHATTAN_HORIZ;
                     break;
-                    
+
                 case KeyEvent.VK_V:
                     this.relation.routingAlg = RoutingAlgorithm.RA_MANHATTAN_VERT;
                     break;
-                    
+
                 case KeyEvent.VK_O:
-                    this.relation.owning = !this.relation.owning;
+                    this.relation.end.toggleOwning();
                     break;
-                    
+
                 default:
                     return false;
             }
-            
+
             this.diagramController.diagramChanged();
             return true;
         }
-        
+
         return false;
     }
-    
-    
+
+
     /** Get bounding rectangle, not necessarily horizontal or vertical,
       * for a segment from 'p1' to 'p2'.  This is the smallest rectangle
       * that encloses all points 'relationBoundsSlop' pixels or less
@@ -806,20 +815,20 @@ public class RelationController extends Controller {
         return getSegmentBounds(GeomUtil.toPoint2D_Double(p1),
                                 GeomUtil.toPoint2D_Double(p2));
     }
-    
+
     /** See the other overload for spec. */
     private Polygon getSegmentBounds(Point2D.Double startPt, Point2D.Double endPt)
     {
         // Region's distance from line segment.
         int slop = relationBoundsSlop;
-        
+
         // Get a vector that is paralle to the segment but has length 'slop'.
         Point2D.Double slopVector = GeomUtil.subtract(endPt, startPt);
         slopVector = GeomUtil.scale2DVectorTo(slopVector, slop);
-        
+
         // Rotate that 90 degrees clockwise (since we're using AWT coords).
         Point2D.Double slopV90 = GeomUtil.rot2DVector90(slopVector);
-        
+
         // Compute points on a rectangle that is +/0 slop all around.
         Polygon bounds = new Polygon();
         for (int i=0; i<4; i++) {
@@ -831,7 +840,7 @@ public class RelationController extends Controller {
             else {
                 p = GeomUtil.add(endPt, slopVector);            // p = end + slop
             }
-            
+
             // Then the short way.
             if (i <= 1) {
                 p = GeomUtil.subtract(p, slopV90);              // p -= slop90
@@ -839,10 +848,10 @@ public class RelationController extends Controller {
             else {
                 p = GeomUtil.add(p, slopV90);                   // p += slop90
             }
-            
+
             bounds.addPoint((int)p.x, (int)p.y);
         }
-        
+
         return bounds;
     }
 
@@ -879,20 +888,20 @@ public class RelationController extends Controller {
         g.drawArc(pt.x - radius, pt.y - radius,
                   radius*2, radius*2,
                   45, 315);
-        
+
         // Put an arrowhead at the 0 degree position.
-        drawArrow(g, GeomUtil.add(pt, new Point(radius, 0)),
+        drawArrowhead(g, GeomUtil.add(pt, new Point(radius, 0)),
                      GeomUtil.add(pt, new Point(radius, -1)),
-                     this.relation.owning);
-                  
+                     this.relation.end.arrowStyle);
+
         // Label above the circle.
         int arrowLabelOffset = 10;
         Point labelPt = GeomUtil.add(pt, new Point(0, -radius - arrowLabelOffset));
         SwingUtil.drawCenteredText(g, labelPt, this.relation.label);
     }
-    
+
     /** Get location of first control point, or the center of the
-      * relation end if there are no control points. */ 
+      * relation end if there are no control points. */
     private Point firstControlPoint()
     {
         if (this.relation.controlPts.isEmpty()) {
@@ -904,7 +913,7 @@ public class RelationController extends Controller {
             return this.relation.controlPts.get(0);
         }
     }
-    
+
     /** Get location of last control point or relation start. */
     private Point lastControlPoint()
     {
@@ -928,7 +937,7 @@ public class RelationController extends Controller {
         Line2D.Double line = new Line2D.Double(
             GeomUtil.toPoint2D_Double(entity.getCenter()),
             GeomUtil.toPoint2D_Double(p));
-        
+
         // Intersect this segment with the entity borders.
         Point2D.Double ret = intersectEntityWithSegment(entity, line);
         if (ret == null) {
@@ -938,7 +947,7 @@ public class RelationController extends Controller {
             return GeomUtil.toPoint(ret);
         }
     }
-    
+
     /** Get the sequence of points to connect for a relation using the
       * direct-line algorithm. */
     private ArrayList<Point> direct_computePoints()
@@ -946,9 +955,9 @@ public class RelationController extends Controller {
         RelationEndpoint start = this.relation.start;
         RelationEndpoint end = this.relation.end;
         ArrayList<Point> cpts = this.relation.controlPts;
-        
+
         ArrayList<Point> points = new ArrayList<Point>();
-        
+
         // Start point.
         if (start.isEntity()) {
             // Find point on edge of 'start' that intersects the line
@@ -967,10 +976,10 @@ public class RelationController extends Controller {
         else {
             points.add(start.getCenter());
         }
-        
+
         // Interior control points.
         points.addAll(cpts);
-        
+
         // End point.
         if (end.isEntity()) {
             // Similar to how first point is set.
@@ -986,10 +995,10 @@ public class RelationController extends Controller {
         else {
             points.add(end.getCenter());
         }
-        
+
         return points;
     }
-    
+
     // ----------------- RelationController: RA_MANHATTAN_* ----------------
     /** Get the visible extent of 're' in dimension 'hv'. */
     private static IntRange getRange(HorizOrVert hv, RelationEndpoint re)
@@ -1001,15 +1010,15 @@ public class RelationController extends Controller {
             return IntRange.singleton(hv.get(re.getCenter()));
         }
     }
-    
+
     /** If 'r1' and 'r2' overlap, return the midpoint of the overlapping
-      * region.  Otherwise, return null. */ 
+      * region.  Otherwise, return null. */
     private static Integer overlaps(IntRange r1, IntRange r2)
     {
         // Get the overlapping region (if exists).
         int low = Math.max(r1.low, r2.low);
         int high = Math.min(r1.high, r2.high);
-        
+
         if (low <= high) {
             return Integer.valueOf(Util.avg(low, high));
         }
@@ -1017,7 +1026,7 @@ public class RelationController extends Controller {
             return null;     // No overlap.
         }
     }
-    
+
     /** Extend 'points' to go through 'target', heading along 'currentHV'
       * first when a corner must be turned.  Return the new value to use
       * in place of 'currentHV' by the caller. */
@@ -1029,7 +1038,7 @@ public class RelationController extends Controller {
         // Where does the chain end?
         int nPoints = points.size();
         Point source = points.get(nPoints-1);
-        
+
         // Can hit w/o turning corner?
         for (HorizOrVert hv : EnumSet.allOf(HorizOrVert.class)) {
             if (hv.get(source) == hv.get(target)) {
@@ -1038,20 +1047,20 @@ public class RelationController extends Controller {
                 return hv;             // Keep going this way next time.
             }
         }
-        
+
         // Must turn a corner.
-        
+
         // Call the dimension to proceed along first 'x'.
         HorizOrVert x = currentHV;
         HorizOrVert y = x.opposite();
-        
+
         Point corner = new Point();
         x.set(corner, x.get(target));
         y.set(corner, y.get(source));
         points.add(corner);
-        
+
         points.add(target);
-        
+
         // Final edge was along 'y'.
         return y;
     }
@@ -1075,14 +1084,14 @@ public class RelationController extends Controller {
             // that the code works when 'x' is D_VERT too.
             HorizOrVert x = hvIter.plus(preferredHV);
             HorizOrVert y = x.opposite();
-            
+
             // Can hit with singe line along 'x'?
             if (getRange(y, start).contains(y.get(target))) {
                 // Yes, use it.
                 return manhattan_getEndpointEmergenceDim(start, x, target);
             }
         }
-        
+
         // Must turn a corner, go along 'preferredHV' first.
         return manhattan_getEndpointEmergenceDim(start, preferredHV, target);
     }
@@ -1094,9 +1103,9 @@ public class RelationController extends Controller {
         Point target)
     {
         HorizOrVert y = x.opposite();
-        
+
         Point ret = new Point();
-        
+
         // With what x coordwill the line emerge from 'start'?
         if (x.get(start.getCenter()) < x.get(target)) {
             x.set(ret, getRange(x, start).high);           // Right side.
@@ -1104,7 +1113,7 @@ public class RelationController extends Controller {
         else {
             x.set(ret, getRange(x, start).low);            // Left side.
         }
-        
+
         // And the y coord?
         if (getRange(y, start).contains(y.get(target))) {
             // Use target's y coord.
@@ -1114,7 +1123,7 @@ public class RelationController extends Controller {
             // Use center of start's range.
             y.set(ret, getRange(y, start).midPoint());
         }
-        
+
         return ret;
     }
 
@@ -1127,38 +1136,38 @@ public class RelationController extends Controller {
         ArrayList<Point> cpts = this.relation.controlPts;
         Point startCenter = start.getCenter();
         Point endCenter = end.getCenter();
-        
+
         // Return value.
         ArrayList<Point> points = new ArrayList<Point>();
-        
+
         // Preferred starting dimension?
         HorizOrVert preferredHV =
             this.relation.routingAlg == RoutingAlgorithm.RA_MANHATTAN_HORIZ?
                 HorizOrVert.HV_HORIZ : HorizOrVert.HV_VERT;
-        
+
         if (cpts.isEmpty()) {
             // Degenerate?
             if (startCenter.equals(endCenter)) {
                 points.add(startCenter);
                 return points;
             }
-            
+
             // Overlap in horiz/vert?
             for (HorizOrVert hvIter : HorizOrVert.allValues()) {
                 // Like above.
                 HorizOrVert x = hvIter.plus(preferredHV);
                 HorizOrVert y = x.opposite();
-                
+
                 IntRange startYRange = getRange(y, start);
                 IntRange endYRange = getRange(y, end);
                 Integer midpt = overlaps(startYRange, endYRange);
                 if (midpt != null) {
                     IntRange startXRange = getRange(x, start);
                     IntRange endXRange = getRange(x, end);
-                    
+
                     Point p1 = new Point();
                     Point p2 = new Point();
-                    
+
                     // Low to high?
                     if (x.get(startCenter) < x.get(endCenter)) {
                         x.set(p1, startXRange.high);
@@ -1170,33 +1179,33 @@ public class RelationController extends Controller {
                     }
                     y.set(p1, midpt);
                     y.set(p2, midpt);
-                    
+
                     points.add(p1);
                     points.add(p2);
                     return points;
                 }
             }
         }
-        
+
         // Determine the point of emergence from 'start' such that we
         // hit the first control point.
         points.add(manhattan_getEndpointEmergence
             (start, preferredHV, this.firstControlPoint()));
-        
+
         // Hit successive control points.
         HorizOrVert currentHV = preferredHV;
         for (Point p : cpts) {
             currentHV = manhattan_hitNextControlPoint(points, currentHV, p);
         }
-        
+
         // Determine the point of entrance to 'end', coming from
         // the last control point.
         Point finalPt = manhattan_getEndpointEmergence
             (end, currentHV.opposite(), this.lastControlPoint());
-        
+
         // Hit this last point.
         manhattan_hitNextControlPoint(points, currentHV, finalPt);
-        
+
         // Example output (no control points, start is D_HORIZ):
         //
         //    +---------+                        points[1]
@@ -1211,7 +1220,7 @@ public class RelationController extends Controller {
         //                                |   end    |
         //                                |          |
         //                                +----------+
-        
+
         return points;
     }
 }

@@ -25,40 +25,48 @@ public class Entity implements JSONable {
     // ------------ constants -------------
     /** Default shape. */
     public static final EntityShape defaultShape = EntityShape.ES_RECTANGLE;
-    
+
     /** Default entity fill color.  Assumed when no color is
       * specified in the input file. */
     public static final String defaultFillColor = "Gray";
-    
+
+    /** Default image fill style. */
+    public static final ImageFillStyle defaultImageFillStyle = ImageFillStyle.IFS_UPPER_LEFT;
+
     // ------------ public data ------------
     /** Location of upper-left corner, in pixels. */
     public Point loc;
-    
+
     /** Size in pixels. */
     public Dimension size;
-    
+
     /** Shape of the outline (or indication of its absence). */
     public EntityShape shape = defaultShape;
-    
+
     /** Name of fill color.  For the moment, this must be one of
       * a fixed set, but I plan on making it customizable. */
     public String fillColor = defaultFillColor;
-    
+
     /** Name/title of the entity. */
     public String name = "";
-    
+
     /** Attributes as free text with newlines. */
     public String attributes = "";
-    
+
     /** Additional shape-specific geometry parameters.  May be null. */
     public int[] shapeParams = null;
-    
-    /** File name of image to use instead of the specified shape.  When
+
+    /** File name of image to draw as the entity background instead of
+      * 'fillColor' (which is then not used for most shapes).  When
       * rendered, if relative, the this will be interpreted as relative
       * to the directory where the containing .ded file is.  This is
       * only used if it is not empty. */
     public String imageFileName = "";
-    
+
+    /** When 'imageFileName' is not empty, this specifies how we fill
+      * the entity rectangle with it. */
+    public ImageFillStyle imageFillStyle = defaultImageFillStyle;
+
     // ------------ public methods ------------
     public Entity()
     {
@@ -73,26 +81,26 @@ public class Entity implements JSONable {
     {
         return new Rectangle(this.loc, this.size);
     }
-    
+
     /** Return the point at the center of the Entity's bounding box. */
     public Point getCenter()
     {
-        return new Point(this.loc.x + this.size.width/2, 
+        return new Point(this.loc.x + this.size.width/2,
                          this.loc.y + this.size.height/2);
     }
-    
+
     /** Set 'fillColor'.  For the moment, that is all. */
     public void setFillColor(String colorName)
     {
         this.fillColor = colorName;
     }
-    
+
     /** Set 'shape'.  Adjust 'shapeParams' to match if needed. */
     public void setShape(EntityShape shape)
     {
         if (this.shape != shape) {
             this.shape = shape;
-            
+
             if (shape.numParams == 0) {
                 this.shapeParams = null;
             }
@@ -104,7 +112,7 @@ public class Entity implements JSONable {
             }
         }
     }
-    
+
     // ------------ serialization ------------
     @Override
     public JSONObject toJSON()
@@ -113,47 +121,51 @@ public class Entity implements JSONable {
         try {
             o.put("loc", AWTJSONUtil.pointToJSON(this.loc));
             o.put("size", AWTJSONUtil.dimensionToJSON(this.size));
-            
+
             if (this.shape != defaultShape) {
                 o.put("shape", this.shape.name());
             }
-            
+
             if (!this.name.isEmpty()) {
                 o.put("name", this.name);
             }
-            
+
             if (!this.attributes.isEmpty()) {
                 o.put("attributes", this.attributes);
             }
-            
+
             if (this.shapeParams != null) {
                 o.put("shapeParams", new JSONArray(this.shapeParams));
             }
-            
+
             if (!this.fillColor.equals(defaultFillColor)) {
                 o.put("fillColor", this.fillColor);
             }
-            
+
             if (!this.imageFileName.isEmpty()) {
                 o.put("imageFileName", this.imageFileName);
+            }
+
+            if (this.imageFillStyle != defaultImageFillStyle) {
+                o.put("imageFillStyle", this.imageFillStyle.name());
             }
         }
         catch (JSONException e) { assert(false); }
         return o;
     }
-    
+
     public Entity(JSONObject o, int ver) throws JSONException
     {
         this.loc = AWTJSONUtil.pointFromJSON(o.getJSONObject("loc"));
         this.size = AWTJSONUtil.dimensionFromJSON(o.getJSONObject("size"));
-        
+
         if (o.has("shape")) {
             this.shape = EntityShape.valueOf(EntityShape.class, o.getString("shape"));
         }
-        
+
         this.name = o.optString("name", "");
         this.attributes = o.optString("attributes", "");
-        
+
         JSONArray params = o.optJSONArray("shapeParams");
         if (params != null) {
             this.shapeParams = new int[params.length()];
@@ -161,16 +173,21 @@ public class Entity implements JSONable {
                 this.shapeParams[i] = params.getInt(i);
             }
         }
-        
+
         if (ver >= 5) {
             this.fillColor = o.optString("fillColor", defaultFillColor);
         }
-        
+
         if (ver >= 7) {
             this.imageFileName = o.optString("imageFileName", "");
         }
+
+        if (ver >= 8 && o.has("imageFillStyle")) {
+            this.imageFillStyle =
+                ImageFillStyle.valueOf(ImageFillStyle.class, o.getString("imageFillStyle"));
+        }
     }
-    
+
     /** Return the value to which 'this' is mapped in 'entityToInteger'. */
     public int toJSONRef(HashMap<Entity, Integer> entityToInteger)
     {
@@ -201,13 +218,13 @@ public class Entity implements JSONable {
         this.loc = flat.readPoint();
         this.size = flat.readDimension();
         this.name = flat.readString();
-        
+
         if (flat.version < 2) { return; }
-        
+
         this.attributes = flat.readString();
-        
+
         if (flat.version < 6) { return; }
-        
+
         int s = flat.readInt();
         switch (s) {
             case 0: this.shape = EntityShape.ES_NO_SHAPE; break;
@@ -217,7 +234,7 @@ public class Entity implements JSONable {
                 throw new XParse("unrecognized entity shape code: "+s);
         }
     }
-    
+
     // ------------- data object boilerplate -------------
     @Override
     public boolean equals(Object obj)
@@ -234,7 +251,8 @@ public class Entity implements JSONable {
                    this.name.equals(e.name) &&
                    this.attributes.equals(e.attributes) &&
                    Arrays.equals(this.shapeParams, e.shapeParams) &&
-                   this.imageFileName.equals(e.imageFileName);
+                   this.imageFileName.equals(e.imageFileName) &&
+                   this.imageFillStyle.equals(e.imageFillStyle);
         }
         return false;
     }
@@ -251,9 +269,10 @@ public class Entity implements JSONable {
         h = h*31 + this.attributes.hashCode();
         h = h*31 + Arrays.hashCode(this.shapeParams);
         h = h*31 + this.imageFileName.hashCode();
+        h = h*31 + this.imageFillStyle.hashCode();
         return h;
     }
-    
+
     @Override
     public String toString()
     {

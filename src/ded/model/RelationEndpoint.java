@@ -20,13 +20,16 @@ public class RelationEndpoint {
     // ------------- instance data ---------------
     /** If this is not null, then the endpoint is an Entity. */
     public Entity entity;
-    
+
     /** Otherwise, if this is not null, then the endpoint is an Inheritance. */
     public Inheritance inheritance;
-    
+
     /** Otherwise, endpoint is an arbitrary point in space. */
     public Point pt;
-    
+
+    /** Whether and how to draw an arrowhead. */
+    public ArrowStyle arrowStyle = ArrowStyle.AS_NONE;
+
     // -------------- methods ---------------
     public RelationEndpoint(Entity e)
     {
@@ -34,7 +37,7 @@ public class RelationEndpoint {
         this.inheritance = null;
         this.pt = null;
     }
-    
+
     public RelationEndpoint(Inheritance i)
     {
         this.entity = null;
@@ -54,26 +57,26 @@ public class RelationEndpoint {
     {
         return this.entity != null;
     }
-    
+
     /** True if the endpoint is a specific entity as compared by
       * reference equality. */
     public boolean isSpecificEntity(Entity e)
     {
         return this.entity == e;
     }
-    
+
     /** True if the endpoint is an inheritance. */
     public boolean isInheritance()
     {
         return this.inheritance != null;
     }
-    
+
     /** True if the endpoint is a specific inheritance. */
     public boolean isSpecificInheritance(Inheritance inh)
     {
         return this.inheritance == inh;
     }
-    
+
     /** True if the endpoint is an arbitrary point. */
     public boolean isPoint()
     {
@@ -93,14 +96,29 @@ public class RelationEndpoint {
             return this.pt;
         }
     }
-    
+
+
+    /** Toggle the "owningness" of this relation endpoint.  That is,
+      * if the arrow style is AS_DOUBLE_ANGLE, then change it to
+      * AS_FILLED_TRIANGLE.  If it is anything else, change it to
+      * AS_DOUBLE_ANGLE. */
+    public void toggleOwning()
+    {
+        if (this.arrowStyle == ArrowStyle.AS_DOUBLE_ANGLE) {
+            this.arrowStyle = ArrowStyle.AS_FILLED_TRIANGLE;
+        }
+        else {
+            this.arrowStyle = ArrowStyle.AS_DOUBLE_ANGLE;
+        }
+    }
+
     public void globalSelfCheck(Diagram d)
     {
         assert((this.entity==null?0:1) +
                (this.inheritance==null?0:1) +
-               (this.pt==null?0:1) 
+               (this.pt==null?0:1)
                    == 1);
-        
+
         if (this.isEntity()) {
             assert(d.entities.contains(this.entity));
         }
@@ -114,7 +132,7 @@ public class RelationEndpoint {
     {
         this.setTo(re);
     }
-    
+
     public void setTo(RelationEndpoint re)
     {
         this.entity = re.entity;
@@ -125,8 +143,9 @@ public class RelationEndpoint {
         else {
             this.pt = new Point(re.pt);
         }
+        this.arrowStyle = re.arrowStyle;
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -135,6 +154,9 @@ public class RelationEndpoint {
         }
         if (this.getClass() == obj.getClass()) {
             RelationEndpoint re = (RelationEndpoint)obj;
+            if (this.arrowStyle != re.arrowStyle) {
+                return false;
+            }
             if (this.isEntity()) {
                 return this.entity.equals(re.entity);
             }
@@ -151,20 +173,24 @@ public class RelationEndpoint {
     @Override
     public int hashCode()
     {
+        int h = 1;
+        h = h*31 + this.arrowStyle.hashCode();
+        h = h*31;
         if (this.isEntity()) {
-            return 1 + 31 * this.entity.hashCode();
+            return h + 1 + 31 * this.entity.hashCode();
         }
         else if (this.isInheritance()) {
-            return 2 + 31 * this.inheritance.hashCode();
+            return h + 2 + 31 * this.inheritance.hashCode();
         }
         else {
-            return 3 + 31 * this.pt.hashCode();
+            return h + 3 + 31 * this.pt.hashCode();
         }
     }
-   
+
     // ------------------- serialization -----------------------
     public JSONObject toJSON(HashMap<Entity, Integer> entityToInteger,
-                             HashMap<Inheritance, Integer> inheritanceToInteger)
+                             HashMap<Inheritance, Integer> inheritanceToInteger,
+                             ArrowStyle defaultArrowStyle)
     {
         JSONObject o = new JSONObject();
         try {
@@ -177,20 +203,36 @@ public class RelationEndpoint {
             else {
                 o.put("pt", AWTJSONUtil.pointToJSON(this.pt));
             }
+
+            // To save space in the common case, use a context-sensitive
+            // default arrow style that matches how the UI creates
+            // arrows initially.
+            if (this.arrowStyle != defaultArrowStyle) {
+                o.put("arrowStyle", this.arrowStyle.name());
+            }
         }
         catch (JSONException e) { assert(false); }
         return o;
     }
-    
+
     public RelationEndpoint(
-        JSONObject o, 
+        JSONObject o,
         ArrayList<Entity> integerToEntity,
-        ArrayList<Inheritance> integerToInheritance)
+        ArrayList<Inheritance> integerToInheritance,
+        ArrowStyle defaultArrowStyle,
+        int version)
         throws JSONException
     {
         this.entity = null;
         this.inheritance = null;
         this.pt = null;
+
+        if (version >= 9 && o.has("arrowStyle")) {
+            this.arrowStyle = ArrowStyle.valueOf(ArrowStyle.class, o.getString("arrowStyle"));
+        }
+        else {
+            this.arrowStyle = defaultArrowStyle;
+        }
 
         if (o.has("entityRef")) {
             this.entity = Entity.fromJSONRef(integerToEntity, o.getLong("entityRef"));
@@ -198,14 +240,14 @@ public class RelationEndpoint {
         }
 
         if (o.has("inheritanceRef")) {
-            this.inheritance = Inheritance.fromJSONRef(integerToInheritance, 
+            this.inheritance = Inheritance.fromJSONRef(integerToInheritance,
                                                        o.getLong("inheritanceRef"));
             return;
         }
 
         this.pt = AWTJSONUtil.pointFromJSON(o.getJSONObject("pt"));
     }
-    
+
     // ------------------ legacy serialization ------------------
     /** Read a RelationEndpoint from an ER FlattenInputStream. */
     public RelationEndpoint(FlattenInputStream flat)
@@ -214,7 +256,7 @@ public class RelationEndpoint {
         this.entity = null;
         this.inheritance = null;
         this.pt = null;
-        
+
         // entity
         Object ent = flat.readSerf();
         if (ent != null) {
@@ -225,7 +267,7 @@ public class RelationEndpoint {
                 throw new XParse("RelationEndpoint.entity: expected an Entity");
             }
         }
-        
+
         if (flat.version >= 7) {
             Object inh = flat.readSerf();
             if (inh != null) {
@@ -237,7 +279,7 @@ public class RelationEndpoint {
                 }
             }
         }
-        
+
         // The C++ serialization code contains a bug: it serializes
         // 'pt' whenever 'entity' is NULL, ignoring the fact that
         // a non-NULL 'inheritance' makes it irrelevant.  So, I will
@@ -245,7 +287,7 @@ public class RelationEndpoint {
         // there is also no inheritance.
         if (this.entity == null) {
             Point p = flat.readPoint();
-            
+
             if (this.inheritance == null) {
                 this.pt = p;
             }

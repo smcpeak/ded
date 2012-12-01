@@ -31,7 +31,7 @@ public class AWTJSONUtil {
         p.y = (int)o.getLong("y");
         return p;
     }
-    
+
     /** Serialize 'd' as JSON. */
     public static JSONObject dimensionToJSON(Dimension d)
     {

@@ -1568,7 +1568,7 @@ public class JSONObject {
     /**
      * Write the contents of the JSONObject as JSON text to a writer with
      * optional indentation.
-     * 
+     *
      * This writes keys in sorted order so the output is canonical.
      *
      * <p>
