@@ -130,10 +130,12 @@ public class RelationEndpoint {
     // -------------------- data object boilerplate ------------------------
     public RelationEndpoint(RelationEndpoint re)
     {
-        this.setTo(re);
+        this.seLocationTo(re);
     }
 
-    public void setTo(RelationEndpoint re)
+    /** Set the location of this endpoint to be the same as 're',
+      * but leave the arrow style alone. */
+    public void seLocationTo(RelationEndpoint re)
     {
         this.entity = re.entity;
         this.inheritance = re.inheritance;
@@ -143,7 +145,6 @@ public class RelationEndpoint {
         else {
             this.pt = new Point(re.pt);
         }
-        this.arrowStyle = re.arrowStyle;
     }
 
     @Override

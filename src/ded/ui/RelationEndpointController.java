@@ -46,7 +46,7 @@ public class RelationEndpointController extends ResizeController {
     @Override
     public void dragTo(Point pt)
     {
-        this.endpoint.setTo(this.diagramController.getRelationEndpoint(pt));
+        this.endpoint.seLocationTo(this.diagramController.getRelationEndpoint(pt));
         this.diagramController.setDirty();
     }
 

@@ -40,6 +40,7 @@ import util.awt.GeomUtil;
 import util.swing.SwingUtil;
 
 import ded.Ded;
+import ded.model.ArrowStyle;
 import ded.model.Diagram;
 import ded.model.Entity;
 import ded.model.EntityShape;
@@ -327,8 +328,10 @@ public class DiagramController extends JPanel
 
             case DCM_CREATE_RELATION: {
                 // Make a Relation that starts and ends at the current location.
-                RelationEndpoint endpt = this.getRelationEndpoint(e.getPoint());
-                Relation r = new Relation(endpt, new RelationEndpoint(endpt));
+                RelationEndpoint start = this.getRelationEndpoint(e.getPoint());
+                RelationEndpoint end = new RelationEndpoint(start);
+                end.arrowStyle = ArrowStyle.AS_FILLED_TRIANGLE;
+                Relation r = new Relation(start, end);
                 this.diagram.relations.add(r);
                 this.setDirty();
 
