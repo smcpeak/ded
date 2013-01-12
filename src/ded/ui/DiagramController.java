@@ -3,15 +3,20 @@
 
 package ded.ui;
 
+import java.awt.AWTEvent;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -50,7 +55,7 @@ import ded.model.RelationEndpoint;
 
 /** Widget to display and edit a diagram. */
 public class DiagramController extends JPanel
-    implements MouseListener, MouseMotionListener, KeyListener, ComponentListener
+    implements MouseListener, MouseMotionListener, KeyListener, ComponentListener, FocusListener
 {
     // ------------- constants ---------------
     private static final long serialVersionUID = 1266678840598864303L;
@@ -82,6 +87,16 @@ public class DiagramController extends JPanel
         "When dragging, hold Shift to turn off 5-pixel snap.\n"+
         "\n"+
         "See menu bar for commands without keybindings.";
+
+    /** The existence and value of this field tells (via reflection)
+      * Abbot, a GUI test tool, that it should record low-level mouse
+      * events rather than converting them into "click" or "drag"
+      * events. */
+    public static String abbotRecorderClassName = "NoClickComponent";
+
+    /** When true, turn on some extra diagnostics related to debugging
+      * a problem with Abbot where it interferes with normal focus. */
+    public static final boolean debugFocus = false;
 
     // ------------- static data ---------------
     /** Granularity of drag/move snap action. */
@@ -186,6 +201,7 @@ public class DiagramController extends JPanel
         this.addMouseMotionListener(this);
         this.addKeyListener(this);
         this.addComponentListener(this);
+        this.addFocusListener(this);
 
         this.setFocusable(true);
     }
@@ -231,6 +247,13 @@ public class DiagramController extends JPanel
         if (this.mode == Mode.DCM_RECT_LASSO) {
             Rectangle r = this.getLassoRect();
             g.drawRect(r.x, r.y, r.width, r.height);
+        }
+
+        // Current focused Component.
+        if (debugFocus) {
+            KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+            Component fo = kfm.getFocusOwner();
+            g.drawString("Focus: "+fo, 3, this.getHeight() - 22);
         }
 
         // Mode label.
@@ -297,9 +320,20 @@ public class DiagramController extends JPanel
         });
     }
 
+    /** This method is passed some of the input events.  I'm using it
+      * as a convenient instrumentation point while experimenting with
+      * and fixing bugs in Abbot.  In production usage, it should do
+      * nothing. */
+    private void eventReceived(AWTEvent e)
+    {
+        //System.out.println(e.toString());
+    }
+
     @Override
     public void mousePressed(MouseEvent e)
     {
+        this.eventReceived(e);
+
         switch (this.mode) {
             case DCM_SELECT: {
                 // Clicked a controller?
@@ -366,6 +400,8 @@ public class DiagramController extends JPanel
     @Override
     public void mouseDragged(MouseEvent e)
     {
+        this.eventReceived(e);
+
         if (this.mode == Mode.DCM_DRAGGING) {
             this.selfCheck();
 
@@ -407,6 +443,8 @@ public class DiagramController extends JPanel
     @Override
     public void mouseReleased(MouseEvent e)
     {
+        this.eventReceived(e);
+
         // Click+drag should only be initiated with left mouse button, so ignore
         // release of others.
         if (!SwingUtilities.isLeftMouseButton(e)) {
@@ -421,6 +459,8 @@ public class DiagramController extends JPanel
     @Override
     public void mouseClicked(MouseEvent e)
     {
+        this.eventReceived(e);
+
         // Double-click on control to edit it.
         if (SwingUtilities.isLeftMouseButton(e) && (e.getClickCount() == 2)) {
             Controller c = this.hitTest(e.getPoint(), null);
@@ -435,11 +475,20 @@ public class DiagramController extends JPanel
     @Override public void mouseExited(MouseEvent e) {}
 
     // MouseMotionListener events I do not care about.
-    @Override public void mouseMoved(MouseEvent e) {}
+    @Override public void mouseMoved(MouseEvent e) {
+        this.eventReceived(e);
+
+        // Keep the focus display up to date if desired.
+        if (debugFocus && e.getX() < 10) {
+            this.repaint();
+        }
+    }
 
     @Override
     public void keyPressed(KeyEvent e)
     {
+        this.eventReceived(e);
+
         // Note: Some of the key bindings shown in the help dialog
         // have been moved to the menu created in Ded.java.
 
@@ -1371,6 +1420,24 @@ public class DiagramController extends JPanel
     @Override public void componentMoved(ComponentEvent e) {}
     @Override public void componentShown(ComponentEvent e) {}
     @Override public void componentHidden(ComponentEvent e) {}
+
+    @Override
+    public void focusGained(FocusEvent e)
+    {
+        if (debugFocus) {
+            System.out.println("DiagramController focusGained: "+e);
+            this.repaint();
+        }
+    }
+
+    @Override
+    public void focusLost(FocusEvent e)
+    {
+        if (debugFocus) {
+            System.out.println("DiagramController focusLost: "+e);
+            this.repaint();
+        }
+    }
 }
 
 // EOF

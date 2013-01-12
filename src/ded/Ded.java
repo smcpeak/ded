@@ -4,6 +4,7 @@
 package ded;
 
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -444,6 +445,51 @@ public class Ded extends JFrame implements WindowListener {
     @Override public void windowDeiconified(WindowEvent e) {}
     @Override public void windowActivated(WindowEvent e) {}
     @Override public void windowDeactivated(WindowEvent e) {}
+
+    /** Check that the current diagram is equivalent to the diagram
+      * in the named file.  This is meant to be called from Abbot for
+      * UI testing.  If the diagrams do not match, throws. */
+    public static void checkDiagram(String correctFname)
+        throws Exception
+    {
+        // Search for a Ded window.  (I cannot figure out how to pass
+        // a reference to a Component from Abbot, even though it seems
+        // to have that capability.)
+        Frame[] frames = Frame.getFrames();
+        for (Frame f : frames) {
+            if (f instanceof Ded) {
+                Ded ded = (Ded)f;
+                ded.innerCheckDiagram(correctFname);
+                return;
+            }
+        }
+
+        throw new RuntimeException("could not find Ded window");
+    }
+
+    /** Non-static helper for 'checkDiagram'. */
+    private void innerCheckDiagram(String correctFname)
+        throws Exception
+    {
+        // First, load the "correct" diagram.
+        Diagram correctDiagram = Diagram.readFromFile(correctFname);
+
+        // Check that it equals() the one we're editing.
+        if (!correctDiagram.equals(this.diagramController.diagram)) {
+            throw new RuntimeException(
+                "current and correct diagrams are not equals()");
+        }
+
+        // Paranoia about equals() being incomplete: serialize both to
+        // the current JSON format ('correctFname' might be an older
+        // version) and compare that.
+        String correctJSON = correctDiagram.toString();
+        String currentJSON = this.diagramController.diagram.toString();
+        if (!correctJSON.equals(currentJSON)) {
+            throw new RuntimeException(
+                "equals() was true but JSON strings are not equal!");
+        }
+    }
 
     public static void main(final String[] args)
     {
