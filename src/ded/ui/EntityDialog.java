@@ -46,6 +46,11 @@ public class EntityDialog extends ModalDialog
       * chosen on the outer entity dialog. */
     private EnumSet<ShapeFlag> shapeFlagsWorkingCopy;
 
+    /** The shape that the working flags is based on.  At certain points,
+      * we need to add default flags, and if the shape has changed, we
+      * need to know what it changed from. */
+    private EntityShape workingFlagsBaseShape;
+
     // Controls.
     private JTextField nameText;
     private JTextArea attributeText;
@@ -65,6 +70,7 @@ public class EntityDialog extends ModalDialog
 
         this.entity = entity;
         this.shapeFlagsWorkingCopy = this.entity.shapeFlags.clone();
+        this.workingFlagsBaseShape = this.entity.shape;
 
         // NOTE: This dialog is not laid out well.  I have not yet figured out
         // a good way to do dialog layout well with Swing (whereas it is easy
@@ -227,7 +233,33 @@ public class EntityDialog extends ModalDialog
     private void openShapeFlagsDialog()
     {
         EntityShape shape = (EntityShape)this.shapeChooser.getSelectedItem();
+        this.updateWorkingFlagsBaseShape(shape);
         ShapeFlagsDialog.exec(this, this.shapeFlagsWorkingCopy, shape);
+    }
+
+    /** Restrict the working flags to those appropriate for 'newShape', and
+      * add any default flags that are applicable to 'newShape' but not to
+      * 'workingFlagsBaseShape'.  Then update the latter to be 'newShape'. */
+    private void updateWorkingFlagsBaseShape(EntityShape newShape)
+    {
+        // Flags for old shape.
+        EnumSet<ShapeFlag> allOldFlags = ShapeFlag.allFlagsForShape(this.workingFlagsBaseShape);
+
+        // Flags for new shape.
+        EnumSet<ShapeFlag> allNewFlags = ShapeFlag.allFlagsForShape(newShape);
+
+        // Restrict flags to new.
+        this.shapeFlagsWorkingCopy.retainAll(allNewFlags);
+
+        // Add any default flag in 'allNewFlags - allOldFlags'.
+        for (ShapeFlag flag : allNewFlags) {
+            if (flag.isDefault && !allOldFlags.contains(flag)) {
+                this.shapeFlagsWorkingCopy.add(flag);
+            }
+        }
+
+        // Remember the new base shape.
+        this.workingFlagsBaseShape = newShape;
     }
 
     /** React to the OK button being pressed. */
@@ -272,6 +304,9 @@ public class EntityDialog extends ModalDialog
         String fillColor = (String)this.fillColorChooser.getSelectedItem();
 
         ImageFillStyle imageFillStyle = (ImageFillStyle)this.imageFillStyleChooser.getSelectedItem();
+
+        // Make sure the shape flags are appropriate for the chosen shape.
+        this.updateWorkingFlagsBaseShape(shape);
 
         // Update the entity.
         this.entity.name = this.nameText.getText();
@@ -335,6 +370,9 @@ public class EntityDialog extends ModalDialog
         else {
             this.paramsLabel.setText("Shape params (none for this shape):");
         }
+
+        // Enable or disable shape flags button.
+        this.shapeFlagsButton.setEnabled(!ShapeFlag.allFlagsForShape(shape).isEmpty());
     }
 
     /** Show the edit dialog for Entity, waiting until the user closes the dialog
