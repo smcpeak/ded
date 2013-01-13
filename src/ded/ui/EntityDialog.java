@@ -157,22 +157,21 @@ public class EntityDialog extends ModalDialog
 
         // shapeParams
         {
-
-            int p=5, q=10;
+            String p="", q="";
             int[] params = this.entity.shapeParams;
             if (params != null) {
                 if (params.length >= 1) {
-                    p = params[0];
+                    p = String.valueOf(params[0]);
                 }
                 if (params.length >= 2) {
-                    q = params[1];
+                    q = String.valueOf(params[1]);
                 }
             }
 
             Box hb = ModalDialog.makeHBox(vb);
-            this.pText = ModalDialog.makeLineEdit(hb, "P:", 'p', String.valueOf(p));
+            this.pText = ModalDialog.makeLineEdit(hb, "P:", 'p', p);
             hb.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
-            this.qText = ModalDialog.makeLineEdit(hb, "Q:", 'q', String.valueOf(q));
+            this.qText = ModalDialog.makeLineEdit(hb, "Q:", 'q', q);
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
             ModalDialog.disallowVertStretch(hb);
         }
@@ -206,14 +205,18 @@ public class EntityDialog extends ModalDialog
         // if there is a problem, we will bail before actually
         // modifying this.entity;
 
-        int x, y, w, h, p, q;
+        int x, y, w, h, p=0, q=0;
         try {
             x = Integer.valueOf(this.xText.getText());
             y = Integer.valueOf(this.yText.getText());
             w = Integer.valueOf(this.wText.getText());
             h = Integer.valueOf(this.hText.getText());
-            p = Integer.valueOf(this.pText.getText());
-            q = Integer.valueOf(this.qText.getText());
+            if (this.entity.shape.numParams >= 1) {
+                p = Integer.valueOf(this.pText.getText());
+            }
+            if (this.entity.shape.numParams >= 2) {
+                q = Integer.valueOf(this.qText.getText());
+            }
         }
         catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this,
@@ -279,8 +282,20 @@ public class EntityDialog extends ModalDialog
         this.qText.setEnabled(en);
 
         // Set the params caption.
-        if (en) {
+        if (shape == EntityShape.ES_CUBOID) {
             this.paramsLabel.setText("Cuboid extends left by P, up by Q pixels:");
+            if (this.pText.getText().isEmpty()) {
+                // Set a reasonable default.
+                this.pText.setText("5");
+                this.qText.setText("10");
+            }
+        }
+        else if (shape == EntityShape.ES_WINDOW) {
+            this.paramsLabel.setText("Window auto-resize center at (P,Q):");
+            if (this.pText.getText().isEmpty()) {
+                this.pText.setText(String.valueOf(this.entity.size.width/2));
+                this.qText.setText(String.valueOf(this.entity.size.height/2));
+            }
         }
         else {
             this.paramsLabel.setText("Shape params (none for this shape):");

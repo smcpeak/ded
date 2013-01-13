@@ -16,7 +16,9 @@ public enum EntityShape {
     ES_CUBOID
         ("Cuboid", 2),
     ES_CYLINDER
-        ("Cylinder", 0);
+        ("Cylinder", 0),
+    ES_WINDOW
+        ("Window", 2);
 
     /** Name of this shape as shown in the UI. */
     public final String displayName;

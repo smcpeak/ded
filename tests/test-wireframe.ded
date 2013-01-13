@@ -1,0 +1,118 @@
+{
+  "drawFileName": true,
+  "entities": [
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 75,
+        "y": 50
+      },
+      "name": "Window caption",
+      "shape": "ES_WINDOW",
+      "shapeParams": [
+        305,
+        220
+      ],
+      "size": {
+        "h": 445,
+        "w": 610
+      }
+    },
+    {
+      "loc": {
+        "x": 160,
+        "y": 140
+      },
+      "name": "upleft",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 490,
+        "y": 130
+      },
+      "name": "upright",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 490,
+        "y": 375
+      },
+      "name": "downright",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 150,
+        "y": 375
+      },
+      "name": "downleft",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 125,
+        "y": 245
+      },
+      "name": "left",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 325,
+        "y": 110
+      },
+      "name": "up",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 520,
+        "y": 250
+      },
+      "name": "right",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 325,
+        "y": 415
+      },
+      "name": "down",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    }
+  ],
+  "inheritances": [],
+  "relations": [],
+  "type": "Diagram Editor Diagram",
+  "version": 10,
+  "windowSize": {
+    "h": 548,
+    "w": 792
+  }
+}

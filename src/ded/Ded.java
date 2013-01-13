@@ -31,6 +31,7 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
 import util.awt.AWTUtil;
+import util.awt.ResourceImageCache;
 import util.swing.MenuAction;
 import util.swing.SwingUtil;
 import ded.model.Diagram;
@@ -51,6 +52,9 @@ public class Ded extends JFrame implements WindowListener {
     // ---------- instance data --------------
     /** The font I want to use in the diagram area. */
     public Font diagramFont;
+
+    /** Image cache. */
+    public ResourceImageCache resourceImageCache = new ResourceImageCache();
 
     /** The main diagram editor pane. */
     private DiagramController diagramController;

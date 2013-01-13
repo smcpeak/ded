@@ -51,21 +51,22 @@ public class EntityResizeController extends ResizeController {
 
         int minSize = EntityController.minimumEntitySize;
 
-        // Adjust the handle location by 'delta', taking care not to make
-        // the width or height smaller than 'minSize'.
+        // Adjust the handle location by 'delta'.  For top/left, we
+        // protect minimum size here, but bottom/right is handled
+        // inside the 'resize' call.  (There is not a very good
+        // reason for the inconsistency.)
 
         switch (this.whichHandle.handleX) {
             case 0: {
                 int newLeft = this.econtroller.getLeft() + delta.x;
                 newLeft = Math.min(this.econtroller.getRight() - minSize, newLeft);
-                this.econtroller.setLeft(newLeft);
+                this.econtroller.resizeSetLeft(newLeft);
                 break;
             }
 
             case 2: {
                 int newRight = this.econtroller.getRight() + delta.x;
-                newRight = Math.max(this.econtroller.getLeft() + minSize, newRight);
-                this.econtroller.setRight(newRight);
+                this.econtroller.resizeSetRight(newRight, true /*direct*/);
                 break;
             }
         }
@@ -74,17 +75,18 @@ public class EntityResizeController extends ResizeController {
             case 0: {
                 int newTop = this.econtroller.getTop() + delta.y;
                 newTop = Math.min(this.econtroller.getBottom() - minSize, newTop);
-                this.econtroller.setTop(newTop);
+                this.econtroller.resizeSetTop(newTop);
                 break;
             }
 
             case 2: {
                 int newBottom = this.econtroller.getBottom() + delta.y;
-                newBottom = Math.max(this.econtroller.getTop() + minSize, newBottom);
-                this.econtroller.setBottom(newBottom);
+                this.econtroller.resizeSetBottom(newBottom, true /*direct*/);
                 break;
             }
         }
+
+        this.diagramController.setDirty();
     }
 
     @Override

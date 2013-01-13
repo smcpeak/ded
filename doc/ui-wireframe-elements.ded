@@ -1,0 +1,362 @@
+{
+  "drawFileName": true,
+  "entities": [
+    {
+      "loc": {
+        "x": 5,
+        "y": 15
+      },
+      "name": "This shows the schema of elements to add in order to allow ded to be used to make UI wireframes.",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 525
+      }
+    },
+    {
+      "attributes": "boolean minimizeButton\nboolean maximizeButton\nboolean closeButton\npoint autoResizeCenter\n",
+      "loc": {
+        "x": 35,
+        "y": 295
+      },
+      "name": "Window",
+      "size": {
+        "h": 85,
+        "w": 145
+      }
+    },
+    {
+      "attributes": "point loc\npoint size\n",
+      "loc": {
+        "x": 265,
+        "y": 55
+      },
+      "name": "RectangularElement",
+      "size": {
+        "h": 60,
+        "w": 140
+      }
+    },
+    {
+      "attributes": "string label\nchar mnemonicKey?\n{left, right, center} alignment\n",
+      "loc": {
+        "x": 265,
+        "y": 170
+      },
+      "name": "LabeledElement",
+      "size": {
+        "h": 75,
+        "w": 170
+      }
+    },
+    {
+      "attributes": "boolean disabled",
+      "loc": {
+        "x": 455,
+        "y": 170
+      },
+      "name": "Scrollbar",
+      "size": {
+        "h": 50,
+        "w": 115
+      }
+    },
+    {
+      "attributes": "boolean disabled",
+      "loc": {
+        "x": 260,
+        "y": 305
+      },
+      "name": "Pushbutton",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "attributes": "boolean disabled\nboolean selected",
+      "loc": {
+        "x": 390,
+        "y": 305
+      },
+      "name": "SelectableButton",
+      "size": {
+        "h": 60,
+        "w": 110
+      }
+    },
+    {
+      "loc": {
+        "x": 330,
+        "y": 405
+      },
+      "name": "RadioButton",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 450,
+        "y": 405
+      },
+      "name": "Checkbox",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 525,
+        "y": 305
+      },
+      "name": "GroupBox",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "attributes": "string choices[]\n",
+      "loc": {
+        "x": 655,
+        "y": 305
+      },
+      "name": "Dropdown",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 775,
+        "y": 305
+      },
+      "name": "Label",
+      "size": {
+        "h": 20,
+        "w": 90
+      }
+    },
+    {
+      "loc": {
+        "x": 195,
+        "y": 360
+      },
+      "name": "TextLine",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "attributes": "string text\nboolean wordWrap\nboolean hscroll\nboolean vscroll\nboolean hasBorder\nboolean hasMarkup\n",
+      "loc": {
+        "x": 765,
+        "y": 110
+      },
+      "name": "TextArea",
+      "size": {
+        "h": 120,
+        "w": 130
+      }
+    },
+    {
+      "attributes": "int lineWidth\nColor color\n",
+      "loc": {
+        "x": 620,
+        "y": 170
+      },
+      "name": "Rectangle",
+      "size": {
+        "h": 60,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 140,
+        "y": 410
+      },
+      "name": "Comment",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 600,
+        "y": 420
+      },
+      "name": "Name",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "loc": {
+        "x": 680,
+        "y": 420
+      },
+      "name": "Type",
+      "size": {
+        "h": 20,
+        "w": 115
+      }
+    },
+    {
+      "loc": {
+        "x": 600,
+        "y": 440
+      },
+      "name": "gcc-1",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "loc": {
+        "x": 680,
+        "y": 440
+      },
+      "name": "GNU C compiler",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 115
+      }
+    },
+    {
+      "loc": {
+        "x": 795,
+        "y": 420
+      },
+      "name": "Executable",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 795,
+        "y": 440
+      },
+      "name": "gcc",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    }
+  ],
+  "inheritances": [
+    {
+      "open": false,
+      "parentRef": 2,
+      "pt": {
+        "x": 335,
+        "y": 145
+      }
+    },
+    {
+      "open": false,
+      "parentRef": 3,
+      "pt": {
+        "x": 315,
+        "y": 285
+      }
+    },
+    {
+      "open": false,
+      "parentRef": 6,
+      "pt": {
+        "x": 440,
+        "y": 390
+      }
+    }
+  ],
+  "relations": [
+    {
+      "end": {"inheritanceRef": 1},
+      "routingAlg": "RA_MANHATTAN_VERT",
+      "start": {"entityRef": 1}
+    },
+    {
+      "end": {"inheritanceRef": 0},
+      "start": {"entityRef": 3}
+    },
+    {
+      "end": {"inheritanceRef": 0},
+      "routingAlg": "RA_MANHATTAN_VERT",
+      "start": {"entityRef": 4}
+    },
+    {
+      "end": {"inheritanceRef": 1},
+      "start": {"entityRef": 5}
+    },
+    {
+      "end": {"inheritanceRef": 1},
+      "routingAlg": "RA_MANHATTAN_VERT",
+      "start": {"entityRef": 6}
+    },
+    {
+      "end": {"inheritanceRef": 2},
+      "routingAlg": "RA_MANHATTAN_VERT",
+      "start": {"entityRef": 7}
+    },
+    {
+      "end": {"inheritanceRef": 2},
+      "routingAlg": "RA_MANHATTAN_VERT",
+      "start": {"entityRef": 8}
+    },
+    {
+      "end": {"inheritanceRef": 1},
+      "routingAlg": "RA_MANHATTAN_VERT",
+      "start": {"entityRef": 9}
+    },
+    {
+      "end": {"inheritanceRef": 1},
+      "routingAlg": "RA_MANHATTAN_VERT",
+      "start": {"entityRef": 10}
+    },
+    {
+      "end": {"inheritanceRef": 1},
+      "routingAlg": "RA_MANHATTAN_VERT",
+      "start": {"entityRef": 11}
+    },
+    {
+      "end": {"inheritanceRef": 1},
+      "routingAlg": "RA_MANHATTAN_VERT",
+      "start": {"entityRef": 12}
+    },
+    {
+      "end": {"inheritanceRef": 0},
+      "routingAlg": "RA_MANHATTAN_VERT",
+      "start": {"entityRef": 13}
+    },
+    {
+      "end": {"inheritanceRef": 0},
+      "routingAlg": "RA_MANHATTAN_VERT",
+      "start": {"entityRef": 14}
+    },
+    {
+      "end": {"inheritanceRef": 1},
+      "routingAlg": "RA_MANHATTAN_VERT",
+      "start": {"entityRef": 15}
+    }
+  ],
+  "type": "Diagram Editor Diagram",
+  "version": 9,
+  "windowSize": {
+    "h": 548,
+    "w": 964
+  }
+}

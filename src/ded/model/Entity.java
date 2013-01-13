@@ -113,6 +113,25 @@ public class Entity implements JSONable {
         }
     }
 
+    /** Get shape param 'i', or 0 if it is not set. */
+    public int getShapeParam(int i)
+    {
+        if (this.shapeParams != null && this.shapeParams.length > i) {
+            return this.shapeParams[i];
+        }
+        else {
+            return 0;
+        }
+    }
+
+    /** Set the shape parameters. */
+    public void setShapeParams(int p, int q)
+    {
+        this.shapeParams = new int[2];
+        this.shapeParams[0] = p;
+        this.shapeParams[1] = q;
+    }
+
     // ------------ serialization ------------
     @Override
     public JSONObject toJSON()

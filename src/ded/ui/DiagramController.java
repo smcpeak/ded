@@ -860,6 +860,9 @@ public class DiagramController extends JPanel
         this.mode = m;
 
         if (m != Mode.DCM_DRAGGING) {
+            if (this.dragging != null) {
+                this.dragging.stopDragging();
+            }
             this.dragging = null;
             this.dragOffset = new Point(0,0);
         }
@@ -1032,6 +1035,7 @@ public class DiagramController extends JPanel
     {
         this.dragging = c;
         this.dragOffset = GeomUtil.subtract(pt, c.getLoc());
+        c.beginDragging(pt);
         this.setMode(Mode.DCM_DRAGGING);
     }
 
@@ -1184,6 +1188,21 @@ public class DiagramController extends JPanel
             }
             this.setDirty();
         }
+    }
+
+    /** Find EntityControllers fully contained in a rectangle. */
+    public Set<EntityController> findEntityControllersInRectangle(Rectangle rect)
+    {
+        HashSet<EntityController> ret = new HashSet<EntityController>();
+        for (Controller c : this.controllers) {
+            if (c instanceof EntityController) {
+                EntityController ec = (EntityController)c;
+                if (rect.contains(ec.getRect())) {
+                    ret.add(ec);
+                }
+            }
+        }
+        return ret;
     }
 
     /** Map a Point to a RelationEndpoint: either an Entity or Inheritance
@@ -1437,6 +1456,12 @@ public class DiagramController extends JPanel
             System.out.println("DiagramController focusLost: "+e);
             this.repaint();
         }
+    }
+
+    /** Return a resource image, using an internal cache. */
+    public Image getResourceImage(String resourceName)
+    {
+        return this.dedWindow.resourceImageCache.getResourceImage(resourceName);
     }
 }
 

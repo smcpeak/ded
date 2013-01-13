@@ -55,6 +55,9 @@ public class EntityController extends Controller
       * the normal hit-test rectangle. */
     public static final int selectionBoxExpansion = 0;
 
+    /** Color of the automatic resize handle in Windows. */
+    public static final Color windowResizeCenterHandleColor = new Color(255, 0, 0);
+
     // ----------- instance data -------------
     /** The thing being controlled. */
     public Entity entity;
@@ -63,6 +66,10 @@ public class EntityController extends Controller
       * ResizeHandle.NUM_RESIZE_HANDLES resize handles.  Otherwise,
       * it is null. */
     public EntityResizeController[] resizeHandles;
+
+    /** If 'wantCenterHandle()', then this is a handle for the
+      * window auto-resize center.  Otherwise, null. */
+    public WindowCenterController windowCenterHandle;
 
     // ----------- public methods -----------
     public EntityController(DiagramController dc, Entity e)
@@ -83,7 +90,7 @@ public class EntityController extends Controller
     public int getBottom() { return this.entity.loc.y + this.entity.size.height; }
 
     /** Set left edge w/o changing other locations. */
-    public void setLeft(int v)
+    public void resizeSetLeft(int v)
     {
         int diff = v - this.getLeft();
         this.entity.loc.x += diff;
@@ -91,7 +98,7 @@ public class EntityController extends Controller
     }
 
     /** Set top edge w/o changing other locations. */
-    public void setTop(int v)
+    public void resizeSetTop(int v)
     {
         int diff = v - this.getTop();
         this.entity.loc.y += diff;
@@ -99,17 +106,104 @@ public class EntityController extends Controller
     }
 
     /** Set right edge w/o changing other locations. */
-    public void setRight(int v)
+    public void resizeSetRight(int v, boolean direct)
     {
         int diff = v - this.getRight();
+
+        if (this.entity.size.width + diff < minimumEntitySize) {
+            // Set 'diff' to value that will make width equal minimum.
+            diff = minimumEntitySize - this.entity.size.width;
+        }
+
+        if (direct && this.entity.shape == EntityShape.ES_WINDOW) {
+            // Calculate the region inside the window that is not the
+            // title bar area.  Controllers are only automatically
+            // moved and resized in this area, partly to avoid
+            // confusion if two windows should happen to have exactly
+            // the same region.
+            final Rectangle moveRegion = this.getAttributeRect();
+
+            // Get all the entities that are inside the region.
+            Set<EntityController> contained =
+                this.diagramController.findEntityControllersInRectangle(moveRegion);
+
+            // Now calculate the region in which a control point must lie
+            // for it to be moved.
+            int p = this.entity.getShapeParam(0);
+            moveRegion.x += p;
+            moveRegion.width -= p;
+
+            // Move/resize some contained entities.
+            for (Controller c : contained) {
+                EntityController ec = (EntityController)c;
+                if (moveRegion.contains(ec.getRect())) {
+                    // Fully contained: move.
+                    ec.entity.loc.x += diff;
+                }
+                else if (ec.getRight() >= moveRegion.x) {
+                    // Right edge contained: resize.
+                    ec.resizeSetRight(ec.getRight() + diff, false /*direct*/);
+                }
+            }
+        }
+
         this.entity.size.width += diff;
     }
 
     /** Set bottom edge w/o changing other locations. */
-    public void setBottom(int v)
+    public void resizeSetBottom(int v, boolean direct)
     {
         int diff = v - this.getBottom();
+
+        if (this.entity.size.height + diff < minimumEntitySize) {
+            diff = minimumEntitySize - this.entity.size.height;
+        }
+
+        // This is copy+paste+modify from 'resizeSetRight'.  For the
+        // moment I am postponing trying to factor it.
+        if (direct && this.entity.shape == EntityShape.ES_WINDOW) {
+            // Calculate the region inside the window that is not the
+            // title bar area.  Controllers are only automatically
+            // moved and resized in this area, partly to avoid
+            // confusion if two windows should happen to have exactly
+            // the same region.
+            final Rectangle moveRegion = this.getAttributeRect();
+
+            // Get all the entities that are inside the region.
+            Set<EntityController> contained =
+                this.diagramController.findEntityControllersInRectangle(moveRegion);
+
+            // Now calculate the region in which a control point must lie
+            // for it to be moved.
+            int q = this.entity.getShapeParam(1);
+            moveRegion.y += q;
+            moveRegion.height -= q;
+
+            // Move/resize some contained entities.
+            for (Controller c : contained) {
+                EntityController ec = (EntityController)c;
+                if (moveRegion.contains(ec.getRect())) {
+                    // Fully contained: move.
+                    ec.entity.loc.y += diff;
+                }
+                else if (ec.getBottom() >= moveRegion.y) {
+                    // Right edge contained: resize.
+                    ec.resizeSetBottom(ec.getBottom() + diff, false /*direct*/);
+                }
+            }
+        }
+
         this.entity.size.height += diff;
+    }
+
+    /** Get the part of entity rectangle excluding the name/title portion.
+      * This assumes the name is shown (it is meant for ES_WINDOW). */
+    public Rectangle getAttributeRect()
+    {
+        Rectangle r = this.getRect();
+        r.y += entityNameHeight;
+        r.height -= entityNameHeight;
+        return r;
     }
 
     @Override
@@ -169,6 +263,16 @@ public class EntityController extends Controller
             wantSolidBackground = false;
         }
 
+        if (this.isSelected() && this.entity.shape == EntityShape.ES_WINDOW) {
+            // Draw the auto-resize location.
+            g.setColor(windowResizeCenterHandleColor);
+
+            int p = r.x + this.entity.getShapeParam(0);
+            int q = r.y + this.entity.getShapeParam(1);
+            g.drawLine(p, r.y+entityNameHeight, p, r.y+r.height);  // vertical line
+            g.drawLine(r.x, q, r.x+r.width, q);                    // horizontal line
+        }
+
         // Entity outline with proper shape.
         switch (this.entity.shape) {
             case ES_NO_SHAPE:
@@ -177,6 +281,7 @@ public class EntityController extends Controller
 
             case ES_RECTANGLE:
             case ES_CUBOID:
+            case ES_WINDOW:
                 if (wantSolidBackground) {
                     // Fill with the normal entity color (selected controllers
                     // get filled with selection color by super.paint).
@@ -205,20 +310,21 @@ public class EntityController extends Controller
                 break;
         }
 
-        if (this.entity.attributes.isEmpty()) {
+        if (this.entity.attributes.isEmpty() &&
+            this.entity.shape != EntityShape.ES_WINDOW)
+        {
             // Name is vertically and horizontally centered in the space.
             SwingUtil.drawCenteredText(g, GeomUtil.getCenter(r), this.entity.name);
         }
         else {
             // Name.
             Rectangle nameRect = new Rectangle(r);
-            if (this.entity.name.isEmpty()) {
+            if (this.entity.name.isEmpty() && this.entity.shape != EntityShape.ES_WINDOW) {
                 // Do not take up space, do not draw divider.
                 nameRect.height = 0;
             }
             else {
                 nameRect.height = entityNameHeight;
-                SwingUtil.drawCenteredText(g, GeomUtil.getCenter(nameRect), this.entity.name);
 
                 if (this.entity.shape != EntityShape.ES_CYLINDER) {
                     // Divider between name and attributes.
@@ -229,6 +335,16 @@ public class EntityController extends Controller
                     // The lower half of the upper ellipse plays the role
                     // of a divider.
                 }
+
+                if (this.entity.shape == EntityShape.ES_WINDOW) {
+                    // Draw window operation controls in the title bar.
+                    this.drawWindowTitleButton(g, nameRect, true /*left*/, "window-ops-button.png");
+                    this.drawWindowTitleButton(g, nameRect, false /*left*/, "window-close-button.png");
+                    this.drawWindowTitleButton(g, nameRect, false /*left*/, "window-maximize-button.png");
+                    this.drawWindowTitleButton(g, nameRect, false /*left*/, "window-minimize-button.png");
+                }
+
+                SwingUtil.drawCenteredText(g, GeomUtil.getCenter(nameRect), this.entity.name);
             }
 
             // Attributes.
@@ -242,6 +358,43 @@ public class EntityController extends Controller
                 this.entity.attributes,
                 attributeRect.x,
                 attributeRect.y + g.getFontMetrics().getMaxAscent());
+        }
+    }
+
+    /** Draw the window operations menu button in left end of 'titleRect',
+      * updating it to reflect the remaining space. */
+    private void drawWindowTitleButton(
+        Graphics g,
+        Rectangle titleRect,
+        boolean leftAlign,
+        String resourceName)
+    {
+        // Get the image to draw.
+        Image image = this.diagramController.getResourceImage(resourceName);
+        if (image == null) {
+            return;
+        }
+
+        // Get its width.
+        int imageWidth = image.getWidth(null);
+        if (imageWidth < 0) {
+            imageWidth = 0;       // still loading?
+        }
+
+        // Draw, and adjust rectangle 'x' if needed.
+        if (leftAlign) {
+            g.drawImage(image, titleRect.x+1, titleRect.y+1, null /*obs*/);
+            titleRect.x += imageWidth;
+        }
+        else {
+            g.drawImage(image, titleRect.x + titleRect.width-1 - imageWidth,
+                        titleRect.y+1, null /*obs*/);
+        }
+
+        // Adjust rectangle width.
+        titleRect.width -= imageWidth;
+        if (titleRect.width < 0) {
+            titleRect.width = 0;
         }
     }
 
@@ -423,7 +576,15 @@ public class EntityController extends Controller
     @Override
     public Set<Polygon> getBounds()
     {
-        Polygon p = GeomUtil.rectPolygon(this.getRect());
+        Rectangle r = this.getRect();
+        if (this.entity.shape == EntityShape.ES_WINDOW) {
+            // Windows normally contain lots of other controls.  It is
+            // annoying when selecting the other controls to have the
+            // window get selected if I miss, etc.  So only select the
+            // window itself from its title bar.
+            r.height = entityNameHeight;
+        }
+        Polygon p = GeomUtil.rectPolygon(r);
         Set<Polygon> ret = new HashSet<Polygon>();
         ret.add(p);
         return ret;
@@ -507,6 +668,19 @@ public class EntityController extends Controller
                 this.diagramController.add(erc);
             }
         }
+
+        // Similar logic for the center handle.
+        boolean wantCenter = wantCenterHandle();
+
+        if (wantCenter == false && this.windowCenterHandle != null) {
+            this.diagramController.remove(this.windowCenterHandle);
+            this.windowCenterHandle = null;
+        }
+
+        if (wantCenter == true && this.windowCenterHandle == null) {
+            this.windowCenterHandle = new WindowCenterController(this.diagramController, this);
+            this.diagramController.add(this.windowCenterHandle);
+        }
     }
 
     /** Return true if this controller should have resize handles right now. */
@@ -527,6 +701,15 @@ public class EntityController extends Controller
         return true;
     }
 
+    /** Return true if this controller should have a window center handle
+      * right now. */
+    private boolean wantCenterHandle()
+    {
+        return
+            this.selState == SelectionState.SS_EXCLUSIVE &&
+            this.entity.shape == EntityShape.ES_WINDOW;
+    }
+
     @Override
     public void selfCheck()
     {
@@ -542,6 +725,14 @@ public class EntityController extends Controller
         }
         else {
             assert(this.resizeHandles == null);
+        }
+
+        if (this.wantCenterHandle()) {
+            assert(this.windowCenterHandle != null);
+            assert(this.diagramController.contains(this.windowCenterHandle));
+        }
+        else {
+            assert(this.windowCenterHandle == null);
         }
     }
 
