@@ -9,6 +9,12 @@
       },
       "name": "Window caption",
       "shape": "ES_WINDOW",
+      "shapeFlags": [
+        "SF_HAS_MAXIMIZE",
+        "SF_HAS_MINIMIZE",
+        "SF_HAS_CLOSE",
+        "SF_HAS_WINDOW_OPS"
+      ],
       "shapeParams": [
         305,
         220

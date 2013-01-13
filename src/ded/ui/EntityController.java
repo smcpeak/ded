@@ -29,6 +29,7 @@ import ded.model.Diagram;
 import ded.model.Entity;
 import ded.model.EntityShape;
 import ded.model.ImageFillStyle;
+import ded.model.ShapeFlag;
 
 /** Controller for Entity. */
 public class EntityController extends Controller
@@ -337,11 +338,20 @@ public class EntityController extends Controller
                 }
 
                 if (this.entity.shape == EntityShape.ES_WINDOW) {
-                    // Draw window operation controls in the title bar.
-                    this.drawWindowTitleButton(g, nameRect, true /*left*/, "window-ops-button.png");
-                    this.drawWindowTitleButton(g, nameRect, false /*left*/, "window-close-button.png");
-                    this.drawWindowTitleButton(g, nameRect, false /*left*/, "window-maximize-button.png");
-                    this.drawWindowTitleButton(g, nameRect, false /*left*/, "window-minimize-button.png");
+                    // Draw controls in the title bar.
+                    EnumSet<ShapeFlag> flags = this.entity.shapeFlags;
+                    if (flags.contains(ShapeFlag.SF_HAS_WINDOW_OPS)) {
+                        this.drawWindowTitleButton(g, nameRect, true /*left*/, "window-ops-button.png");
+                    }
+                    if (flags.contains(ShapeFlag.SF_HAS_CLOSE)) {
+                        this.drawWindowTitleButton(g, nameRect, false /*left*/, "window-close-button.png");
+                    }
+                    if (flags.contains(ShapeFlag.SF_HAS_MAXIMIZE)) {
+                        this.drawWindowTitleButton(g, nameRect, false /*left*/, "window-maximize-button.png");
+                    }
+                    if (flags.contains(ShapeFlag.SF_HAS_MINIMIZE)) {
+                        this.drawWindowTitleButton(g, nameRect, false /*left*/, "window-minimize-button.png");
+                    }
                 }
 
                 SwingUtil.drawCenteredText(g, GeomUtil.getCenter(nameRect), this.entity.name);

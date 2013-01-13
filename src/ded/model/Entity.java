@@ -9,6 +9,7 @@ import java.awt.Rectangle;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 
 import org.json.JSONArray;
@@ -55,6 +56,9 @@ public class Entity implements JSONable {
 
     /** Additional shape-specific geometry parameters.  May be null. */
     public int[] shapeParams = null;
+
+    /** Shape-specific flags. */
+    public EnumSet<ShapeFlag> shapeFlags = ShapeFlag.defaultFlagsForShape(defaultShape);
 
     /** File name of image to draw as the entity background instead of
       * 'fillColor' (which is then not used for most shapes).  When
@@ -157,6 +161,10 @@ public class Entity implements JSONable {
                 o.put("shapeParams", new JSONArray(this.shapeParams));
             }
 
+            if (!this.shapeFlags.isEmpty()) {
+                o.put("shapeFlags", AWTJSONUtil.enumSetToJSON(this.shapeFlags));
+            }
+
             if (!this.fillColor.equals(defaultFillColor)) {
                 o.put("fillColor", this.fillColor);
             }
@@ -191,6 +199,11 @@ public class Entity implements JSONable {
             for (int i=0; i < params.length(); i++) {
                 this.shapeParams[i] = params.getInt(i);
             }
+        }
+
+        JSONArray flags = o.optJSONArray("shapeFlags");
+        if (flags != null) {
+            this.shapeFlags = AWTJSONUtil.enumSetFromJSON(ShapeFlag.class, flags);
         }
 
         if (ver >= 5) {
@@ -270,6 +283,7 @@ public class Entity implements JSONable {
                    this.name.equals(e.name) &&
                    this.attributes.equals(e.attributes) &&
                    Arrays.equals(this.shapeParams, e.shapeParams) &&
+                   this.shapeFlags.equals(e.shapeFlags) &&
                    this.imageFileName.equals(e.imageFileName) &&
                    this.imageFillStyle.equals(e.imageFillStyle);
         }
@@ -287,6 +301,7 @@ public class Entity implements JSONable {
         h = h*31 + this.name.hashCode();
         h = h*31 + this.attributes.hashCode();
         h = h*31 + Arrays.hashCode(this.shapeParams);
+        h = h*31 + this.shapeFlags.hashCode();
         h = h*31 + this.imageFileName.hashCode();
         h = h*31 + this.imageFillStyle.hashCode();
         return h;

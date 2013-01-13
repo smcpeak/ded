@@ -6,11 +6,16 @@ package ded.ui;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.util.EnumSet;
 import java.util.Vector;
 
 import javax.swing.Box;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -24,6 +29,7 @@ import ded.model.Diagram;
 import ded.model.Entity;
 import ded.model.EntityShape;
 import ded.model.ImageFillStyle;
+import ded.model.ShapeFlag;
 
 /** Dialog box to edit an Entity. */
 public class EntityDialog extends ModalDialog
@@ -35,10 +41,16 @@ public class EntityDialog extends ModalDialog
     /** Entity being edited. */
     private Entity entity;
 
+    /** Working copy of the shape flags.  This is what the shape flags
+      * dialog edits.  We only copy it back into 'entity' if OK is
+      * chosen on the outer entity dialog. */
+    private EnumSet<ShapeFlag> shapeFlagsWorkingCopy;
+
     // Controls.
     private JTextField nameText;
     private JTextArea attributeText;
     private JComboBox shapeChooser;
+    private JButton shapeFlagsButton;
     private JComboBox fillColorChooser;
     private JTextField xText, yText, wText, hText;
     private JLabel paramsLabel;
@@ -52,6 +64,7 @@ public class EntityDialog extends ModalDialog
         super(documentParent, "Edit Entity");
 
         this.entity = entity;
+        this.shapeFlagsWorkingCopy = this.entity.shapeFlags.clone();
 
         // NOTE: This dialog is not laid out well.  I have not yet figured out
         // a good way to do dialog layout well with Swing (whereas it is easy
@@ -92,13 +105,27 @@ public class EntityDialog extends ModalDialog
 
         // shape
         {
+            Box shapeBox = ModalDialog.makeHBox(vb);
+
             this.shapeChooser = ModalDialog.makeEnumChooser(
-                vb,
+                shapeBox,
                 "Shape:",
                 's',
                 EntityShape.class,
                 this.entity.shape);
             this.shapeChooser.addItemListener(this);
+
+            shapeBox.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
+
+            this.shapeFlagsButton = new JButton("Flags");
+            this.shapeFlagsButton.setMnemonic(KeyEvent.VK_G);
+            this.shapeFlagsButton.addActionListener(new ActionListener() {
+                @Override public void actionPerformed(ActionEvent e) {
+                    EntityDialog.this.openShapeFlagsDialog();
+                }
+            });
+            shapeBox.add(this.shapeFlagsButton);
+
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
         }
 
@@ -196,6 +223,13 @@ public class EntityDialog extends ModalDialog
         this.finishBuildingDialog(vb);
     }
 
+    /** Open the dialog for choosing the shape flags. */
+    private void openShapeFlagsDialog()
+    {
+        EntityShape shape = (EntityShape)this.shapeChooser.getSelectedItem();
+        ShapeFlagsDialog.exec(this, this.shapeFlagsWorkingCopy, shape);
+    }
+
     /** React to the OK button being pressed. */
     @Override
     public void okPressed()
@@ -243,6 +277,7 @@ public class EntityDialog extends ModalDialog
         this.entity.name = this.nameText.getText();
         this.entity.attributes = this.attributeText.getText();
         this.entity.setShape(shape);      // Sets 'shapeParams' too.
+        this.entity.shapeFlags = this.shapeFlagsWorkingCopy.clone();
         this.entity.setFillColor(fillColor);
         this.entity.loc.x = x;
         this.entity.loc.y = y;
