@@ -395,7 +395,7 @@ public class Ded extends JFrame implements WindowListener {
         JOptionPane.showMessageDialog(
             this,
             "Diagram Editor (DED)\n"+
-                "Copyright (c) 2012 Scott McPeak\n"+
+                "Copyright (c) 2012-2013 Scott McPeak\n"+
                 "Program version: "+version+"\n"+
                 "Maximum file version: "+Diagram.currentFileVersion+"\n"+
                 "This software is made available under the terms of the BSD license:\n"+
