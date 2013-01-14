@@ -293,6 +293,7 @@ public class EntityController extends Controller
             case ES_CUBOID:
             case ES_WINDOW:
             case ES_SCROLLBAR:
+            case ES_PUSHBUTTON:
                 if (wantSolidBackground) {
                     // Fill with the normal entity color (selected controllers
                     // get filled with selection color by super.paint).
@@ -306,6 +307,14 @@ public class EntityController extends Controller
 
                 if (this.entity.shape == EntityShape.ES_SCROLLBAR) {
                     this.drawScrollbar(g, r);
+                }
+                if (this.entity.shape == EntityShape.ES_PUSHBUTTON) {
+                    Rectangle inner = (Rectangle)r.clone();
+                    inner.x++;
+                    inner.y++;
+                    inner.width -= 2;
+                    inner.height -= 2;
+                    this.drawBevel(g, inner);
                 }
                 break;
 

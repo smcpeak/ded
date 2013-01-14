@@ -201,6 +201,18 @@
         "h": 20,
         "w": 590
       }
+    },
+    {
+      "loc": {
+        "x": 115,
+        "y": 320
+      },
+      "name": "A button",
+      "shape": "ES_PUSHBUTTON",
+      "size": {
+        "h": 30,
+        "w": 75
+      }
     }
   ],
   "inheritances": [],
