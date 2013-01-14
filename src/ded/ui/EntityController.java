@@ -59,6 +59,15 @@ public class EntityController extends Controller
     /** Color of the automatic resize handle in Windows. */
     public static final Color windowResizeCenterHandleColor = new Color(255, 0, 0);
 
+    /** Color of the top-left side of a beveled control. */
+    public static final Color bevelLightColor = Color.WHITE;
+
+    /** Color of the bottom-right side of a beveled control. */
+    public static final Color bevelDarkColor = Color.BLACK;
+
+    /** Color of the non-bevel part of the scroll thumb. */
+    public static final Color scrollThumbColor = new Color(220, 220, 220);
+
     // ----------- instance data -------------
     /** The thing being controlled. */
     public Entity entity;
@@ -283,6 +292,7 @@ public class EntityController extends Controller
             case ES_RECTANGLE:
             case ES_CUBOID:
             case ES_WINDOW:
+            case ES_SCROLLBAR:
                 if (wantSolidBackground) {
                     // Fill with the normal entity color (selected controllers
                     // get filled with selection color by super.paint).
@@ -293,6 +303,10 @@ public class EntityController extends Controller
 
                 g.setColor(entityOutlineColor);
                 g.drawRect(r.x, r.y, r.width-1, r.height-1);
+
+                if (this.entity.shape == EntityShape.ES_SCROLLBAR) {
+                    this.drawScrollbar(g, r);
+                }
                 break;
 
             case ES_ELLIPSE:
@@ -574,7 +588,106 @@ public class EntityController extends Controller
         // Draw right side.
         g.drawLine(r.x + r.width - 1, r.y + entityNameHeight/2,
                    r.x + r.width - 1, r.y + r.height - entityNameHeight/2);
+    }
 
+    /** Draw the scrollbar image into 'r'. */
+    public void drawScrollbar(Graphics g, Rectangle r)
+    {
+        int p = this.entity.getShapeParam(0);
+        int q = this.entity.getShapeParam(1);
+
+        if (r.height >= r.width) {
+            // Draw vertical orientation.
+            if (r.height > r.width*2) {
+                // Two square buttons plus thumb.
+                g.drawImage(this.diagramController.getResourceImage("scroll-up-button.png"),
+                            r.x, r.y, r.width, r.width, null /*obs*/);
+                g.drawImage(this.diagramController.getResourceImage("scroll-down-button.png"),
+                            r.x, r.y + r.height - r.width, r.width, r.width, null /*objs*/);
+
+                // Narrow 'r' to just the thumb track.
+                r.y += r.width;
+                r.height -= r.width*2;
+
+                // Then to the thumb location.
+                int thumbStart = r.y + r.height * p / 100;
+                int thumbEnd = r.y + r.height * q / 100;
+                r.y = thumbStart;
+                r.height = thumbEnd-thumbStart+1;
+                r.x += 1;
+                r.width -= 2;
+
+                this.drawScrollThumb(g, r);
+            }
+            else {
+                // Spinner: squash the up/down to fit.
+                int mid = r.height / 2;
+                g.drawImage(this.diagramController.getResourceImage("scroll-up-button.png"),
+                            r.x, r.y, r.width, mid, null /*obs*/);
+                g.drawImage(this.diagramController.getResourceImage("scroll-down-button.png"),
+                            r.x, r.y + mid, r.width, r.height - mid, null /*objs*/);
+            }
+        }
+        else {
+            // Draw horizontal orientation.
+            if (r.width > r.height*2) {
+                // Two square buttons plus thumb.
+                g.drawImage(this.diagramController.getResourceImage("scroll-left-button.png"),
+                            r.x, r.y, r.height, r.height, null /*obs*/);
+                g.drawImage(this.diagramController.getResourceImage("scroll-right-button.png"),
+                            r.x + r.width - r.height, r.y, r.height, r.height, null /*objs*/);
+
+                // Narrow 'r' to just the thumb track.
+                r.x += r.height;
+                r.width -= r.height*2;
+
+                // Then to the thumb location.
+                int thumbStart = r.x + r.width * p / 100;
+                int thumbEnd = r.x + r.width * q / 100;
+                r.x = thumbStart;
+                r.width = thumbEnd-thumbStart+1;
+                r.y += 1;
+                r.height -= 2;
+
+                this.drawScrollThumb(g, r);
+            }
+            else {
+                // Spinner: squash the up/down to fit.
+                int mid = r.width / 2;
+                g.drawImage(this.diagramController.getResourceImage("scroll-left-button.png"),
+                            r.x, r.y, mid, r.height, null /*obs*/);
+                g.drawImage(this.diagramController.getResourceImage("scroll-right-button.png"),
+                            r.x + mid, r.y, r.width - mid, r.height, null /*objs*/);
+            }
+        }
+    }
+
+    /** Draw the scroll thumb image into 'r'. */
+    private void drawScrollThumb(Graphics g, Rectangle r)
+    {
+        g.setColor(scrollThumbColor);
+        g.fillRect(r.x, r.y, r.width, r.height);
+
+        this.drawBevel(g, r);
+    }
+
+    /** Draw a bevel just inside 'r'. */
+    private void drawBevel(Graphics g0, Rectangle r)
+    {
+        Graphics g = g0.create();
+        g.setClip(r.x, r.y, r.width, r.height);
+
+        g.setColor(bevelLightColor);
+        g.drawLine(r.x, r.y, r.x+r.width-2, r.y);           // outer top
+        g.drawLine(r.x+1, r.y+1, r.x+r.width-3, r.y+1);     // inner top
+        g.drawLine(r.x, r.y, r.x, r.y+r.height-2);          // outer left
+        g.drawLine(r.x+1, r.y+1, r.x+1, r.y+r.height-3);    // inner left
+
+        g.setColor(bevelDarkColor);
+        g.drawLine(r.x+r.width-1, r.y+r.height-1, r.x+r.width-1, r.y+1);   // outer right
+        g.drawLine(r.x+r.width-2, r.y+r.height-1, r.x+r.width-2, r.y+2);   // inner right
+        g.drawLine(r.x+r.width-1, r.y+r.height-1, r.x+1, r.y+r.height-1);  // outer bottom
+        g.drawLine(r.x+r.width-1, r.y+r.height-2, r.x+2, r.y+r.height-2);  // inner bottom
     }
 
     /** Return the rectangle describing this controller's bounds. */

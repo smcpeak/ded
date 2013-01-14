@@ -271,16 +271,18 @@ public class EntityDialog extends ModalDialog
         // if there is a problem, we will bail before actually
         // modifying this.entity;
 
+        EntityShape shape = (EntityShape)this.shapeChooser.getSelectedItem();
+
         int x, y, w, h, p=0, q=0;
         try {
             x = Integer.valueOf(this.xText.getText());
             y = Integer.valueOf(this.yText.getText());
             w = Integer.valueOf(this.wText.getText());
             h = Integer.valueOf(this.hText.getText());
-            if (this.entity.shape.numParams >= 1) {
+            if (shape.numParams >= 1) {
                 p = Integer.valueOf(this.pText.getText());
             }
-            if (this.entity.shape.numParams >= 2) {
+            if (shape.numParams >= 2) {
                 q = Integer.valueOf(this.qText.getText());
             }
         }
@@ -292,7 +294,6 @@ public class EntityDialog extends ModalDialog
             return;
         }
 
-        EntityShape shape = (EntityShape)this.shapeChooser.getSelectedItem();
         if (shape.numParams > 0 && (p < 0 || q < 0)) {
             JOptionPane.showMessageDialog(this,
                 "P and Q must be non-negative.",
@@ -365,6 +366,13 @@ public class EntityDialog extends ModalDialog
             if (this.pText.getText().isEmpty()) {
                 this.pText.setText(String.valueOf(this.entity.size.width/2));
                 this.qText.setText(String.valueOf(this.entity.size.height/2));
+            }
+        }
+        else if (shape == EntityShape.ES_SCROLLBAR) {
+            this.paramsLabel.setText("Thumb drawn from P% to Q%:");
+            if (this.pText.getText().isEmpty()) {
+                this.pText.setText("0");
+                this.qText.setText("25");
             }
         }
         else {

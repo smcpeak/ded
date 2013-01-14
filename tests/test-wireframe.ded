@@ -111,6 +111,96 @@
         "h": 50,
         "w": 100
       }
+    },
+    {
+      "loc": {
+        "x": 665,
+        "y": 70
+      },
+      "shape": "ES_SCROLLBAR",
+      "shapeParams": [
+        5,
+        10
+      ],
+      "size": {
+        "h": 405,
+        "w": 20
+      }
+    },
+    {
+      "loc": {
+        "x": 75,
+        "y": 475
+      },
+      "shape": "ES_SCROLLBAR",
+      "shapeParams": [
+        0,
+        25
+      ],
+      "size": {
+        "h": 20,
+        "w": 590
+      }
+    },
+    {
+      "loc": {
+        "x": 645,
+        "y": 425
+      },
+      "shape": "ES_SCROLLBAR",
+      "shapeParams": [
+        0,
+        25
+      ],
+      "size": {
+        "h": 25,
+        "w": 15
+      }
+    },
+    {
+      "loc": {
+        "x": 610,
+        "y": 450
+      },
+      "shape": "ES_SCROLLBAR",
+      "shapeParams": [
+        0,
+        25
+      ],
+      "size": {
+        "h": 20,
+        "w": 30
+      }
+    },
+    {
+      "loc": {
+        "x": 690,
+        "y": 70
+      },
+      "shape": "ES_SCROLLBAR",
+      "shapeParams": [
+        50,
+        75
+      ],
+      "size": {
+        "h": 405,
+        "w": 20
+      }
+    },
+    {
+      "loc": {
+        "x": 75,
+        "y": 500
+      },
+      "shape": "ES_SCROLLBAR",
+      "shapeParams": [
+        50,
+        75
+      ],
+      "size": {
+        "h": 20,
+        "w": 590
+      }
     }
   ],
   "inheritances": [],
