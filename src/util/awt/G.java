@@ -11,8 +11,11 @@ import java.awt.Rectangle;
 
 /** This is a collection of utility functions related to java.awt.Graphics
   * and its associated geometric object classes.  It is called "G" so that
-  * uses in code are reasonably compact, since I can't add methodsto the
-  * classes I would modify if I could. */
+  * uses in code are reasonably compact, since I can't add methods to the
+  * classes I would modify if I could.
+  *
+  * This is sort of a poor man's operator overloading and class extension
+  * combined. */
 public class G {
     /** Return either x or y of 'r', depending on 'hv'. */
     public static int origin(Rectangle r, HorizOrVert hv)
@@ -199,6 +202,4 @@ public class G {
             return new Point(0, v);
         }
     }
-
-
 }
