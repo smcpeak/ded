@@ -97,6 +97,26 @@ public class G {
             r.height - dist.y);
     }
 
+    /** Return a new Rectangle based on 'r' where x or y, depending on 'hv',
+      * has been moved by 'delta', but the bottom/right corner is unchanged. */
+    public static Rectangle moveOriginBy(Rectangle r, HorizOrVert hv, int delta)
+    {
+        if (hv.isHoriz()) {
+            return new Rectangle(
+                r.x + delta,
+                r.y,
+                r.width - delta,
+                r.height);
+        }
+        else {
+            return new Rectangle(
+                r.x,
+                r.y + delta,
+                r.width,
+                r.height - delta);
+        }
+    }
+
     /** Return a new Rectangle based on 'r' where the bottom/right corner
       * is moved by 'dist', leaving its top/left corner unchanged. */
     public static Rectangle moveBottomRightBy(Rectangle r, Point dist)
@@ -151,10 +171,33 @@ public class G {
         return new Point(v.x * scalar, v.y * scalar);
     }
 
-    /** Add two points. */
+    /** Add two Points. */
     public static Point add(Point p1, Point p2)
     {
         return new Point(p1.x+p2.x, p1.y+p2.y);
+    }
+
+    /** Add a Dimension and a Point, yielding a Dimension. */
+    public static Dimension add(Dimension dim, Point pt)
+    {
+        return new Dimension(dim.width + pt.x, dim.height + pt.y);
+    }
+
+    /** Return width or height of dim depending on 'hv'. */
+    public static int size(Dimension dim, HorizOrVert hv)
+    {
+        return hv.isHoriz()? dim.width : dim.height;
+    }
+
+    /** Return (v,0) if hv.isHoriz(), or (0,v) if hv.isVert(). */
+    public static Point hvVector(HorizOrVert hv, int v)
+    {
+        if (hv.isHoriz()) {
+            return new Point(v, 0);
+        }
+        else {
+            return new Point(0, v);
+        }
     }
 
 

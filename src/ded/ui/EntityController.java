@@ -117,15 +117,24 @@ public class EntityController extends Controller
         this.entity.size.height -= diff;
     }
 
-    /** Set right edge w/o changing other locations. */
-    public void resizeSetRight(int v, boolean direct)
+    /** Get right or bottom edge, depending on 'hv', */
+    public int getBottomOrRight(HorizOrVert hv)
     {
-        int diff = v - this.getRight();
+        return hv.isHoriz() ? this.getRight() : this.getBottom();
+    }
 
-        if (this.entity.size.width + diff < minimumEntitySize) {
+    /** Set right or bottom edge, depending on 'hv', w/o changing other locations. */
+    public void resizeSetBottomOrRight(int v, HorizOrVert hv, boolean direct)
+    {
+        int diff = v - this.getBottomOrRight(hv);
+
+        if (G.size(this.entity.size, hv) + diff < minimumEntitySize) {
             // Set 'diff' to value that will make width equal minimum.
-            diff = minimumEntitySize - this.entity.size.width;
+            diff = minimumEntitySize - G.size(this.entity.size, hv);
         }
+
+        // 'diff' as a vector.
+        Point diffv = G.hvVector(hv, diff);
 
         if (direct && this.entity.shape == EntityShape.ES_WINDOW) {
             // Calculate the region inside the window that is not the
@@ -133,7 +142,7 @@ public class EntityController extends Controller
             // moved and resized in this area, partly to avoid
             // confusion if two windows should happen to have exactly
             // the same region.
-            final Rectangle moveRegion = this.getAttributeRect();
+            Rectangle moveRegion = this.getAttributeRect();
 
             // Get all the entities that are inside the region.
             Set<EntityController> contained =
@@ -141,71 +150,38 @@ public class EntityController extends Controller
 
             // Now calculate the region in which a control point must lie
             // for it to be moved.
-            int p = this.entity.getShapeParam(0);
-            moveRegion.x += p;
-            moveRegion.width -= p;
+            int pq = this.entity.getShapeParam(hv.isHoriz()? 0 : 1);
+            pq -= (hv.isVert()? entityNameHeight : 0);    // rel. to attrib rect
+            moveRegion = G.moveOriginBy(moveRegion, hv, pq);
 
             // Move/resize some contained entities.
             for (Controller c : contained) {
                 EntityController ec = (EntityController)c;
                 if (moveRegion.contains(ec.getRect())) {
                     // Fully contained: move.
-                    ec.entity.loc.x += diff;
+                    ec.entity.loc = G.add(ec.entity.loc, diffv);
                 }
-                else if (ec.getRight() >= moveRegion.x) {
-                    // Right edge contained: resize.
-                    ec.resizeSetRight(ec.getRight() + diff, false /*direct*/);
+                else if (ec.getBottomOrRight(hv) >= G.origin(moveRegion, hv)) {
+                    // Bottom or right edge contained: resize.
+                    ec.resizeSetBottomOrRight(ec.getBottomOrRight(hv) + diff,
+                                              hv, false /*direct*/);
                 }
             }
         }
 
-        this.entity.size.width += diff;
+        this.entity.size = G.add(this.entity.size, diffv);
+    }
+
+    /** Set right edge w/o changing other locations. */
+    public void resizeSetRight(int v, boolean direct)
+    {
+        resizeSetBottomOrRight(v, HorizOrVert.HV_HORIZ, direct);
     }
 
     /** Set bottom edge w/o changing other locations. */
     public void resizeSetBottom(int v, boolean direct)
     {
-        int diff = v - this.getBottom();
-
-        if (this.entity.size.height + diff < minimumEntitySize) {
-            diff = minimumEntitySize - this.entity.size.height;
-        }
-
-        // This is copy+paste+modify from 'resizeSetRight'.  For the
-        // moment I am postponing trying to factor it.
-        if (direct && this.entity.shape == EntityShape.ES_WINDOW) {
-            // Calculate the region inside the window that is not the
-            // title bar area.  Controllers are only automatically
-            // moved and resized in this area, partly to avoid
-            // confusion if two windows should happen to have exactly
-            // the same region.
-            final Rectangle moveRegion = this.getAttributeRect();
-
-            // Get all the entities that are inside the region.
-            Set<EntityController> contained =
-                this.diagramController.findEntityControllersInRectangle(moveRegion);
-
-            // Now calculate the region in which a control point must lie
-            // for it to be moved.
-            int q = this.entity.getShapeParam(1);
-            moveRegion.y += q;
-            moveRegion.height -= q;
-
-            // Move/resize some contained entities.
-            for (Controller c : contained) {
-                EntityController ec = (EntityController)c;
-                if (moveRegion.contains(ec.getRect())) {
-                    // Fully contained: move.
-                    ec.entity.loc.y += diff;
-                }
-                else if (ec.getBottom() >= moveRegion.y) {
-                    // Right edge contained: resize.
-                    ec.resizeSetBottom(ec.getBottom() + diff, false /*direct*/);
-                }
-            }
-        }
-
-        this.entity.size.height += diff;
+        resizeSetBottomOrRight(v, HorizOrVert.HV_VERT, direct);
     }
 
     /** Get the part of entity rectangle excluding the name/title portion.
@@ -626,12 +602,8 @@ public class EntityController extends Controller
         // Calculate a 1-length vector along the track direction from
         // the "decrease" button to the "increase" button, and another
         // that is perpendicular.
-        Point trackv = new Point(1, 0);        // along the track
-        Point crossv = new Point(0, 1);        // across the track
-        if (hvLong.isVert()) {
-            trackv = G.transpose(trackv);
-            crossv = G.transpose(crossv);
-        }
+        Point trackv = G.hvVector(hvLong, 1);        // along the track
+        Point crossv = G.hvVector(hvShort, 1);       // across the track
 
         // Endpoint button images.
         Image decreaseButton = this.diagramController.getResourceImage(
