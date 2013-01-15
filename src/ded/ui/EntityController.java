@@ -22,7 +22,9 @@ import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
+import util.awt.G;
 import util.awt.GeomUtil;
+import util.awt.HorizOrVert;
 import util.swing.SwingUtil;
 
 import ded.model.Diagram;
@@ -605,69 +607,69 @@ public class EntityController extends Controller
         int p = this.entity.getShapeParam(0);
         int q = this.entity.getShapeParam(1);
 
+        // The long and short directions for the scrollbar.
+        HorizOrVert hvLong, hvShort;
         if (r.height >= r.width) {
             // Draw vertical orientation.
-            if (r.height > r.width*2) {
-                // Two square buttons plus thumb.
-                g.drawImage(this.diagramController.getResourceImage("scroll-up-button.png"),
-                            r.x, r.y, r.width, r.width, null /*obs*/);
-                g.drawImage(this.diagramController.getResourceImage("scroll-down-button.png"),
-                            r.x, r.y + r.height - r.width, r.width, r.width, null /*objs*/);
-
-                // Narrow 'r' to just the thumb track.
-                r.y += r.width;
-                r.height -= r.width*2;
-
-                // Then to the thumb location.
-                int thumbStart = r.y + r.height * p / 100;
-                int thumbEnd = r.y + r.height * q / 100;
-                r.y = thumbStart;
-                r.height = thumbEnd-thumbStart+1;
-                r.x += 1;
-                r.width -= 2;
-
-                this.drawScrollThumb(g, r);
-            }
-            else {
-                // Spinner: squash the up/down to fit.
-                int mid = r.height / 2;
-                g.drawImage(this.diagramController.getResourceImage("scroll-up-button.png"),
-                            r.x, r.y, r.width, mid, null /*obs*/);
-                g.drawImage(this.diagramController.getResourceImage("scroll-down-button.png"),
-                            r.x, r.y + mid, r.width, r.height - mid, null /*objs*/);
-            }
+            hvLong = HorizOrVert.HV_VERT;
+            hvShort = HorizOrVert.HV_HORIZ;
         }
         else {
-            // Draw horizontal orientation.
-            if (r.width > r.height*2) {
-                // Two square buttons plus thumb.
-                g.drawImage(this.diagramController.getResourceImage("scroll-left-button.png"),
-                            r.x, r.y, r.height, r.height, null /*obs*/);
-                g.drawImage(this.diagramController.getResourceImage("scroll-right-button.png"),
-                            r.x + r.width - r.height, r.y, r.height, r.height, null /*objs*/);
+            // Horizontal orientation.
+            hvLong = HorizOrVert.HV_HORIZ;
+            hvShort = HorizOrVert.HV_VERT;
+        }
 
-                // Narrow 'r' to just the thumb track.
-                r.x += r.height;
-                r.width -= r.height*2;
+        // Size of the short dimension.
+        int shortSide = G.size(r, hvShort);
 
-                // Then to the thumb location.
-                int thumbStart = r.x + r.width * p / 100;
-                int thumbEnd = r.x + r.width * q / 100;
-                r.x = thumbStart;
-                r.width = thumbEnd-thumbStart+1;
-                r.y += 1;
-                r.height -= 2;
+        // Calculate a 1-length vector along the track direction from
+        // the "decrease" button to the "increase" button, and another
+        // that is perpendicular.
+        Point trackv = new Point(1, 0);        // along the track
+        Point crossv = new Point(0, 1);        // across the track
+        if (hvLong.isVert()) {
+            trackv = G.transpose(trackv);
+            crossv = G.transpose(crossv);
+        }
 
-                this.drawScrollThumb(g, r);
-            }
-            else {
-                // Spinner: squash the up/down to fit.
-                int mid = r.width / 2;
-                g.drawImage(this.diagramController.getResourceImage("scroll-left-button.png"),
-                            r.x, r.y, mid, r.height, null /*obs*/);
-                g.drawImage(this.diagramController.getResourceImage("scroll-right-button.png"),
-                            r.x + mid, r.y, r.width - mid, r.height, null /*objs*/);
-            }
+        // Endpoint button images.
+        Image decreaseButton = this.diagramController.getResourceImage(
+            hvLong.isVert()? "scroll-up-button.png" : "scroll-left-button.png");
+        Image increaseButton = this.diagramController.getResourceImage(
+            hvLong.isVert()? "scroll-down-button.png" : "scroll-right-button.png");
+
+        if (G.size(r, hvLong) > shortSide*2) {
+            // Two square buttons plus thumb.
+            Dimension shortSideSquare = G.squareDim(shortSide);
+            G.drawImage(g, decreaseButton, G.topLeft(r), shortSideSquare);
+            G.drawImage(g, increaseButton, G.sub(G.bottomRight(r), shortSideSquare), shortSideSquare);
+
+            // Narrow 'r' to just the thumb track.
+            r = G.moveTopLeftBy(r, G.mul(trackv, shortSide));
+            r = G.moveBottomRightBy(r, G.mul(trackv, -1 * shortSide));
+
+            // Then to the thumb location.
+            int thumbStart = G.origin(r, hvLong) + G.size(r, hvLong) * p / 100;
+            int thumbEnd = G.origin(r, hvLong) + G.size(r, hvLong) * q / 100;
+            r = G.setOrigin(r, hvLong, thumbStart);
+            r = G.setSize(r, hvLong, thumbEnd-thumbStart+1);
+            r = G.incOrigin(r, hvShort, 1);
+            r = G.incSize(r, hvShort, -2);
+
+            this.drawScrollThumb(g, r);
+        }
+        else {
+            // Spinner: squash the up/down to fit.
+            int mid = G.size(r, hvLong) / 2;
+            G.drawImage(g, decreaseButton,
+                        G.topLeft(r),
+                        G.add(G.mul(crossv, shortSide),
+                              G.mul(trackv, mid)));
+            G.drawImage(g, increaseButton,
+                        G.add(G.topLeft(r), G.mul(trackv, mid)),
+                        G.add(G.mul(crossv, shortSide),
+                              G.mul(trackv, G.size(r, hvLong) - mid)));
         }
     }
 
