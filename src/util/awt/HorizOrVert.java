@@ -18,6 +18,12 @@ public enum HorizOrVert {
         return this == HV_HORIZ;
     }
 
+    /** True iff this is HV_VERT. */
+    public boolean isVert()
+    {
+        return this == HV_VERT;
+    }
+
     /** Yield collecton of all values for convenient iteration. */
     public static EnumSet<HorizOrVert> allValues()
     {

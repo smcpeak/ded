@@ -5,7 +5,9 @@ package util.awt;
 
 import java.awt.Dimension;
 import java.awt.Point;
+import java.util.EnumSet;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -51,6 +53,36 @@ public class AWTJSONUtil {
         d.width = (int)o.getLong("w");
         d.height = (int)o.getLong("h");
         return d;
+    }
+
+    /** Render 'set' as a JSON array. */
+    public static <T extends Enum<T>> JSONArray enumSetToJSON(EnumSet<T> set)
+    {
+        JSONArray ret = new JSONArray();
+        for (T t : set) {
+            ret.put(t.name());
+        }
+        return ret;
+    }
+
+    /** Deserialize an EnumSet from a JSON array. */
+    public static <T extends Enum<T>>
+    EnumSet<T> enumSetFromJSON(Class<T> enumType, JSONArray array) throws JSONException
+    {
+        EnumSet<T> ret = EnumSet.noneOf(enumType);
+        for (int i=0; i < array.length(); i++) {
+            String element = array.getString(i);
+            try {
+                T t = Enum.valueOf(enumType, element);
+                ret.add(t);
+            }
+            catch (IllegalArgumentException e) {
+                throw new JSONException(
+                    "Unknown enumerator in set of "+enumType.getSimpleName()+
+                    ": \""+element+"\": "+e.getMessage());
+            }
+        }
+        return ret;
     }
 }
 

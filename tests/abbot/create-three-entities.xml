@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AWTTestScript>
+  <component class="javax.swing.JDialog" id="About Diagram Editor" parent="Diagram Editor" title="About Diagram Editor" />
+  <component class="ded.Ded" id="Diagram Editor" root="true" title="Diagram Editor" />
+  <component class="ded.ui.DiagramController" id="DiagramController Instance" index="0" parent="JLayeredPane Instance" window="Diagram Editor" />
+  <component class="javax.swing.JLayeredPane" id="JLayeredPane Instance" index="1" parent="JRootPane Instance" window="Diagram Editor" />
+  <component class="javax.swing.JLayeredPane" id="JLayeredPane Instance 2" index="1" parent="JRootPane Instance 2" window="About Diagram Editor" />
+  <component class="javax.swing.JOptionPane" id="JOptionPane Instance" index="0" parent="JPanel Instance" window="About Diagram Editor" />
+  <component class="javax.swing.JPanel" id="JPanel Instance" index="0" parent="JLayeredPane Instance 2" window="About Diagram Editor" />
+  <component class="javax.swing.JRootPane" id="JRootPane Instance" index="0" parent="Diagram Editor" />
+  <component class="javax.swing.JRootPane" id="JRootPane Instance 2" index="0" parent="About Diagram Editor" />
+  <component class="javax.swing.JPanel" id="OptionPane.body" index="1" name="OptionPane.body" parent="OptionPane.realBody" window="About Diagram Editor" />
+  <component class="javax.swing.JButton" id="OptionPane.button" index="0" name="OptionPane.button" parent="OptionPane.buttonArea" text="OK" window="About Diagram Editor" />
+  <component class="javax.swing.JPanel" id="OptionPane.buttonArea" index="3" name="OptionPane.buttonArea" parent="JOptionPane Instance" window="About Diagram Editor" />
+  <component class="javax.swing.JLabel" id="OptionPane.label" index="3" name="OptionPane.label" parent="OptionPane.body" text="Maximum file version: 9" window="About Diagram Editor" />
+  <component class="javax.swing.JPanel" id="OptionPane.messageArea" index="0" name="OptionPane.messageArea" parent="JOptionPane Instance" window="About Diagram Editor" />
+  <component class="javax.swing.JPanel" id="OptionPane.realBody" index="0" name="OptionPane.realBody" parent="OptionPane.messageArea" window="About Diagram Editor" />
+  <launch args="[]" class="ded.Ded" classpath="bin" desc="launch ded" method="main" />
+  <wait args="Diagram Editor" class="abbot.tester.ComponentTester" method="assertComponentShowing" />
+  <action args="Diagram Editor,800,600" class="abbot.tester.WindowTester" method="actionResize" />
+  <sequence>
+    <action args="DiagramController Instance,c" method="actionKeyString" />
+    <action args="DiagramController Instance,(114%2c79)" class="ded.ui.DiagramController" method="actionClick" />
+    <action args="DiagramController Instance,c" method="actionKeyString" />
+    <action args="DiagramController Instance,(203%2c165)" class="ded.ui.DiagramController" method="actionClick" />
+    <action args="DiagramController Instance,c" method="actionKeyString" />
+    <action args="DiagramController Instance,(308%2c239)" class="ded.ui.DiagramController" method="actionClick" />
+    <action args="DiagramController Instance,(323%2c143)" class="ded.ui.DiagramController" method="actionClick" />
+  </sequence>
+  <call args="tests/abbot/create-three-entities.ded" class="ded.Ded" desc="checkDiagram" method="checkDiagram" />
+  <terminate />
+</AWTTestScript>
+

@@ -145,6 +145,18 @@ public abstract class Controller {
         }
     }
 
+    /** This is called when we're beginning a drag operation.  Normally,
+      * controllers can ignore this and just respond to 'dragTo', but if
+      * they need to remember some state from the drag start, this is
+      * the time to do it.  'pt' is where the mouse was, relative to the
+      * diagram up/left, when dragging began. */
+    public void beginDragging(Point pt)
+    {}
+
+    /** This is called when dragging has ceased. */
+    public void stopDragging()
+    {}
+
     /** Show the right click popup menu. */
     @SuppressWarnings("serial")
     public void rightClickMenu(final MouseEvent ev)
