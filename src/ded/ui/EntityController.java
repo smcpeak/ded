@@ -22,13 +22,16 @@ import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
+import util.awt.G;
 import util.awt.GeomUtil;
+import util.awt.HorizOrVert;
 import util.swing.SwingUtil;
 
 import ded.model.Diagram;
 import ded.model.Entity;
 import ded.model.EntityShape;
 import ded.model.ImageFillStyle;
+import ded.model.ShapeFlag;
 
 /** Controller for Entity. */
 public class EntityController extends Controller
@@ -55,6 +58,18 @@ public class EntityController extends Controller
       * the normal hit-test rectangle. */
     public static final int selectionBoxExpansion = 0;
 
+    /** Color of the automatic resize handle in Windows. */
+    public static final Color windowResizeCenterHandleColor = new Color(255, 0, 0);
+
+    /** Color of the top-left side of a beveled control. */
+    public static final Color bevelLightColor = Color.WHITE;
+
+    /** Color of the bottom-right side of a beveled control. */
+    public static final Color bevelDarkColor = Color.BLACK;
+
+    /** Color of the non-bevel part of the scroll thumb. */
+    public static final Color scrollThumbColor = new Color(220, 220, 220);
+
     // ----------- instance data -------------
     /** The thing being controlled. */
     public Entity entity;
@@ -63,6 +78,10 @@ public class EntityController extends Controller
       * ResizeHandle.NUM_RESIZE_HANDLES resize handles.  Otherwise,
       * it is null. */
     public EntityResizeController[] resizeHandles;
+
+    /** If 'wantCenterHandle()', then this is a handle for the
+      * window auto-resize center.  Otherwise, null. */
+    public WindowCenterController windowCenterHandle;
 
     // ----------- public methods -----------
     public EntityController(DiagramController dc, Entity e)
@@ -83,7 +102,7 @@ public class EntityController extends Controller
     public int getBottom() { return this.entity.loc.y + this.entity.size.height; }
 
     /** Set left edge w/o changing other locations. */
-    public void setLeft(int v)
+    public void resizeSetLeft(int v)
     {
         int diff = v - this.getLeft();
         this.entity.loc.x += diff;
@@ -91,25 +110,88 @@ public class EntityController extends Controller
     }
 
     /** Set top edge w/o changing other locations. */
-    public void setTop(int v)
+    public void resizeSetTop(int v)
     {
         int diff = v - this.getTop();
         this.entity.loc.y += diff;
         this.entity.size.height -= diff;
     }
 
-    /** Set right edge w/o changing other locations. */
-    public void setRight(int v)
+    /** Get right or bottom edge, depending on 'hv', */
+    public int getBottomOrRight(HorizOrVert hv)
     {
-        int diff = v - this.getRight();
-        this.entity.size.width += diff;
+        return hv.isHoriz() ? this.getRight() : this.getBottom();
+    }
+
+    /** Set right or bottom edge, depending on 'hv', w/o changing other locations. */
+    public void resizeSetBottomOrRight(int v, HorizOrVert hv, boolean direct)
+    {
+        int diff = v - this.getBottomOrRight(hv);
+
+        if (G.size(this.entity.size, hv) + diff < minimumEntitySize) {
+            // Set 'diff' to value that will make width equal minimum.
+            diff = minimumEntitySize - G.size(this.entity.size, hv);
+        }
+
+        // 'diff' as a vector.
+        Point diffv = G.hvVector(hv, diff);
+
+        if (direct && this.entity.shape == EntityShape.ES_WINDOW) {
+            // Calculate the region inside the window that is not the
+            // title bar area.  Controllers are only automatically
+            // moved and resized in this area, partly to avoid
+            // confusion if two windows should happen to have exactly
+            // the same region.
+            Rectangle moveRegion = this.getAttributeRect();
+
+            // Get all the entities that are inside the region.
+            Set<EntityController> contained =
+                this.diagramController.findEntityControllersInRectangle(moveRegion);
+
+            // Now calculate the region in which a control point must lie
+            // for it to be moved.
+            int pq = this.entity.getShapeParam(hv.isHoriz()? 0 : 1);
+            pq -= (hv.isVert()? entityNameHeight : 0);    // rel. to attrib rect
+            moveRegion = G.moveOriginBy(moveRegion, hv, pq);
+
+            // Move/resize some contained entities.
+            for (Controller c : contained) {
+                EntityController ec = (EntityController)c;
+                if (moveRegion.contains(ec.getRect())) {
+                    // Fully contained: move.
+                    ec.entity.loc = G.add(ec.entity.loc, diffv);
+                }
+                else if (ec.getBottomOrRight(hv) >= G.origin(moveRegion, hv)) {
+                    // Bottom or right edge contained: resize.
+                    ec.resizeSetBottomOrRight(ec.getBottomOrRight(hv) + diff,
+                                              hv, false /*direct*/);
+                }
+            }
+        }
+
+        this.entity.size = G.add(this.entity.size, diffv);
+    }
+
+    /** Set right edge w/o changing other locations. */
+    public void resizeSetRight(int v, boolean direct)
+    {
+        resizeSetBottomOrRight(v, HorizOrVert.HV_HORIZ, direct);
     }
 
     /** Set bottom edge w/o changing other locations. */
-    public void setBottom(int v)
+    public void resizeSetBottom(int v, boolean direct)
     {
-        int diff = v - this.getBottom();
-        this.entity.size.height += diff;
+        resizeSetBottomOrRight(v, HorizOrVert.HV_VERT, direct);
+    }
+
+    /** Get the part of entity rectangle excluding the name/title portion.
+      * This assumes the name is shown (it is meant for ES_WINDOW). */
+    public Rectangle getAttributeRect()
+    {
+        Rectangle r = this.getRect();
+        r.y += entityNameHeight;
+        r.height -= entityNameHeight;
+        return r;
     }
 
     @Override
@@ -169,6 +251,16 @@ public class EntityController extends Controller
             wantSolidBackground = false;
         }
 
+        if (this.isSelected() && this.entity.shape == EntityShape.ES_WINDOW) {
+            // Draw the auto-resize location.
+            g.setColor(windowResizeCenterHandleColor);
+
+            int p = r.x + this.entity.getShapeParam(0);
+            int q = r.y + this.entity.getShapeParam(1);
+            g.drawLine(p, r.y+entityNameHeight, p, r.y+r.height);  // vertical line
+            g.drawLine(r.x, q, r.x+r.width, q);                    // horizontal line
+        }
+
         // Entity outline with proper shape.
         switch (this.entity.shape) {
             case ES_NO_SHAPE:
@@ -177,6 +269,9 @@ public class EntityController extends Controller
 
             case ES_RECTANGLE:
             case ES_CUBOID:
+            case ES_WINDOW:
+            case ES_SCROLLBAR:
+            case ES_PUSHBUTTON:
                 if (wantSolidBackground) {
                     // Fill with the normal entity color (selected controllers
                     // get filled with selection color by super.paint).
@@ -187,6 +282,18 @@ public class EntityController extends Controller
 
                 g.setColor(entityOutlineColor);
                 g.drawRect(r.x, r.y, r.width-1, r.height-1);
+
+                if (this.entity.shape == EntityShape.ES_SCROLLBAR) {
+                    this.drawScrollbar(g, r);
+                }
+                if (this.entity.shape == EntityShape.ES_PUSHBUTTON) {
+                    Rectangle inner = (Rectangle)r.clone();
+                    inner.x++;
+                    inner.y++;
+                    inner.width -= 2;
+                    inner.height -= 2;
+                    this.drawBevel(g, inner);
+                }
                 break;
 
             case ES_ELLIPSE:
@@ -205,20 +312,21 @@ public class EntityController extends Controller
                 break;
         }
 
-        if (this.entity.attributes.isEmpty()) {
+        if (this.entity.attributes.isEmpty() &&
+            this.entity.shape != EntityShape.ES_WINDOW)
+        {
             // Name is vertically and horizontally centered in the space.
             SwingUtil.drawCenteredText(g, GeomUtil.getCenter(r), this.entity.name);
         }
         else {
             // Name.
             Rectangle nameRect = new Rectangle(r);
-            if (this.entity.name.isEmpty()) {
+            if (this.entity.name.isEmpty() && this.entity.shape != EntityShape.ES_WINDOW) {
                 // Do not take up space, do not draw divider.
                 nameRect.height = 0;
             }
             else {
                 nameRect.height = entityNameHeight;
-                SwingUtil.drawCenteredText(g, GeomUtil.getCenter(nameRect), this.entity.name);
 
                 if (this.entity.shape != EntityShape.ES_CYLINDER) {
                     // Divider between name and attributes.
@@ -229,6 +337,25 @@ public class EntityController extends Controller
                     // The lower half of the upper ellipse plays the role
                     // of a divider.
                 }
+
+                if (this.entity.shape == EntityShape.ES_WINDOW) {
+                    // Draw controls in the title bar.
+                    EnumSet<ShapeFlag> flags = this.entity.shapeFlags;
+                    if (flags.contains(ShapeFlag.SF_HAS_WINDOW_OPS)) {
+                        this.drawWindowTitleButton(g, nameRect, true /*left*/, "window-ops-button.png");
+                    }
+                    if (flags.contains(ShapeFlag.SF_HAS_CLOSE)) {
+                        this.drawWindowTitleButton(g, nameRect, false /*left*/, "window-close-button.png");
+                    }
+                    if (flags.contains(ShapeFlag.SF_HAS_MAXIMIZE)) {
+                        this.drawWindowTitleButton(g, nameRect, false /*left*/, "window-maximize-button.png");
+                    }
+                    if (flags.contains(ShapeFlag.SF_HAS_MINIMIZE)) {
+                        this.drawWindowTitleButton(g, nameRect, false /*left*/, "window-minimize-button.png");
+                    }
+                }
+
+                SwingUtil.drawCenteredText(g, GeomUtil.getCenter(nameRect), this.entity.name);
             }
 
             // Attributes.
@@ -242,6 +369,43 @@ public class EntityController extends Controller
                 this.entity.attributes,
                 attributeRect.x,
                 attributeRect.y + g.getFontMetrics().getMaxAscent());
+        }
+    }
+
+    /** Draw the window operations menu button in left end of 'titleRect',
+      * updating it to reflect the remaining space. */
+    private void drawWindowTitleButton(
+        Graphics g,
+        Rectangle titleRect,
+        boolean leftAlign,
+        String resourceName)
+    {
+        // Get the image to draw.
+        Image image = this.diagramController.getResourceImage(resourceName);
+        if (image == null) {
+            return;
+        }
+
+        // Get its width.
+        int imageWidth = image.getWidth(null);
+        if (imageWidth < 0) {
+            imageWidth = 0;       // still loading?
+        }
+
+        // Draw, and adjust rectangle 'x' if needed.
+        if (leftAlign) {
+            g.drawImage(image, titleRect.x+1, titleRect.y+1, null /*obs*/);
+            titleRect.x += imageWidth;
+        }
+        else {
+            g.drawImage(image, titleRect.x + titleRect.width-1 - imageWidth,
+                        titleRect.y+1, null /*obs*/);
+        }
+
+        // Adjust rectangle width.
+        titleRect.width -= imageWidth;
+        if (titleRect.width < 0) {
+            titleRect.width = 0;
         }
     }
 
@@ -411,7 +575,102 @@ public class EntityController extends Controller
         // Draw right side.
         g.drawLine(r.x + r.width - 1, r.y + entityNameHeight/2,
                    r.x + r.width - 1, r.y + r.height - entityNameHeight/2);
+    }
 
+    /** Draw the scrollbar image into 'r'. */
+    public void drawScrollbar(Graphics g, Rectangle r)
+    {
+        int p = this.entity.getShapeParam(0);
+        int q = this.entity.getShapeParam(1);
+
+        // The long and short directions for the scrollbar.
+        HorizOrVert hvLong, hvShort;
+        if (r.height >= r.width) {
+            // Draw vertical orientation.
+            hvLong = HorizOrVert.HV_VERT;
+            hvShort = HorizOrVert.HV_HORIZ;
+        }
+        else {
+            // Horizontal orientation.
+            hvLong = HorizOrVert.HV_HORIZ;
+            hvShort = HorizOrVert.HV_VERT;
+        }
+
+        // Size of the short dimension.
+        int shortSide = G.size(r, hvShort);
+
+        // Calculate a 1-length vector along the track direction from
+        // the "decrease" button to the "increase" button, and another
+        // that is perpendicular.
+        Point trackv = G.hvVector(hvLong, 1);        // along the track
+        Point crossv = G.hvVector(hvShort, 1);       // across the track
+
+        // Endpoint button images.
+        Image decreaseButton = this.diagramController.getResourceImage(
+            hvLong.isVert()? "scroll-up-button.png" : "scroll-left-button.png");
+        Image increaseButton = this.diagramController.getResourceImage(
+            hvLong.isVert()? "scroll-down-button.png" : "scroll-right-button.png");
+
+        if (G.size(r, hvLong) > shortSide*2) {
+            // Two square buttons plus thumb.
+            Dimension shortSideSquare = G.squareDim(shortSide);
+            G.drawImage(g, decreaseButton, G.topLeft(r), shortSideSquare);
+            G.drawImage(g, increaseButton, G.sub(G.bottomRight(r), shortSideSquare), shortSideSquare);
+
+            // Narrow 'r' to just the thumb track.
+            r = G.moveTopLeftBy(r, G.mul(trackv, shortSide));
+            r = G.moveBottomRightBy(r, G.mul(trackv, -1 * shortSide));
+
+            // Then to the thumb location.
+            int thumbStart = G.origin(r, hvLong) + G.size(r, hvLong) * p / 100;
+            int thumbEnd = G.origin(r, hvLong) + G.size(r, hvLong) * q / 100;
+            r = G.setOrigin(r, hvLong, thumbStart);
+            r = G.setSize(r, hvLong, thumbEnd-thumbStart+1);
+            r = G.incOrigin(r, hvShort, 1);
+            r = G.incSize(r, hvShort, -2);
+
+            this.drawScrollThumb(g, r);
+        }
+        else {
+            // Spinner: squash the up/down to fit.
+            int mid = G.size(r, hvLong) / 2;
+            G.drawImage(g, decreaseButton,
+                        G.topLeft(r),
+                        G.add(G.mul(crossv, shortSide),
+                              G.mul(trackv, mid)));
+            G.drawImage(g, increaseButton,
+                        G.add(G.topLeft(r), G.mul(trackv, mid)),
+                        G.add(G.mul(crossv, shortSide),
+                              G.mul(trackv, G.size(r, hvLong) - mid)));
+        }
+    }
+
+    /** Draw the scroll thumb image into 'r'. */
+    private void drawScrollThumb(Graphics g, Rectangle r)
+    {
+        g.setColor(scrollThumbColor);
+        g.fillRect(r.x, r.y, r.width, r.height);
+
+        this.drawBevel(g, r);
+    }
+
+    /** Draw a bevel just inside 'r'. */
+    private void drawBevel(Graphics g0, Rectangle r)
+    {
+        Graphics g = g0.create();
+        g.setClip(r.x, r.y, r.width, r.height);
+
+        g.setColor(bevelLightColor);
+        g.drawLine(r.x, r.y, r.x+r.width-2, r.y);           // outer top
+        g.drawLine(r.x+1, r.y+1, r.x+r.width-3, r.y+1);     // inner top
+        g.drawLine(r.x, r.y, r.x, r.y+r.height-2);          // outer left
+        g.drawLine(r.x+1, r.y+1, r.x+1, r.y+r.height-3);    // inner left
+
+        g.setColor(bevelDarkColor);
+        g.drawLine(r.x+r.width-1, r.y+r.height-1, r.x+r.width-1, r.y+1);   // outer right
+        g.drawLine(r.x+r.width-2, r.y+r.height-1, r.x+r.width-2, r.y+2);   // inner right
+        g.drawLine(r.x+r.width-1, r.y+r.height-1, r.x+1, r.y+r.height-1);  // outer bottom
+        g.drawLine(r.x+r.width-1, r.y+r.height-2, r.x+2, r.y+r.height-2);  // inner bottom
     }
 
     /** Return the rectangle describing this controller's bounds. */
@@ -423,7 +682,15 @@ public class EntityController extends Controller
     @Override
     public Set<Polygon> getBounds()
     {
-        Polygon p = GeomUtil.rectPolygon(this.getRect());
+        Rectangle r = this.getRect();
+        if (this.entity.shape == EntityShape.ES_WINDOW) {
+            // Windows normally contain lots of other controls.  It is
+            // annoying when selecting the other controls to have the
+            // window get selected if I miss, etc.  So only select the
+            // window itself from its title bar.
+            r.height = entityNameHeight;
+        }
+        Polygon p = GeomUtil.rectPolygon(r);
         Set<Polygon> ret = new HashSet<Polygon>();
         ret.add(p);
         return ret;
@@ -507,6 +774,19 @@ public class EntityController extends Controller
                 this.diagramController.add(erc);
             }
         }
+
+        // Similar logic for the center handle.
+        boolean wantCenter = wantCenterHandle();
+
+        if (wantCenter == false && this.windowCenterHandle != null) {
+            this.diagramController.remove(this.windowCenterHandle);
+            this.windowCenterHandle = null;
+        }
+
+        if (wantCenter == true && this.windowCenterHandle == null) {
+            this.windowCenterHandle = new WindowCenterController(this.diagramController, this);
+            this.diagramController.add(this.windowCenterHandle);
+        }
     }
 
     /** Return true if this controller should have resize handles right now. */
@@ -527,6 +807,15 @@ public class EntityController extends Controller
         return true;
     }
 
+    /** Return true if this controller should have a window center handle
+      * right now. */
+    private boolean wantCenterHandle()
+    {
+        return
+            this.selState == SelectionState.SS_EXCLUSIVE &&
+            this.entity.shape == EntityShape.ES_WINDOW;
+    }
+
     @Override
     public void selfCheck()
     {
@@ -542,6 +831,14 @@ public class EntityController extends Controller
         }
         else {
             assert(this.resizeHandles == null);
+        }
+
+        if (this.wantCenterHandle()) {
+            assert(this.windowCenterHandle != null);
+            assert(this.diagramController.contains(this.windowCenterHandle));
+        }
+        else {
+            assert(this.windowCenterHandle == null);
         }
     }
 

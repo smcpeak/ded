@@ -1,0 +1,226 @@
+{
+  "drawFileName": true,
+  "entities": [
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 75,
+        "y": 50
+      },
+      "name": "Window caption",
+      "shape": "ES_WINDOW",
+      "shapeFlags": [
+        "SF_HAS_MAXIMIZE",
+        "SF_HAS_MINIMIZE",
+        "SF_HAS_CLOSE",
+        "SF_HAS_WINDOW_OPS"
+      ],
+      "shapeParams": [
+        305,
+        220
+      ],
+      "size": {
+        "h": 445,
+        "w": 610
+      }
+    },
+    {
+      "loc": {
+        "x": 160,
+        "y": 140
+      },
+      "name": "upleft",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 490,
+        "y": 130
+      },
+      "name": "upright",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 490,
+        "y": 375
+      },
+      "name": "downright",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 150,
+        "y": 375
+      },
+      "name": "downleft",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 125,
+        "y": 245
+      },
+      "name": "left",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 325,
+        "y": 110
+      },
+      "name": "up",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 520,
+        "y": 250
+      },
+      "name": "right",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 325,
+        "y": 415
+      },
+      "name": "down",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 665,
+        "y": 70
+      },
+      "shape": "ES_SCROLLBAR",
+      "shapeParams": [
+        5,
+        10
+      ],
+      "size": {
+        "h": 405,
+        "w": 20
+      }
+    },
+    {
+      "loc": {
+        "x": 75,
+        "y": 475
+      },
+      "shape": "ES_SCROLLBAR",
+      "shapeParams": [
+        0,
+        25
+      ],
+      "size": {
+        "h": 20,
+        "w": 590
+      }
+    },
+    {
+      "loc": {
+        "x": 645,
+        "y": 425
+      },
+      "shape": "ES_SCROLLBAR",
+      "shapeParams": [
+        0,
+        25
+      ],
+      "size": {
+        "h": 25,
+        "w": 15
+      }
+    },
+    {
+      "loc": {
+        "x": 610,
+        "y": 450
+      },
+      "shape": "ES_SCROLLBAR",
+      "shapeParams": [
+        0,
+        25
+      ],
+      "size": {
+        "h": 20,
+        "w": 30
+      }
+    },
+    {
+      "loc": {
+        "x": 690,
+        "y": 70
+      },
+      "shape": "ES_SCROLLBAR",
+      "shapeParams": [
+        50,
+        75
+      ],
+      "size": {
+        "h": 405,
+        "w": 20
+      }
+    },
+    {
+      "loc": {
+        "x": 75,
+        "y": 500
+      },
+      "shape": "ES_SCROLLBAR",
+      "shapeParams": [
+        50,
+        75
+      ],
+      "size": {
+        "h": 20,
+        "w": 590
+      }
+    },
+    {
+      "loc": {
+        "x": 115,
+        "y": 320
+      },
+      "name": "A button",
+      "shape": "ES_PUSHBUTTON",
+      "size": {
+        "h": 30,
+        "w": 75
+      }
+    }
+  ],
+  "inheritances": [],
+  "relations": [],
+  "type": "Diagram Editor Diagram",
+  "version": 10,
+  "windowSize": {
+    "h": 548,
+    "w": 792
+  }
+}

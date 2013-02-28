@@ -16,7 +16,9 @@ import java.awt.font.LineMetrics;
 
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
@@ -186,6 +188,16 @@ public class SwingUtil {
 
         // Show it.
         JOptionPane.showMessageDialog(parent, scrollPane, title, JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /** Assign names to the implicit panes of a JFrame so that when
+      * the component hierarchy is printed, they are intelligible. */
+    public static void assignJFrameImplicitPaneNames(JFrame frame)
+    {
+        JRootPane root = frame.getRootPane();
+        root.setName("root");
+        root.getLayeredPane().setName("layeredPane");
+        root.getGlassPane().setName("glassPane");
     }
 }
 

@@ -4,6 +4,7 @@
 package ded;
 
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,7 +30,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
+import util.awt.AWTUtil;
+import util.awt.ResourceImageCache;
 import util.swing.MenuAction;
+import util.swing.SwingUtil;
 import ded.model.Diagram;
 import ded.ui.DiagramController;
 
@@ -49,6 +53,9 @@ public class Ded extends JFrame implements WindowListener {
     /** The font I want to use in the diagram area. */
     public Font diagramFont;
 
+    /** Image cache. */
+    public ResourceImageCache resourceImageCache = new ResourceImageCache();
+
     /** The main diagram editor pane. */
     private DiagramController diagramController;
 
@@ -59,6 +66,8 @@ public class Ded extends JFrame implements WindowListener {
     public Ded()
     {
         super(windowTitle);
+
+        SwingUtil.assignJFrameImplicitPaneNames(this);
 
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         this.addWindowListener(this);
@@ -145,6 +154,7 @@ public class Ded extends JFrame implements WindowListener {
         }
 
         this.diagramController = new DiagramController(this);
+        this.diagramController.setName("diagramController");
         this.diagramController.setOpaque(true);
         this.setContentPane(this.diagramController);
 
@@ -155,6 +165,7 @@ public class Ded extends JFrame implements WindowListener {
     private void buildMenuBar()
     {
         JMenuBar menuBar = new JMenuBar();
+        menuBar.setName("menuBar");
         menuBar.add(buildFileMenu());
         menuBar.add(buildEditMenu());
         menuBar.add(buildModeMenu());
@@ -167,6 +178,7 @@ public class Ded extends JFrame implements WindowListener {
     private JMenu buildFileMenu()
     {
         JMenu m = new JMenu("File");
+        m.setName("file");
         m.setMnemonic(KeyEvent.VK_F);
 
         m.add(new MenuAction("New diagram", KeyEvent.VK_N) {
@@ -208,6 +220,7 @@ public class Ded extends JFrame implements WindowListener {
     private JMenu buildEditMenu()
     {
         JMenu m = new JMenu("Edit");
+        m.setName("edit");
         m.setMnemonic(KeyEvent.VK_E);
 
         m.add(new MenuAction("Edit selected ...", KeyEvent.VK_ENTER, KeyEvent.VK_ENTER, 0) {
@@ -235,6 +248,7 @@ public class Ded extends JFrame implements WindowListener {
     private JMenu buildModeMenu()
     {
         JMenu m = new JMenu("Mode");
+        m.setName("mode");
         m.setMnemonic(KeyEvent.VK_M);
 
         m.add(new MenuAction("Select (normal)", KeyEvent.VK_S, KeyEvent.VK_S, 0) {
@@ -268,6 +282,7 @@ public class Ded extends JFrame implements WindowListener {
     private JMenu buildDiagramMenu()
     {
         JMenu m = new JMenu("Diagram");
+        m.setName("diagram");
         m.setMnemonic(KeyEvent.VK_D);
 
         this.drawFileNameCheckbox =
@@ -307,6 +322,7 @@ public class Ded extends JFrame implements WindowListener {
     private JMenu buildHelpMenu()
     {
         JMenu m = new JMenu("Help");
+        m.setName("help");
         m.setMnemonic(KeyEvent.VK_H);
 
         // I would like the 'H' key displayed as an accelerator here,
@@ -379,7 +395,7 @@ public class Ded extends JFrame implements WindowListener {
         JOptionPane.showMessageDialog(
             this,
             "Diagram Editor (DED)\n"+
-                "Copyright (c) 2012 Scott McPeak\n"+
+                "Copyright (c) 2012-2013 Scott McPeak\n"+
                 "Program version: "+version+"\n"+
                 "Maximum file version: "+Diagram.currentFileVersion+"\n"+
                 "This software is made available under the terms of the BSD license:\n"+
@@ -401,7 +417,9 @@ public class Ded extends JFrame implements WindowListener {
         //
         // If/when I add support for editing multiple documents in
         // one process, I'll have to make the logic here smarter.
-        System.exit(0);
+        //
+        // This causes Abbot to stack overflow...
+        //System.exit(0);
     }
 
     /** Close the window; but prompt if dirty. */
@@ -431,6 +449,51 @@ public class Ded extends JFrame implements WindowListener {
     @Override public void windowDeiconified(WindowEvent e) {}
     @Override public void windowActivated(WindowEvent e) {}
     @Override public void windowDeactivated(WindowEvent e) {}
+
+    /** Check that the current diagram is equivalent to the diagram
+      * in the named file.  This is meant to be called from Abbot for
+      * UI testing.  If the diagrams do not match, throws. */
+    public static void checkDiagram(String correctFname)
+        throws Exception
+    {
+        // Search for a Ded window.  (I cannot figure out how to pass
+        // a reference to a Component from Abbot, even though it seems
+        // to have that capability.)
+        Frame[] frames = Frame.getFrames();
+        for (Frame f : frames) {
+            if (f instanceof Ded) {
+                Ded ded = (Ded)f;
+                ded.innerCheckDiagram(correctFname);
+                return;
+            }
+        }
+
+        throw new RuntimeException("could not find Ded window");
+    }
+
+    /** Non-static helper for 'checkDiagram'. */
+    private void innerCheckDiagram(String correctFname)
+        throws Exception
+    {
+        // First, load the "correct" diagram.
+        Diagram correctDiagram = Diagram.readFromFile(correctFname);
+
+        // Check that it equals() the one we're editing.
+        if (!correctDiagram.equals(this.diagramController.diagram)) {
+            throw new RuntimeException(
+                "current and correct diagrams are not equals()");
+        }
+
+        // Paranoia about equals() being incomplete: serialize both to
+        // the current JSON format ('correctFname' might be an older
+        // version) and compare that.
+        String correctJSON = correctDiagram.toString();
+        String currentJSON = this.diagramController.diagram.toString();
+        if (!correctJSON.equals(currentJSON)) {
+            throw new RuntimeException(
+                "equals() was true but JSON strings are not equal!");
+        }
+    }
 
     public static void main(final String[] args)
     {
@@ -479,6 +542,7 @@ public class Ded extends JFrame implements WindowListener {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 Ded ded = new Ded();
+                ded.setName("ded");
 
                 // Open specified file if any.
                 if (args.length >= 1) {
@@ -486,6 +550,10 @@ public class Ded extends JFrame implements WindowListener {
                 }
 
                 ded.setVisible(true);
+
+                if (false) {
+                    AWTUtil.dumpFrameTrees();
+                }
             }
         });
     }

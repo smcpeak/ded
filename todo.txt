@@ -10,6 +10,7 @@ Small:
 - dashed lines for relations
 - specify initial size (etc.?) for new relations
 - option to automatically expand entities to contain their title and attributes
+- Tab key should cycle among all entities
 
 Medium:
 - entities with hyperlinks, export HTML link map

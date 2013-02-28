@@ -6,11 +6,16 @@ package ded.ui;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.util.EnumSet;
 import java.util.Vector;
 
 import javax.swing.Box;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -24,6 +29,7 @@ import ded.model.Diagram;
 import ded.model.Entity;
 import ded.model.EntityShape;
 import ded.model.ImageFillStyle;
+import ded.model.ShapeFlag;
 
 /** Dialog box to edit an Entity. */
 public class EntityDialog extends ModalDialog
@@ -35,10 +41,21 @@ public class EntityDialog extends ModalDialog
     /** Entity being edited. */
     private Entity entity;
 
+    /** Working copy of the shape flags.  This is what the shape flags
+      * dialog edits.  We only copy it back into 'entity' if OK is
+      * chosen on the outer entity dialog. */
+    private EnumSet<ShapeFlag> shapeFlagsWorkingCopy;
+
+    /** The shape that the working flags is based on.  At certain points,
+      * we need to add default flags, and if the shape has changed, we
+      * need to know what it changed from. */
+    private EntityShape workingFlagsBaseShape;
+
     // Controls.
     private JTextField nameText;
     private JTextArea attributeText;
     private JComboBox shapeChooser;
+    private JButton shapeFlagsButton;
     private JComboBox fillColorChooser;
     private JTextField xText, yText, wText, hText;
     private JLabel paramsLabel;
@@ -52,6 +69,8 @@ public class EntityDialog extends ModalDialog
         super(documentParent, "Edit Entity");
 
         this.entity = entity;
+        this.shapeFlagsWorkingCopy = this.entity.shapeFlags.clone();
+        this.workingFlagsBaseShape = this.entity.shape;
 
         // NOTE: This dialog is not laid out well.  I have not yet figured out
         // a good way to do dialog layout well with Swing (whereas it is easy
@@ -92,13 +111,27 @@ public class EntityDialog extends ModalDialog
 
         // shape
         {
+            Box shapeBox = ModalDialog.makeHBox(vb);
+
             this.shapeChooser = ModalDialog.makeEnumChooser(
-                vb,
+                shapeBox,
                 "Shape:",
                 's',
                 EntityShape.class,
                 this.entity.shape);
             this.shapeChooser.addItemListener(this);
+
+            shapeBox.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
+
+            this.shapeFlagsButton = new JButton("Flags");
+            this.shapeFlagsButton.setMnemonic(KeyEvent.VK_G);
+            this.shapeFlagsButton.addActionListener(new ActionListener() {
+                @Override public void actionPerformed(ActionEvent e) {
+                    EntityDialog.this.openShapeFlagsDialog();
+                }
+            });
+            shapeBox.add(this.shapeFlagsButton);
+
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
         }
 
@@ -157,22 +190,21 @@ public class EntityDialog extends ModalDialog
 
         // shapeParams
         {
-
-            int p=5, q=10;
+            String p="", q="";
             int[] params = this.entity.shapeParams;
             if (params != null) {
                 if (params.length >= 1) {
-                    p = params[0];
+                    p = String.valueOf(params[0]);
                 }
                 if (params.length >= 2) {
-                    q = params[1];
+                    q = String.valueOf(params[1]);
                 }
             }
 
             Box hb = ModalDialog.makeHBox(vb);
-            this.pText = ModalDialog.makeLineEdit(hb, "P:", 'p', String.valueOf(p));
+            this.pText = ModalDialog.makeLineEdit(hb, "P:", 'p', p);
             hb.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
-            this.qText = ModalDialog.makeLineEdit(hb, "Q:", 'q', String.valueOf(q));
+            this.qText = ModalDialog.makeLineEdit(hb, "Q:", 'q', q);
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
             ModalDialog.disallowVertStretch(hb);
         }
@@ -197,6 +229,39 @@ public class EntityDialog extends ModalDialog
         this.finishBuildingDialog(vb);
     }
 
+    /** Open the dialog for choosing the shape flags. */
+    private void openShapeFlagsDialog()
+    {
+        EntityShape shape = (EntityShape)this.shapeChooser.getSelectedItem();
+        this.updateWorkingFlagsBaseShape(shape);
+        ShapeFlagsDialog.exec(this, this.shapeFlagsWorkingCopy, shape);
+    }
+
+    /** Restrict the working flags to those appropriate for 'newShape', and
+      * add any default flags that are applicable to 'newShape' but not to
+      * 'workingFlagsBaseShape'.  Then update the latter to be 'newShape'. */
+    private void updateWorkingFlagsBaseShape(EntityShape newShape)
+    {
+        // Flags for old shape.
+        EnumSet<ShapeFlag> allOldFlags = ShapeFlag.allFlagsForShape(this.workingFlagsBaseShape);
+
+        // Flags for new shape.
+        EnumSet<ShapeFlag> allNewFlags = ShapeFlag.allFlagsForShape(newShape);
+
+        // Restrict flags to new.
+        this.shapeFlagsWorkingCopy.retainAll(allNewFlags);
+
+        // Add any default flag in 'allNewFlags - allOldFlags'.
+        for (ShapeFlag flag : allNewFlags) {
+            if (flag.isDefault && !allOldFlags.contains(flag)) {
+                this.shapeFlagsWorkingCopy.add(flag);
+            }
+        }
+
+        // Remember the new base shape.
+        this.workingFlagsBaseShape = newShape;
+    }
+
     /** React to the OK button being pressed. */
     @Override
     public void okPressed()
@@ -206,14 +271,20 @@ public class EntityDialog extends ModalDialog
         // if there is a problem, we will bail before actually
         // modifying this.entity;
 
-        int x, y, w, h, p, q;
+        EntityShape shape = (EntityShape)this.shapeChooser.getSelectedItem();
+
+        int x, y, w, h, p=0, q=0;
         try {
             x = Integer.valueOf(this.xText.getText());
             y = Integer.valueOf(this.yText.getText());
             w = Integer.valueOf(this.wText.getText());
             h = Integer.valueOf(this.hText.getText());
-            p = Integer.valueOf(this.pText.getText());
-            q = Integer.valueOf(this.qText.getText());
+            if (shape.numParams >= 1) {
+                p = Integer.valueOf(this.pText.getText());
+            }
+            if (shape.numParams >= 2) {
+                q = Integer.valueOf(this.qText.getText());
+            }
         }
         catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this,
@@ -223,7 +294,6 @@ public class EntityDialog extends ModalDialog
             return;
         }
 
-        EntityShape shape = (EntityShape)this.shapeChooser.getSelectedItem();
         if (shape.numParams > 0 && (p < 0 || q < 0)) {
             JOptionPane.showMessageDialog(this,
                 "P and Q must be non-negative.",
@@ -236,10 +306,14 @@ public class EntityDialog extends ModalDialog
 
         ImageFillStyle imageFillStyle = (ImageFillStyle)this.imageFillStyleChooser.getSelectedItem();
 
+        // Make sure the shape flags are appropriate for the chosen shape.
+        this.updateWorkingFlagsBaseShape(shape);
+
         // Update the entity.
         this.entity.name = this.nameText.getText();
         this.entity.attributes = this.attributeText.getText();
         this.entity.setShape(shape);      // Sets 'shapeParams' too.
+        this.entity.shapeFlags = this.shapeFlagsWorkingCopy.clone();
         this.entity.setFillColor(fillColor);
         this.entity.loc.x = x;
         this.entity.loc.y = y;
@@ -279,12 +353,34 @@ public class EntityDialog extends ModalDialog
         this.qText.setEnabled(en);
 
         // Set the params caption.
-        if (en) {
+        if (shape == EntityShape.ES_CUBOID) {
             this.paramsLabel.setText("Cuboid extends left by P, up by Q pixels:");
+            if (this.pText.getText().isEmpty()) {
+                // Set a reasonable default.
+                this.pText.setText("5");
+                this.qText.setText("10");
+            }
+        }
+        else if (shape == EntityShape.ES_WINDOW) {
+            this.paramsLabel.setText("Window auto-resize center at (P,Q):");
+            if (this.pText.getText().isEmpty()) {
+                this.pText.setText(String.valueOf(this.entity.size.width/2));
+                this.qText.setText(String.valueOf(this.entity.size.height/2));
+            }
+        }
+        else if (shape == EntityShape.ES_SCROLLBAR) {
+            this.paramsLabel.setText("Thumb drawn from P% to Q%:");
+            if (this.pText.getText().isEmpty()) {
+                this.pText.setText("0");
+                this.qText.setText("25");
+            }
         }
         else {
             this.paramsLabel.setText("Shape params (none for this shape):");
         }
+
+        // Enable or disable shape flags button.
+        this.shapeFlagsButton.setEnabled(!ShapeFlag.allFlagsForShape(shape).isEmpty());
     }
 
     /** Show the edit dialog for Entity, waiting until the user closes the dialog
