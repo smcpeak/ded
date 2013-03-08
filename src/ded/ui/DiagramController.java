@@ -695,8 +695,14 @@ public class DiagramController extends JPanel
                         "C++ ERED implementation.  If you save the file, it "+
                         "will be overwritten with the new JSON-based format "+
                         "used by the Java-based Diagram Editor, which the "+
-                        "C++ ERED cannot read.  Overwrite with the new "+
-                        "format?",
+                        "C++ ERED cannot read.\n"+
+                        "\n"+
+                        "In order to avoid confusion, it is probably best to "+
+                        "save the new file with the \".ded\" extension rather "+
+                        "than the traditional \".er\" extension so that others "+
+                        "will know to use Ded to read it.\n"+
+                        "\n"+
+                        "Overwrite with the new format anyway?",
                     "Confirm Overwrite of Imported File",
                     JOptionPane.YES_NO_OPTION);
                 if (res != JOptionPane.YES_OPTION) {
