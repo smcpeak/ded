@@ -13,6 +13,11 @@ import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
@@ -31,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
@@ -39,6 +45,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.json.JSONException;
 
 import util.Util;
 import util.awt.GeomUtil;
@@ -73,6 +81,7 @@ public class DiagramController extends JPanel
         "Enter or Double click - Edit selected thing\n"+
         "Insert - Insert relation control point\n"+
         "Delete - Delete selected thing\n"+
+        "Ctrl+C, Ctrl-V - Copy/paste, including across windows\n"+
         "Ctrl+S - Save to file and export to PNG (fname+\".png\")\n"+
         "Ctrl+O - Load from file (can import ER files)\n"+
         "Left click - select\n"+
@@ -630,15 +639,15 @@ public class DiagramController extends JPanel
         this.controllers.clear();
 
         for (Entity e : this.diagram.entities) {
-            this.add(new EntityController(this, e));
+            this.buildEntityController(e);
         }
 
         for (Relation r : this.diagram.relations) {
-            buildRelationController(r);
+            this.buildRelationController(r);
         }
 
         for (Inheritance inh : this.diagram.inheritances) {
-            buildInheritanceController(inh);
+            this.buildInheritanceController(inh);
         }
 
         this.setMode(Mode.DCM_SELECT);
@@ -902,6 +911,14 @@ public class DiagramController extends JPanel
         this.repaint();
     }
 
+    /** Construct a controller for 'e' and add it to 'this'. */
+    private EntityController buildEntityController(Entity e)
+    {
+        EntityController ec = new EntityController(this, e);
+        this.add(ec);
+        return ec;
+    }
+
     /** Construct a controller for 'r' and add it to 'this'. */
     private RelationController buildRelationController(Relation r)
     {
@@ -959,6 +976,271 @@ public class DiagramController extends JPanel
                     "There must be exactly one thing selected to edit it.");
             }
         }
+    }
+
+    /** Copy the selected entities to the (application) clipboard. */
+    public void copySelected()
+    {
+        Set<Controller> selControllers = this.getAllSelected();
+        if (selControllers.isEmpty()) {
+            this.errorMessageBox("Nothing is selected to copy.");
+            return;
+        }
+
+        // Collect all the selected elements.  (Since the set is based
+        // on structural identity, if there are two identical elements
+        // selected, we will only pick up one of them.  That's not
+        // exactly ideal, but not a big problem either.)
+        Set<Entity> selEntities = new HashSet<Entity>();
+        Set<Inheritance> selInheritances = new HashSet<Inheritance>();
+        Set<Relation> selRelations = new HashSet<Relation>();
+        for (Controller c : selControllers) {
+            if (c instanceof EntityController) {
+                selEntities.add(((EntityController)c).entity);
+            }
+            if (c instanceof InheritanceController) {
+                selInheritances.add(((InheritanceController)c).inheritance);
+            }
+            if (c instanceof RelationController) {
+                selRelations.add(((RelationController)c).relation);
+            }
+        }
+
+        // Map from elements in the original to their counterpart in the copy.
+        Map<Entity,Entity> entityToCopy = new HashMap<Entity,Entity>();
+        Map<Inheritance,Inheritance> inheritanceToCopy = new HashMap<Inheritance,Inheritance>();
+
+        // Construct a new Diagram with just the selected elements.
+        Diagram copy = new Diagram();
+        for (Entity e : selEntities) {
+            Entity eCopy = new Entity(e);
+            entityToCopy.put(e, eCopy);
+            copy.entities.add(eCopy);
+        }
+        for (Inheritance i : selInheritances) {
+            // See if the parent entity is among those we are copying.
+            Entity parentCopy = entityToCopy.get(i.parent);
+            if (parentCopy == null) {
+                // No, so we'll skip the inheritance too.
+            }
+            else {
+                Inheritance iCopy = new Inheritance(i, parentCopy);
+                inheritanceToCopy.put(i, iCopy);
+                copy.inheritances.add(iCopy);
+            }
+        }
+        for (Relation r : selRelations) {
+            RelationEndpoint startCopy =
+                copyRelationEndpoint(r.start, entityToCopy, inheritanceToCopy);
+            RelationEndpoint endCopy =
+                copyRelationEndpoint(r.end, entityToCopy, inheritanceToCopy);
+            if (startCopy == null || endCopy == null) {
+                // Skip the relation.
+            }
+            else {
+                copy.relations.add(new Relation(r, startCopy, endCopy));
+            }
+        }
+
+        // Make sure the Diagram is well-formed.
+        try {
+            // This is quadratic...
+            copy.selfCheck();
+        }
+        catch (Throwable t) {
+            this.errorMessageBox("Internal error: failed to create a well-formed copy: "+t);
+            return;
+        }
+
+        // Copy it as a string to the system clipboard.
+        StringSelection data = new StringSelection(copy.toJSONString());
+        Clipboard clipboard =
+            Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(data, data);
+        clipboard =
+            Toolkit.getDefaultToolkit().getSystemSelection();
+        if (clipboard != null) {
+            clipboard.setContents(data, data);
+        }
+    }
+
+    /** Make a copy of 'src', taking advantage of the maps to corresponding
+      * entities and inheritances already copied. */
+    private static RelationEndpoint copyRelationEndpoint(
+        RelationEndpoint src,
+        Map<Entity,Entity> entityToCopy,
+        Map<Inheritance,Inheritance> inheritanceToCopy)
+    {
+        RelationEndpoint ret;
+
+        if (src.entity != null) {
+            Entity eCopy = entityToCopy.get(src.entity);
+            if (eCopy == null) {
+                // Counterpart is not copied, so we will bail on the
+                // endpoint, and hence the relation too.
+                return null;
+            }
+            ret = new RelationEndpoint(eCopy);
+        }
+
+        else if (src.inheritance != null) {
+            Inheritance iCopy = inheritanceToCopy.get(src.inheritance);
+            if (iCopy == null) {
+                return null;
+            }
+            ret = new RelationEndpoint(iCopy);
+        }
+
+        else {
+            ret = new RelationEndpoint(new Point(src.pt));
+        }
+
+        ret.arrowStyle = src.arrowStyle;
+        return ret;
+    }
+
+    /** Try to read the clipboard contents as a Diagram.  Return null and
+      * display an error if we cannot. */
+    private Diagram getClipboardAsDiagram()
+    {
+        // Let's start with the "selection" because if it is valid JSON
+        // then it's probably what we want.
+        String selErrorMessage = null;
+        String selContents = null;
+        Clipboard clipboard =
+            Toolkit.getDefaultToolkit().getSystemSelection();
+        if (clipboard == null) {
+            // Probably we're running on something other than X Windows,
+            // so we thankfully don't have to deal with the screwy
+            // "selection" concept.
+        }
+        else {
+            Transferable clipData = clipboard.getContents(clipboard);
+            if (clipData == null) {
+                selErrorMessage = "Nothing is in the \"selection\".";
+            }
+            else {
+                try {
+                    if (clipData.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                        selContents = (String)(clipData.getTransferData(
+                            DataFlavor.stringFlavor));
+
+                        // Try to parse it.
+                        try {
+                            return Diagram.parseJSONString(selContents);
+                        }
+                        catch (JSONException e) {
+                            selErrorMessage = "Could not parse selection data as Diagram JSON: "+e;
+                        }
+                    }
+                    else {
+                        selErrorMessage = "The data in the selection is not a string.";
+                    }
+                }
+                catch (Exception e) {
+                    selErrorMessage = "Error while retrieving selection data: "+e;
+                }
+            }
+        }
+
+        // Now try again with the clipboard.
+        String clipErrorMessage = null;
+        String clipContents = null;
+        clipboard =
+            Toolkit.getDefaultToolkit().getSystemClipboard();
+        if (clipboard == null) {
+            clipErrorMessage = "getSystemClipboard returned null?!";
+        }
+        else {
+            Transferable clipData = clipboard.getContents(clipboard);
+            if (clipData == null) {
+                clipErrorMessage = "Nothing is in the clipboard.";
+            }
+            else {
+                try {
+                    if (clipData.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                        clipContents = (String)(clipData.getTransferData(
+                            DataFlavor.stringFlavor));
+
+                        try {
+                            return Diagram.parseJSONString(clipContents);
+                        }
+                        catch (JSONException e) {
+                            clipErrorMessage = "Could not parse clipboard data as Diagram JSON: "+e;
+                        }
+                    }
+                    else {
+                        clipErrorMessage = "The data in the clipboard is not a string.";
+                    }
+                }
+                catch (Exception e) {
+                    clipErrorMessage = "Error while retrieving clipboard data: "+e;
+                }
+            }
+        }
+
+        // Both methods failed, and we have one or two error messages.
+        // Decide what to show.
+        if (selErrorMessage == null) {
+            this.errorMessageBox(clipErrorMessage);
+        }
+        else if (selContents == null && clipContents != null) {
+            this.errorMessageBox(clipErrorMessage);
+        }
+        else if (selContents != null && clipContents == null) {
+            this.errorMessageBox(selErrorMessage);
+        }
+        else if (selContents.equals(clipContents)) {
+            this.errorMessageBox(
+                clipErrorMessage+
+                "  (The selection and clipboard contents are the same.)");
+        }
+        else {
+            this.errorMessageBox(
+                "Failed to read either the selection or the clipboard.  "+
+                 selErrorMessage+"  "+clipErrorMessage);
+        }
+
+        return null;
+    }
+
+    /** Insert the clipboard contents into the diagram. */
+    public void pasteClipboard()
+    {
+        // Try to parse what is in the clipboard as Diagram JSON.
+        Diagram copy = this.getClipboardAsDiagram();
+        if (copy == null) {
+            // Already showed the error dialog.
+            return;
+        }
+
+        // Prepare to select only the new controllers.
+        this.deselectAll();
+
+        // Insert the new entities, making controllers for them.
+        final Set<Controller> newControllers = new HashSet<Controller>();
+        for (Entity e : copy.entities) {
+            this.diagram.entities.add(e);
+            newControllers.add(this.buildEntityController(e));
+        }
+        for (Inheritance i : copy.inheritances) {
+            this.diagram.inheritances.add(i);
+            newControllers.add(this.buildInheritanceController(i));
+        }
+        for (Relation r : copy.relations) {
+            this.diagram.relations.add(r);
+            newControllers.add(this.buildRelationController(r));
+        }
+
+        // Make exactly the new controllers selected.
+        this.selectAccordingToFilter(new ControllerFilter() {
+            public boolean satisfies(Controller c)
+            {
+                return newControllers.contains(c);
+            }
+        });
+
+        this.diagramChanged();
     }
 
     /** Delete the selected controllers and associated entities, if any. */

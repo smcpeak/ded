@@ -39,6 +39,14 @@ public class Inheritance {
         this.pt = pt;
     }
 
+    /** Deep copy constructor, except for parent entity. */
+    public Inheritance(Inheritance obj, Entity parent)
+    {
+        this.parent = parent;
+        this.open = obj.open;
+        this.pt = new Point(obj.pt);
+    }
+
     public void globalSelfCheck(Diagram d)
     {
         assert(d.entities.contains(this.parent));
