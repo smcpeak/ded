@@ -439,18 +439,6 @@
         "h": 50,
         "w": 50
       }
-    },
-    {
-      "imageFileName": "smiley.png",
-      "imageFillStyle": "IFS_CENTER",
-      "loc": {
-        "x": 325,
-        "y": 410
-      },
-      "size": {
-        "h": 65,
-        "w": 65
-      }
     }
   ],
   "inheritances": [{
@@ -863,7 +851,7 @@
     }
   ],
   "type": "Diagram Editor Diagram",
-  "version": 11,
+  "version": 10,
   "windowSize": {
     "h": 505,
     "w": 725

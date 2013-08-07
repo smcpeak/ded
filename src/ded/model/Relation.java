@@ -44,6 +44,20 @@ public class Relation {
         this.end = end;
     }
 
+    /** Deep copy constructor, except for supplied endpoints. */
+    public Relation(Relation obj, RelationEndpoint start, RelationEndpoint end)
+    {
+        this.start = start;
+        this.end = end;
+
+        for (Point pt : obj.controlPts) {
+            this.controlPts.add(new Point(pt));
+        }
+
+        this.routingAlg = obj.routingAlg;
+        this.label = obj.label;
+    }
+
     /** True if either endpoint is referentially equal to 'e'. */
     public boolean involvesEntity(Entity e)
     {

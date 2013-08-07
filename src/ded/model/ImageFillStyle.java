@@ -12,7 +12,9 @@ public enum ImageFillStyle {
     IFS_TILE
       ("Tile image to fill space"),
     IFS_LOCK_SIZE
-      ("Lock entity size to match image");
+      ("Lock entity size to match image"),
+    IFS_CENTER
+      ("One copy centered horiz and vert");
 
     /** How to describe this style in the UI. */
     public final String description;
