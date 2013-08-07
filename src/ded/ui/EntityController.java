@@ -451,6 +451,14 @@ public class EntityController extends Controller
                 break;
             }
 
+            case IFS_CENTER:
+                g.drawImage(image, r.x + r.width/2 - imageWidth/2,
+                                   r.y + r.height/2 - imageHeight/2,
+                                   r.x + r.width/2 + imageWidth/2,
+                                   r.y + r.height/2 + imageHeight/2,
+                                   0,0, imageWidth, imageHeight, null);
+                break;
+
             case IFS_STRETCH:
                 g.drawImage(image, r.x, r.y, r.x+r.width, r.y+r.height,
                                    0,0, imageWidth, imageHeight, null);
