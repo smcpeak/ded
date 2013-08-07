@@ -427,7 +427,18 @@ public class EntityController extends Controller
 
         switch (ifs) {
             case IFS_UPPER_LEFT:
-            case IFS_LOCK_SIZE:
+            case IFS_LOCK_SIZE: {
+                // Bugfix: Make sure not to ask to draw more of the image
+                // than exists.  If I do, weird things happen!
+                int w = imageWidth;
+                if (w < 0 || w > r.width) {
+                    w = r.width;
+                }
+                int h = imageHeight;
+                if (h < 0 || h > r.height) {
+                    h = r.height;
+                }
+
                 // I first tried the simplest drawImage call, but it is
                 // significantly slower than specifying all of the
                 // coordinates, even when the image is not clipped (?).
@@ -435,9 +446,10 @@ public class EntityController extends Controller
                 // The API docs do not say that it is ok to pass null
                 // as the observer, but I saw code that did it online,
                 // and so far it seems to work.
-                g.drawImage(image, r.x, r.y, r.x+r.width, r.y+r.height,
-                                   0,0, r.width, r.height, null);
+                g.drawImage(image, r.x, r.y, r.x + w, r.y + h,
+                                   0,0, w, h, null);
                 break;
+            }
 
             case IFS_STRETCH:
                 g.drawImage(image, r.x, r.y, r.x+r.width, r.y+r.height,
