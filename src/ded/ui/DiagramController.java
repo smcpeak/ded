@@ -36,8 +36,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.IdentityHashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
@@ -48,6 +47,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.json.JSONException;
 
+import util.IdentityHashSet;
 import util.Util;
 import util.awt.GeomUtil;
 import util.swing.SwingUtil;
@@ -158,6 +158,11 @@ public class DiagramController extends JPanel
 
     /** If DCM_RECT_LASSO, the current mouse position. */
     private Point lassoEnd;
+
+    /** If DCM_RECT_LASSO, the set of originally-selected controllers,
+      * which is to be included in whatever is contained by the lasso. */
+    private IdentityHashSet<Controller> lassoOriginalSelected =
+        new IdentityHashSet<Controller>();
 
     /** If CFM_DRAGGING, this is the controller being moved. */
     private Controller dragging;
@@ -348,19 +353,23 @@ public class DiagramController extends JPanel
                 // Clicked a controller?
                 Controller c = this.hitTest(e.getPoint(), null);
                 if (c == null) {
-                    if (SwingUtil.controlPressed(e)) {
-                        // Control is pressed.  We missed all controls, so ignore.
-                    }
-                    else {
-                        if (this.deselectAll() > 0) {
-                            this.repaint();
+                    // Missed controls, start a lasso selection
+                    // if left button.
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        this.lassoOriginalSelected.clear();
+                        if (SwingUtil.controlPressed(e)) {
+                            // Control is pressed.  Keep current selections.
+                            this.lassoOriginalSelected.addAll(this.getAllSelected());
+                        }
+                        else {
+                            if (this.deselectAll() > 0) {
+                                this.repaint();
+                            }
                         }
 
-                        if (SwingUtilities.isLeftMouseButton(e)) {
-                            // Enter lasso mode.
-                            setMode(Mode.DCM_RECT_LASSO);
-                            this.lassoStart = this.lassoEnd = e.getPoint();
-                        }
+                        // Enter lasso mode.
+                        setMode(Mode.DCM_RECT_LASSO);
+                        this.lassoStart = this.lassoEnd = e.getPoint();
                     }
                 }
                 else {
@@ -884,6 +893,7 @@ public class DiagramController extends JPanel
 
         if (m != Mode.DCM_RECT_LASSO) {
             this.lassoStart = this.lassoEnd = new Point(0,0);
+            this.lassoOriginalSelected.clear();
         }
 
         switch (m) {
@@ -960,7 +970,7 @@ public class DiagramController extends JPanel
     }
 
     /** Get all selected controllers. */
-    public Set<Controller> getAllSelected()
+    public IdentityHashSet<Controller> getAllSelected()
     {
         return this.findControllers(new ControllerFilter() {
             public boolean satisfies(Controller c) {
@@ -987,19 +997,16 @@ public class DiagramController extends JPanel
     /** Copy the selected entities to the (application) clipboard. */
     public void copySelected()
     {
-        Set<Controller> selControllers = this.getAllSelected();
+        IdentityHashSet<Controller> selControllers = this.getAllSelected();
         if (selControllers.isEmpty()) {
             this.errorMessageBox("Nothing is selected to copy.");
             return;
         }
 
-        // Collect all the selected elements.  (Since the set is based
-        // on structural identity, if there are two identical elements
-        // selected, we will only pick up one of them.  That's not
-        // exactly ideal, but not a big problem either.)
-        Set<Entity> selEntities = new HashSet<Entity>();
-        Set<Inheritance> selInheritances = new HashSet<Inheritance>();
-        Set<Relation> selRelations = new HashSet<Relation>();
+        // Collect all the selected elements.
+        IdentityHashSet<Entity> selEntities = new IdentityHashSet<Entity>();
+        IdentityHashSet<Inheritance> selInheritances = new IdentityHashSet<Inheritance>();
+        IdentityHashSet<Relation> selRelations = new IdentityHashSet<Relation>();
         for (Controller c : selControllers) {
             if (c instanceof EntityController) {
                 selEntities.add(((EntityController)c).entity);
@@ -1013,8 +1020,10 @@ public class DiagramController extends JPanel
         }
 
         // Map from elements in the original to their counterpart in the copy.
-        Map<Entity,Entity> entityToCopy = new HashMap<Entity,Entity>();
-        Map<Inheritance,Inheritance> inheritanceToCopy = new HashMap<Inheritance,Inheritance>();
+        IdentityHashMap<Entity,Entity> entityToCopy =
+            new IdentityHashMap<Entity,Entity>();
+        IdentityHashMap<Inheritance,Inheritance> inheritanceToCopy =
+            new IdentityHashMap<Inheritance,Inheritance>();
 
         // Construct a new Diagram with just the selected elements.
         Diagram copy = new Diagram();
@@ -1074,8 +1083,8 @@ public class DiagramController extends JPanel
       * entities and inheritances already copied. */
     private static RelationEndpoint copyRelationEndpoint(
         RelationEndpoint src,
-        Map<Entity,Entity> entityToCopy,
-        Map<Inheritance,Inheritance> inheritanceToCopy)
+        IdentityHashMap<Entity,Entity> entityToCopy,
+        IdentityHashMap<Inheritance,Inheritance> inheritanceToCopy)
     {
         RelationEndpoint ret;
 
@@ -1224,7 +1233,8 @@ public class DiagramController extends JPanel
         this.deselectAll();
 
         // Insert the new entities, making controllers for them.
-        final Set<Controller> newControllers = new HashSet<Controller>();
+        final IdentityHashSet<Controller> newControllers =
+            new IdentityHashSet<Controller>();
         for (Entity e : copy.entities) {
             this.diagram.entities.add(e);
             newControllers.add(this.buildEntityController(e));
@@ -1253,7 +1263,7 @@ public class DiagramController extends JPanel
     public void deleteSelected()
     {
         if (this.mode == Mode.DCM_SELECT) {
-            Set<Controller> sel = this.getAllSelected();
+            IdentityHashSet<Controller> sel = this.getAllSelected();
             int n = sel.size();
             if (n > 1) {
                 int choice = JOptionPane.showConfirmDialog(this,
@@ -1417,6 +1427,11 @@ public class DiagramController extends JPanel
                     return false;
                 }
 
+                // Keep the original set, if any.
+                if (DiagramController.this.lassoOriginalSelected.contains(c)) {
+                    return true;
+                }
+
                 return c.boundsIntersects(lasso);
             }
         });
@@ -1443,9 +1458,9 @@ public class DiagramController extends JPanel
     }
 
     /** Return set of matching controllers. */
-    private Set<Controller> findControllers(ControllerFilter filter)
+    private IdentityHashSet<Controller> findControllers(ControllerFilter filter)
     {
-        HashSet<Controller> ret = new HashSet<Controller>();
+        IdentityHashSet<Controller> ret = new IdentityHashSet<Controller>();
         for (Controller c : this.controllers) {
             if (filter.satisfies(c)) {
                 ret.add(c);
@@ -1459,13 +1474,13 @@ public class DiagramController extends JPanel
     {
         // Get the set of matching controllers first; we cannot remove
         // them while searching due to iterator invalidation issues.
-        Set<Controller> ctls = this.findControllers(filter);
+        IdentityHashSet<Controller> ctls = this.findControllers(filter);
 
         this.deleteControllers(ctls);
     }
 
     /** Delete specified controllers. */
-    public void deleteControllers(Set<Controller> ctls)
+    public void deleteControllers(IdentityHashSet<Controller> ctls)
     {
         for (Controller c : ctls) {
             // This is inefficient, but oh well: before deleting, check
@@ -1479,9 +1494,10 @@ public class DiagramController extends JPanel
     }
 
     /** Find EntityControllers fully contained in a rectangle. */
-    public Set<EntityController> findEntityControllersInRectangle(Rectangle rect)
+    public IdentityHashSet<EntityController> findEntityControllersInRectangle(Rectangle rect)
     {
-        HashSet<EntityController> ret = new HashSet<EntityController>();
+        IdentityHashSet<EntityController> ret =
+            new IdentityHashSet<EntityController>();
         for (Controller c : this.controllers) {
             if (c instanceof EntityController) {
                 EntityController ec = (EntityController)c;

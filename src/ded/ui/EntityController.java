@@ -22,6 +22,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
+import util.IdentityHashSet;
 import util.awt.G;
 import util.awt.GeomUtil;
 import util.awt.HorizOrVert;
@@ -149,7 +150,7 @@ public class EntityController extends Controller
             Rectangle moveRegion = this.getAttributeRect();
 
             // Get all the entities that are inside the region.
-            Set<EntityController> contained =
+            IdentityHashSet<EntityController> contained =
                 this.diagramController.findEntityControllersInRectangle(moveRegion);
 
             // Now calculate the region in which a control point must lie

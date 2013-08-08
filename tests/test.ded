@@ -2,6 +2,17 @@
   "drawFileName": true,
   "entities": [
     {
+      "loc": {
+        "x": 630,
+        "y": 335
+      },
+      "name": "select me",
+      "size": {
+        "h": 25,
+        "w": 70
+      }
+    },
+    {
       "attributes": "open?\nPoint pt\n\n",
       "loc": {
         "x": 220,
@@ -501,11 +512,23 @@
         "h": 20,
         "w": 65
       }
+    },
+    {
+      "imageFileName": "smiley.png",
+      "loc": {
+        "x": 585,
+        "y": 280
+      },
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 95,
+        "w": 130
+      }
     }
   ],
   "inheritances": [{
     "open": false,
-    "parentRef": 2,
+    "parentRef": 3,
     "pt": {
       "x": 555,
       "y": 240
@@ -513,59 +536,59 @@
   }],
   "relations": [
     {
-      "end": {"entityRef": 0},
+      "end": {"entityRef": 1},
       "label": "inheritances*",
-      "start": {"entityRef": 3}
-    },
-    {
-      "end": {"entityRef": 0},
-      "label": "inherit?",
-      "start": {"entityRef": 1}
-    },
-    {
-      "end": {"entityRef": 5},
-      "label": "parent",
-      "start": {"entityRef": 0}
-    },
-    {
-      "end": {"entityRef": 5},
-      "label": "entity?",
-      "start": {"entityRef": 1}
-    },
-    {
-      "end": {"entityRef": 2},
-      "label": "controlPts[]",
       "start": {"entityRef": 4}
     },
     {
-      "end": {"entityRef": 4},
-      "label": "relations*",
-      "start": {"entityRef": 3}
+      "end": {"entityRef": 1},
+      "label": "inherit?",
+      "start": {"entityRef": 2}
+    },
+    {
+      "end": {"entityRef": 6},
+      "label": "parent",
+      "start": {"entityRef": 1}
+    },
+    {
+      "end": {"entityRef": 6},
+      "label": "entity?",
+      "start": {"entityRef": 2}
+    },
+    {
+      "end": {"entityRef": 3},
+      "label": "controlPts[]",
+      "start": {"entityRef": 5}
     },
     {
       "end": {"entityRef": 5},
+      "label": "relations*",
+      "start": {"entityRef": 4}
+    },
+    {
+      "end": {"entityRef": 6},
       "label": "entities*",
-      "start": {"entityRef": 3}
+      "start": {"entityRef": 4}
     },
     {
       "controlPts": [{
         "x": 310,
         "y": 44
       }],
-      "end": {"entityRef": 1},
+      "end": {"entityRef": 2},
       "label": "end",
-      "start": {"entityRef": 4}
+      "start": {"entityRef": 5}
     },
     {
       "controlPts": [{
         "x": 306,
         "y": 74
       }],
-      "end": {"entityRef": 1},
+      "end": {"entityRef": 2},
       "label": "start",
       "start": {
         "arrowStyle": "AS_FILLED_TRIANGLE",
-        "entityRef": 4
+        "entityRef": 5
       }
     },
     {
@@ -821,35 +844,35 @@
       }}
     },
     {
-      "end": {"entityRef": 26},
+      "end": {"entityRef": 27},
       "start": {"pt": {
         "x": 140,
         "y": 455
       }}
     },
     {
-      "end": {"entityRef": 26},
+      "end": {"entityRef": 27},
       "start": {"pt": {
         "x": 165,
         "y": 480
       }}
     },
     {
-      "end": {"entityRef": 26},
+      "end": {"entityRef": 27},
       "start": {"pt": {
         "x": 190,
         "y": 455
       }}
     },
     {
-      "end": {"entityRef": 26},
+      "end": {"entityRef": 27},
       "start": {"pt": {
         "x": 165,
         "y": 430
       }}
     },
     {
-      "end": {"entityRef": 26},
+      "end": {"entityRef": 27},
       "routingAlg": "RA_DIRECT",
       "start": {"pt": {
         "x": 145,
@@ -857,7 +880,7 @@
       }}
     },
     {
-      "end": {"entityRef": 26},
+      "end": {"entityRef": 27},
       "routingAlg": "RA_DIRECT",
       "start": {"pt": {
         "x": 185,
@@ -865,7 +888,7 @@
       }}
     },
     {
-      "end": {"entityRef": 26},
+      "end": {"entityRef": 27},
       "routingAlg": "RA_DIRECT",
       "start": {"pt": {
         "x": 185,
@@ -873,7 +896,7 @@
       }}
     },
     {
-      "end": {"entityRef": 26},
+      "end": {"entityRef": 27},
       "routingAlg": "RA_DIRECT",
       "start": {"pt": {
         "x": 145,
@@ -882,7 +905,7 @@
     },
     {
       "end": {"inheritanceRef": 0},
-      "start": {"entityRef": 29}
+      "start": {"entityRef": 30}
     },
     {
       "controlPts": [

@@ -21,6 +21,7 @@ check:
 	java -cp bin -ea ded.model.SerializationTests tests/*.ded
 	java -cp bin -ea ded.model.SerializationTests tests/*.er
 	java -cp bin -ea util.UtilTests
+	java -cp bin -ea util.IdentityHashSetTests
 
 # GUI tests.  These require Abbot:
 #
