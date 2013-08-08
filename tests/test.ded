@@ -451,6 +451,56 @@
         "h": 65,
         "w": 65
       }
+    },
+    {
+      "imageFileName": "purple10x10.png",
+      "imageFillStyle": "IFS_TILE",
+      "loc": {
+        "x": 435,
+        "y": 445
+      },
+      "name": "can't tell when this is selected",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 175
+      }
+    },
+    {
+      "fillColor": "Purple",
+      "loc": {
+        "x": 505,
+        "y": 365
+      },
+      "name": "Purple",
+      "size": {
+        "h": 20,
+        "w": 65
+      }
+    },
+    {
+      "fillColor": "Red",
+      "loc": {
+        "x": 505,
+        "y": 405
+      },
+      "name": "Red",
+      "size": {
+        "h": 20,
+        "w": 65
+      }
+    },
+    {
+      "fillColor": "Pink",
+      "loc": {
+        "x": 505,
+        "y": 385
+      },
+      "name": "Pink",
+      "size": {
+        "h": 20,
+        "w": 65
+      }
     }
   ],
   "inheritances": [{

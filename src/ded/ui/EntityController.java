@@ -44,6 +44,10 @@ public class EntityController extends Controller
     /** Color to draw the outline of an entity. */
     public static final Color entityOutlineColor = new Color(0, 0, 0);
 
+    /** Width of border to draw with XOR around selected entities,
+      * beyond changing the background color (which may be ignored). */
+    public static final int selectedEntityXORBorderWidth = 3;
+
     /** Height of the name box. */
     public static final int entityNameHeight = 20;
 
@@ -363,12 +367,30 @@ public class EntityController extends Controller
             attributeRect.y += nameRect.height;
             attributeRect.height -= nameRect.height;
             attributeRect = GeomUtil.growRectangle(attributeRect, -entityAttributeMargin);
-            g.clipRect(attributeRect.x, attributeRect.y,
-                       attributeRect.width, attributeRect.height);
-            SwingUtil.drawTextWithNewlines(g,
+            Graphics g2 = g.create();      // localize effect of clipRect
+            g2.clipRect(attributeRect.x, attributeRect.y,
+                        attributeRect.width, attributeRect.height);
+            SwingUtil.drawTextWithNewlines(g2,
                 this.entity.attributes,
                 attributeRect.x,
-                attributeRect.y + g.getFontMetrics().getMaxAscent());
+                attributeRect.y + g2.getFontMetrics().getMaxAscent());
+        }
+
+        // Try to make sure selected objects are noticeable, even when
+        // using a fill image.
+        if (this.isSelected()) {
+            // Must be white to ensure that at least one bit is flipped.
+            g.setXORMode(Color.WHITE);
+
+            // We start at 1 so that the border itself is left alone.
+            // This is important with the default black border on a white
+            // background, since XOR with white will make it white, and
+            // then the entity seems to be one pixel smaller while it is
+            // selected, making visualizing its position more difficult.
+            for (int i=1; i <= selectedEntityXORBorderWidth; i++) {
+                g.drawRect(r.x + i, r.y + i,
+                           r.width-1 - i*2, r.height-1 - i*2);
+            }
         }
     }
 
