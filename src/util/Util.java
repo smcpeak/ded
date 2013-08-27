@@ -4,6 +4,7 @@
 package util;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
 
 /** Generic Java utilities. */
@@ -90,6 +91,18 @@ public class Util {
         }
         else {
             return new File(relativeBase, name);
+        }
+    }
+
+    /** Make a copy of the input array, which may be null, in which case
+      * the return value is null too. */
+    public static int[] copyArray(int[] src)
+    {
+        if (src == null) {
+            return null;
+        }
+        else {
+            return Arrays.copyOf(src, src.length);
         }
     }
 }

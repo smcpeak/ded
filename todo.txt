@@ -3,7 +3,6 @@ TODOs for Diagram Editor
 
 Small:
 - add menu option to create a new diagram window
-- copy+paste for sets of selected entities
 - entity grouping
 - better self-loop rendering
 - choose relation line thickness

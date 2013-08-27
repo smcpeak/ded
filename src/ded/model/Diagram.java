@@ -13,6 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,7 +49,7 @@ public class Diagram implements JSONable {
       * should include a bump--even though the old code might be
       * able to read the file without choking, the semantics would
       * not be preserved. */
-    public static final int currentFileVersion = 10;
+    public static final int currentFileVersion = 11;
 
     // ---------- public data ------------
     /** Size of window to display diagram.  Some elements might not fit
@@ -283,6 +284,19 @@ public class Diagram implements JSONable {
         return new Diagram(obj);
     }
 
+    /** Serialize as a JSON string. */
+    public String toJSONString()
+    {
+        return toJSON().toString();
+    }
+
+    /** Deserialize a JSON string; may throw JSONException. */
+    public static Diagram parseJSONString(String json)
+        throws JSONException
+    {
+        return new Diagram(new JSONObject(new JSONTokener(new StringReader(json))));
+    }
+
     /** Read a diagram from a file and return the new Diagram object.
       * This will auto-detect the ER or JSON file formats and read
       * the file appropriately. */
@@ -474,7 +488,7 @@ public class Diagram implements JSONable {
     @Override
     public String toString()
     {
-        return this.toJSON().toString();
+        return this.toJSONString();
     }
 }
 

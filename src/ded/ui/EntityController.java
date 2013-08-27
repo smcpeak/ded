@@ -22,6 +22,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
+import util.IdentityHashSet;
 import util.awt.G;
 import util.awt.GeomUtil;
 import util.awt.HorizOrVert;
@@ -43,6 +44,10 @@ public class EntityController extends Controller
 
     /** Color to draw the outline of an entity. */
     public static final Color entityOutlineColor = new Color(0, 0, 0);
+
+    /** Width of border to draw with XOR around selected entities,
+      * beyond changing the background color (which may be ignored). */
+    public static final int selectedEntityXORBorderWidth = 3;
 
     /** Height of the name box. */
     public static final int entityNameHeight = 20;
@@ -145,7 +150,7 @@ public class EntityController extends Controller
             Rectangle moveRegion = this.getAttributeRect();
 
             // Get all the entities that are inside the region.
-            Set<EntityController> contained =
+            IdentityHashSet<EntityController> contained =
                 this.diagramController.findEntityControllersInRectangle(moveRegion);
 
             // Now calculate the region in which a control point must lie
@@ -363,12 +368,30 @@ public class EntityController extends Controller
             attributeRect.y += nameRect.height;
             attributeRect.height -= nameRect.height;
             attributeRect = GeomUtil.growRectangle(attributeRect, -entityAttributeMargin);
-            g.clipRect(attributeRect.x, attributeRect.y,
-                       attributeRect.width, attributeRect.height);
-            SwingUtil.drawTextWithNewlines(g,
+            Graphics g2 = g.create();      // localize effect of clipRect
+            g2.clipRect(attributeRect.x, attributeRect.y,
+                        attributeRect.width, attributeRect.height);
+            SwingUtil.drawTextWithNewlines(g2,
                 this.entity.attributes,
                 attributeRect.x,
-                attributeRect.y + g.getFontMetrics().getMaxAscent());
+                attributeRect.y + g2.getFontMetrics().getMaxAscent());
+        }
+
+        // Try to make sure selected objects are noticeable, even when
+        // using a fill image.
+        if (this.isSelected()) {
+            // Must be white to ensure that at least one bit is flipped.
+            g.setXORMode(Color.WHITE);
+
+            // We start at 1 so that the border itself is left alone.
+            // This is important with the default black border on a white
+            // background, since XOR with white will make it white, and
+            // then the entity seems to be one pixel smaller while it is
+            // selected, making visualizing its position more difficult.
+            for (int i=1; i <= selectedEntityXORBorderWidth; i++) {
+                g.drawRect(r.x + i, r.y + i,
+                           r.width-1 - i*2, r.height-1 - i*2);
+            }
         }
     }
 
@@ -427,7 +450,18 @@ public class EntityController extends Controller
 
         switch (ifs) {
             case IFS_UPPER_LEFT:
-            case IFS_LOCK_SIZE:
+            case IFS_LOCK_SIZE: {
+                // Bugfix: Make sure not to ask to draw more of the image
+                // than exists.  If I do, weird things happen!
+                int w = imageWidth;
+                if (w < 0 || w > r.width) {
+                    w = r.width;
+                }
+                int h = imageHeight;
+                if (h < 0 || h > r.height) {
+                    h = r.height;
+                }
+
                 // I first tried the simplest drawImage call, but it is
                 // significantly slower than specifying all of the
                 // coordinates, even when the image is not clipped (?).
@@ -435,8 +469,17 @@ public class EntityController extends Controller
                 // The API docs do not say that it is ok to pass null
                 // as the observer, but I saw code that did it online,
                 // and so far it seems to work.
-                g.drawImage(image, r.x, r.y, r.x+r.width, r.y+r.height,
-                                   0,0, r.width, r.height, null);
+                g.drawImage(image, r.x, r.y, r.x + w, r.y + h,
+                                   0,0, w, h, null);
+                break;
+            }
+
+            case IFS_CENTER:
+                g.drawImage(image, r.x + r.width/2 - imageWidth/2,
+                                   r.y + r.height/2 - imageHeight/2,
+                                   r.x + r.width/2 + imageWidth/2,
+                                   r.y + r.height/2 + imageHeight/2,
+                                   0,0, imageWidth, imageHeight, null);
                 break;
 
             case IFS_STRETCH:

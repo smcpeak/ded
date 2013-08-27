@@ -13,6 +13,11 @@ import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
@@ -31,7 +36,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
+import java.util.IdentityHashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
@@ -40,6 +45,9 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.json.JSONException;
+
+import util.IdentityHashSet;
 import util.Util;
 import util.awt.GeomUtil;
 import util.swing.SwingUtil;
@@ -73,6 +81,7 @@ public class DiagramController extends JPanel
         "Enter or Double click - Edit selected thing\n"+
         "Insert - Insert relation control point\n"+
         "Delete - Delete selected thing\n"+
+        "Ctrl+C, Ctrl-V - Copy/paste, including across windows\n"+
         "Ctrl+S - Save to file and export to PNG (fname+\".png\")\n"+
         "Ctrl+O - Load from file (can import ER files)\n"+
         "Left click - select\n"+
@@ -149,6 +158,11 @@ public class DiagramController extends JPanel
 
     /** If DCM_RECT_LASSO, the current mouse position. */
     private Point lassoEnd;
+
+    /** If DCM_RECT_LASSO, the set of originally-selected controllers,
+      * which is to be included in whatever is contained by the lasso. */
+    private IdentityHashSet<Controller> lassoOriginalSelected =
+        new IdentityHashSet<Controller>();
 
     /** If CFM_DRAGGING, this is the controller being moved. */
     private Controller dragging;
@@ -339,19 +353,23 @@ public class DiagramController extends JPanel
                 // Clicked a controller?
                 Controller c = this.hitTest(e.getPoint(), null);
                 if (c == null) {
-                    if (SwingUtil.controlPressed(e)) {
-                        // Control is pressed.  We missed all controls, so ignore.
-                    }
-                    else {
-                        if (this.deselectAll() > 0) {
-                            this.repaint();
+                    // Missed controls, start a lasso selection
+                    // if left button.
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        this.lassoOriginalSelected.clear();
+                        if (SwingUtil.controlPressed(e)) {
+                            // Control is pressed.  Keep current selections.
+                            this.lassoOriginalSelected.addAll(this.getAllSelected());
+                        }
+                        else {
+                            if (this.deselectAll() > 0) {
+                                this.repaint();
+                            }
                         }
 
-                        if (SwingUtilities.isLeftMouseButton(e)) {
-                            // Enter lasso mode.
-                            setMode(Mode.DCM_RECT_LASSO);
-                            this.lassoStart = this.lassoEnd = e.getPoint();
-                        }
+                        // Enter lasso mode.
+                        setMode(Mode.DCM_RECT_LASSO);
+                        this.lassoStart = this.lassoEnd = e.getPoint();
                     }
                 }
                 else {
@@ -630,15 +648,15 @@ public class DiagramController extends JPanel
         this.controllers.clear();
 
         for (Entity e : this.diagram.entities) {
-            this.add(new EntityController(this, e));
+            this.buildEntityController(e);
         }
 
         for (Relation r : this.diagram.relations) {
-            buildRelationController(r);
+            this.buildRelationController(r);
         }
 
         for (Inheritance inh : this.diagram.inheritances) {
-            buildInheritanceController(inh);
+            this.buildInheritanceController(inh);
         }
 
         this.setMode(Mode.DCM_SELECT);
@@ -695,8 +713,14 @@ public class DiagramController extends JPanel
                         "C++ ERED implementation.  If you save the file, it "+
                         "will be overwritten with the new JSON-based format "+
                         "used by the Java-based Diagram Editor, which the "+
-                        "C++ ERED cannot read.  Overwrite with the new "+
-                        "format?",
+                        "C++ ERED cannot read.\n"+
+                        "\n"+
+                        "In order to avoid confusion, it is probably best to "+
+                        "save the new file with the \".ded\" extension rather "+
+                        "than the traditional \".er\" extension so that others "+
+                        "will know to use Ded to read it.\n"+
+                        "\n"+
+                        "Overwrite with the new format anyway?",
                     "Confirm Overwrite of Imported File",
                     JOptionPane.YES_NO_OPTION);
                 if (res != JOptionPane.YES_OPTION) {
@@ -869,6 +893,7 @@ public class DiagramController extends JPanel
 
         if (m != Mode.DCM_RECT_LASSO) {
             this.lassoStart = this.lassoEnd = new Point(0,0);
+            this.lassoOriginalSelected.clear();
         }
 
         switch (m) {
@@ -900,6 +925,14 @@ public class DiagramController extends JPanel
 
         this.selfCheck();
         this.repaint();
+    }
+
+    /** Construct a controller for 'e' and add it to 'this'. */
+    private EntityController buildEntityController(Entity e)
+    {
+        EntityController ec = new EntityController(this, e);
+        this.add(ec);
+        return ec;
     }
 
     /** Construct a controller for 'r' and add it to 'this'. */
@@ -937,7 +970,7 @@ public class DiagramController extends JPanel
     }
 
     /** Get all selected controllers. */
-    public Set<Controller> getAllSelected()
+    public IdentityHashSet<Controller> getAllSelected()
     {
         return this.findControllers(new ControllerFilter() {
             public boolean satisfies(Controller c) {
@@ -961,11 +994,276 @@ public class DiagramController extends JPanel
         }
     }
 
+    /** Copy the selected entities to the (application) clipboard. */
+    public void copySelected()
+    {
+        IdentityHashSet<Controller> selControllers = this.getAllSelected();
+        if (selControllers.isEmpty()) {
+            this.errorMessageBox("Nothing is selected to copy.");
+            return;
+        }
+
+        // Collect all the selected elements.
+        IdentityHashSet<Entity> selEntities = new IdentityHashSet<Entity>();
+        IdentityHashSet<Inheritance> selInheritances = new IdentityHashSet<Inheritance>();
+        IdentityHashSet<Relation> selRelations = new IdentityHashSet<Relation>();
+        for (Controller c : selControllers) {
+            if (c instanceof EntityController) {
+                selEntities.add(((EntityController)c).entity);
+            }
+            if (c instanceof InheritanceController) {
+                selInheritances.add(((InheritanceController)c).inheritance);
+            }
+            if (c instanceof RelationController) {
+                selRelations.add(((RelationController)c).relation);
+            }
+        }
+
+        // Map from elements in the original to their counterpart in the copy.
+        IdentityHashMap<Entity,Entity> entityToCopy =
+            new IdentityHashMap<Entity,Entity>();
+        IdentityHashMap<Inheritance,Inheritance> inheritanceToCopy =
+            new IdentityHashMap<Inheritance,Inheritance>();
+
+        // Construct a new Diagram with just the selected elements.
+        Diagram copy = new Diagram();
+        for (Entity e : selEntities) {
+            Entity eCopy = new Entity(e);
+            entityToCopy.put(e, eCopy);
+            copy.entities.add(eCopy);
+        }
+        for (Inheritance i : selInheritances) {
+            // See if the parent entity is among those we are copying.
+            Entity parentCopy = entityToCopy.get(i.parent);
+            if (parentCopy == null) {
+                // No, so we'll skip the inheritance too.
+            }
+            else {
+                Inheritance iCopy = new Inheritance(i, parentCopy);
+                inheritanceToCopy.put(i, iCopy);
+                copy.inheritances.add(iCopy);
+            }
+        }
+        for (Relation r : selRelations) {
+            RelationEndpoint startCopy =
+                copyRelationEndpoint(r.start, entityToCopy, inheritanceToCopy);
+            RelationEndpoint endCopy =
+                copyRelationEndpoint(r.end, entityToCopy, inheritanceToCopy);
+            if (startCopy == null || endCopy == null) {
+                // Skip the relation.
+            }
+            else {
+                copy.relations.add(new Relation(r, startCopy, endCopy));
+            }
+        }
+
+        // Make sure the Diagram is well-formed.
+        try {
+            // This is quadratic...
+            copy.selfCheck();
+        }
+        catch (Throwable t) {
+            this.errorMessageBox("Internal error: failed to create a well-formed copy: "+t);
+            return;
+        }
+
+        // Copy it as a string to the system clipboard.
+        StringSelection data = new StringSelection(copy.toJSONString());
+        Clipboard clipboard =
+            Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(data, data);
+        clipboard =
+            Toolkit.getDefaultToolkit().getSystemSelection();
+        if (clipboard != null) {
+            clipboard.setContents(data, data);
+        }
+    }
+
+    /** Make a copy of 'src', taking advantage of the maps to corresponding
+      * entities and inheritances already copied. */
+    private static RelationEndpoint copyRelationEndpoint(
+        RelationEndpoint src,
+        IdentityHashMap<Entity,Entity> entityToCopy,
+        IdentityHashMap<Inheritance,Inheritance> inheritanceToCopy)
+    {
+        RelationEndpoint ret;
+
+        if (src.entity != null) {
+            Entity eCopy = entityToCopy.get(src.entity);
+            if (eCopy == null) {
+                // Counterpart is not copied, so we will bail on the
+                // endpoint, and hence the relation too.
+                return null;
+            }
+            ret = new RelationEndpoint(eCopy);
+        }
+
+        else if (src.inheritance != null) {
+            Inheritance iCopy = inheritanceToCopy.get(src.inheritance);
+            if (iCopy == null) {
+                return null;
+            }
+            ret = new RelationEndpoint(iCopy);
+        }
+
+        else {
+            ret = new RelationEndpoint(new Point(src.pt));
+        }
+
+        ret.arrowStyle = src.arrowStyle;
+        return ret;
+    }
+
+    /** Try to read the clipboard contents as a Diagram.  Return null and
+      * display an error if we cannot. */
+    private Diagram getClipboardAsDiagram()
+    {
+        // Let's start with the "selection" because if it is valid JSON
+        // then it's probably what we want.
+        String selErrorMessage = null;
+        String selContents = null;
+        Clipboard clipboard =
+            Toolkit.getDefaultToolkit().getSystemSelection();
+        if (clipboard == null) {
+            // Probably we're running on something other than X Windows,
+            // so we thankfully don't have to deal with the screwy
+            // "selection" concept.
+        }
+        else {
+            Transferable clipData = clipboard.getContents(clipboard);
+            if (clipData == null) {
+                selErrorMessage = "Nothing is in the \"selection\".";
+            }
+            else {
+                try {
+                    if (clipData.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                        selContents = (String)(clipData.getTransferData(
+                            DataFlavor.stringFlavor));
+
+                        // Try to parse it.
+                        try {
+                            return Diagram.parseJSONString(selContents);
+                        }
+                        catch (JSONException e) {
+                            selErrorMessage = "Could not parse selection data as Diagram JSON: "+e;
+                        }
+                    }
+                    else {
+                        selErrorMessage = "The data in the selection is not a string.";
+                    }
+                }
+                catch (Exception e) {
+                    selErrorMessage = "Error while retrieving selection data: "+e;
+                }
+            }
+        }
+
+        // Now try again with the clipboard.
+        String clipErrorMessage = null;
+        String clipContents = null;
+        clipboard =
+            Toolkit.getDefaultToolkit().getSystemClipboard();
+        if (clipboard == null) {
+            clipErrorMessage = "getSystemClipboard returned null?!";
+        }
+        else {
+            Transferable clipData = clipboard.getContents(clipboard);
+            if (clipData == null) {
+                clipErrorMessage = "Nothing is in the clipboard.";
+            }
+            else {
+                try {
+                    if (clipData.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                        clipContents = (String)(clipData.getTransferData(
+                            DataFlavor.stringFlavor));
+
+                        try {
+                            return Diagram.parseJSONString(clipContents);
+                        }
+                        catch (JSONException e) {
+                            clipErrorMessage = "Could not parse clipboard data as Diagram JSON: "+e;
+                        }
+                    }
+                    else {
+                        clipErrorMessage = "The data in the clipboard is not a string.";
+                    }
+                }
+                catch (Exception e) {
+                    clipErrorMessage = "Error while retrieving clipboard data: "+e;
+                }
+            }
+        }
+
+        // Both methods failed, and we have one or two error messages.
+        // Decide what to show.
+        if (selErrorMessage == null) {
+            this.errorMessageBox(clipErrorMessage);
+        }
+        else if (selContents == null && clipContents != null) {
+            this.errorMessageBox(clipErrorMessage);
+        }
+        else if (selContents != null && clipContents == null) {
+            this.errorMessageBox(selErrorMessage);
+        }
+        else if (selContents.equals(clipContents)) {
+            this.errorMessageBox(
+                clipErrorMessage+
+                "  (The selection and clipboard contents are the same.)");
+        }
+        else {
+            this.errorMessageBox(
+                "Failed to read either the selection or the clipboard.  "+
+                 selErrorMessage+"  "+clipErrorMessage);
+        }
+
+        return null;
+    }
+
+    /** Insert the clipboard contents into the diagram. */
+    public void pasteClipboard()
+    {
+        // Try to parse what is in the clipboard as Diagram JSON.
+        Diagram copy = this.getClipboardAsDiagram();
+        if (copy == null) {
+            // Already showed the error dialog.
+            return;
+        }
+
+        // Prepare to select only the new controllers.
+        this.deselectAll();
+
+        // Insert the new entities, making controllers for them.
+        final IdentityHashSet<Controller> newControllers =
+            new IdentityHashSet<Controller>();
+        for (Entity e : copy.entities) {
+            this.diagram.entities.add(e);
+            newControllers.add(this.buildEntityController(e));
+        }
+        for (Inheritance i : copy.inheritances) {
+            this.diagram.inheritances.add(i);
+            newControllers.add(this.buildInheritanceController(i));
+        }
+        for (Relation r : copy.relations) {
+            this.diagram.relations.add(r);
+            newControllers.add(this.buildRelationController(r));
+        }
+
+        // Make exactly the new controllers selected.
+        this.selectAccordingToFilter(new ControllerFilter() {
+            public boolean satisfies(Controller c)
+            {
+                return newControllers.contains(c);
+            }
+        });
+
+        this.diagramChanged();
+    }
+
     /** Delete the selected controllers and associated entities, if any. */
     public void deleteSelected()
     {
         if (this.mode == Mode.DCM_SELECT) {
-            Set<Controller> sel = this.getAllSelected();
+            IdentityHashSet<Controller> sel = this.getAllSelected();
             int n = sel.size();
             if (n > 1) {
                 int choice = JOptionPane.showConfirmDialog(this,
@@ -1129,6 +1427,11 @@ public class DiagramController extends JPanel
                     return false;
                 }
 
+                // Keep the original set, if any.
+                if (DiagramController.this.lassoOriginalSelected.contains(c)) {
+                    return true;
+                }
+
                 return c.boundsIntersects(lasso);
             }
         });
@@ -1155,9 +1458,9 @@ public class DiagramController extends JPanel
     }
 
     /** Return set of matching controllers. */
-    private Set<Controller> findControllers(ControllerFilter filter)
+    private IdentityHashSet<Controller> findControllers(ControllerFilter filter)
     {
-        HashSet<Controller> ret = new HashSet<Controller>();
+        IdentityHashSet<Controller> ret = new IdentityHashSet<Controller>();
         for (Controller c : this.controllers) {
             if (filter.satisfies(c)) {
                 ret.add(c);
@@ -1171,13 +1474,13 @@ public class DiagramController extends JPanel
     {
         // Get the set of matching controllers first; we cannot remove
         // them while searching due to iterator invalidation issues.
-        Set<Controller> ctls = this.findControllers(filter);
+        IdentityHashSet<Controller> ctls = this.findControllers(filter);
 
         this.deleteControllers(ctls);
     }
 
     /** Delete specified controllers. */
-    public void deleteControllers(Set<Controller> ctls)
+    public void deleteControllers(IdentityHashSet<Controller> ctls)
     {
         for (Controller c : ctls) {
             // This is inefficient, but oh well: before deleting, check
@@ -1191,9 +1494,10 @@ public class DiagramController extends JPanel
     }
 
     /** Find EntityControllers fully contained in a rectangle. */
-    public Set<EntityController> findEntityControllersInRectangle(Rectangle rect)
+    public IdentityHashSet<EntityController> findEntityControllersInRectangle(Rectangle rect)
     {
-        HashSet<EntityController> ret = new HashSet<EntityController>();
+        IdentityHashSet<EntityController> ret =
+            new IdentityHashSet<EntityController>();
         for (Controller c : this.controllers) {
             if (c instanceof EntityController) {
                 EntityController ec = (EntityController)c;

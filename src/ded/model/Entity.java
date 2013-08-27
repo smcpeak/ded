@@ -17,6 +17,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import util.FlattenInputStream;
+import util.Util;
 import util.XParse;
 import util.awt.AWTJSONUtil;
 import util.json.JSONable;
@@ -268,6 +269,21 @@ public class Entity implements JSONable {
     }
 
     // ------------- data object boilerplate -------------
+    /** Deep clone copy constructor. */
+    public Entity(Entity obj)
+    {
+        this.loc = new Point(obj.loc);
+        this.size = new Dimension(obj.size);
+        this.shape = obj.shape;
+        this.fillColor = obj.fillColor;
+        this.name = obj.name;
+        this.attributes = obj.attributes;
+        this.shapeParams = Util.copyArray(obj.shapeParams);
+        this.shapeFlags = obj.shapeFlags.clone();
+        this.imageFileName = obj.imageFileName;
+        this.imageFillStyle = obj.imageFillStyle;
+    }
+
     @Override
     public boolean equals(Object obj)
     {
