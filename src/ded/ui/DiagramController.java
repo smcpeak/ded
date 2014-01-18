@@ -37,6 +37,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
@@ -276,21 +277,37 @@ public class DiagramController extends JPanel
         }
     }
 
-    /** Deselect all controllers and return the number that were previously selected. */
-    public int deselectAll()
+    /** Return the set of currently selected controllers as a freshly
+      * created set object. */
+    protected HashSet<Controller> getSelectionSet()
     {
-        // Change state after iterating.
-        HashSet<Controller> toDeselect = new HashSet<Controller>();
+        HashSet<Controller> ret = new HashSet<Controller>();
 
         for (Controller c : this.controllers) {
             if (c.isSelected()) {
-                toDeselect.add(c);
+                ret.add(c);
             }
         }
 
-        for (Controller c : toDeselect) {
-            c.setSelected(SelectionState.SS_UNSELECTED);
+        return ret;
+    }
+
+    /** Set the selection state of all of the controllers in 'set' to 'state'. */
+    protected void setMultipleSelected(Set<Controller> set, SelectionState state)
+    {
+        for (Controller c : set) {
+            c.setSelected(state);
         }
+    }
+
+    /** Deselect all controllers and return the number that were previously selected. */
+    public int deselectAll()
+    {
+        // Get selection set first, so we only change state after iterating.
+        HashSet<Controller> toDeselect = getSelectionSet();
+
+        // Unselect them.
+        setMultipleSelected(toDeselect, SelectionState.SS_UNSELECTED);
 
         return toDeselect.size();
     }
@@ -774,51 +791,71 @@ public class DiagramController extends JPanel
         // time, they don't in the meantime go copy or view the partially
         // written image.
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-        // Based on code from:
-        // http://stackoverflow.com/questions/5655908/export-jpanel-graphics-to-png-or-gif-or-jpg
-
-        // First, render the image to an in-memory image buffer.
-        BufferedImage bi =
-            new BufferedImage(this.getSize().width, this.getSize().height,
-                              BufferedImage.TYPE_INT_ARGB);
-        Graphics g = bi.createGraphics();
-        this.paint(g);
-        g.dispose();
-
-        // Now, write that image to a file in PNG format.
         try {
-            // This is a very convenient call, but it has many flaws.
-            //
-            // First, it unconditionally deletes 'file' before writing.
-            // That means it won't work as a symlink, does not interact
-            // with permissions as expected, etc.
-            //
-            // Second, worse, the error handling is atrocious.  In my
-            // testing, when there is a permission problem, this code
-            // prints the "Permission denied" exception to *stderr*, with
-            // no opportunity to do something reasonable with it, and
-            // then throws a totally uninformative NullPointerException.
-            //
-            // I made a brief attempt to fix these problems by copying
-            // some of the implementation code into my code, but the
-            // problems go pretty deep so I gave up.
-            //
-            // Since all of these are simply bugs in the Java libraries
-            // (my code is not doing anything incorrect), I will simply
-            // hope that eventually those bugs get fixed by Sun/Oracle.
-            ImageIO.write(bi, "png", file);
-        }
-        catch (Exception e) {
-            this.exnErrorMessageBox(
-                "While writing PNG to \""+file+"\", the "+
-                "following exception was raised by the ImageIO "+
-                "library, whose error handling is really bad, so "+
-                "good luck figuring out the real problem "+
-                "(maybe check stderr)", e);
-        }
+            // Based on code from:
+            // http://stackoverflow.com/questions/5655908/export-jpanel-graphics-to-png-or-gif-or-jpg
 
-        this.setCursor(Cursor.getDefaultCursor());
+            // First, render the image to an in-memory image buffer.
+            BufferedImage bi =
+                new BufferedImage(this.getSize().width, this.getSize().height,
+                                  BufferedImage.TYPE_INT_ARGB);
+            Graphics g = bi.createGraphics();
+            this.paintWithoutSelectionsShowing(g);
+            g.dispose();
+
+            // Now, write that image to a file in PNG format.
+            try {
+                // This is a very convenient call, but it has many flaws.
+                //
+                // First, it unconditionally deletes 'file' before writing.
+                // That means it won't work as a symlink, does not interact
+                // with permissions as expected, etc.
+                //
+                // Second, worse, the error handling is atrocious.  In my
+                // testing, when there is a permission problem, this code
+                // prints the "Permission denied" exception to *stderr*, with
+                // no opportunity to do something reasonable with it, and
+                // then throws a totally uninformative NullPointerException.
+                //
+                // I made a brief attempt to fix these problems by copying
+                // some of the implementation code into my code, but the
+                // problems go pretty deep so I gave up.
+                //
+                // Since all of these are simply bugs in the Java libraries
+                // (my code is not doing anything incorrect), I will simply
+                // hope that eventually those bugs get fixed by Sun/Oracle.
+                ImageIO.write(bi, "png", file);
+            }
+            catch (Exception e) {
+                this.exnErrorMessageBox(
+                    "While writing PNG to \""+file+"\", the "+
+                    "following exception was raised by the ImageIO "+
+                    "library, whose error handling is really bad, so "+
+                    "good luck figuring out the real problem "+
+                    "(maybe check stderr)", e);
+            }
+
+        }
+        finally {
+            this.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
+    /** Paint diagram to 'g', except temporarily deselect everything
+      * first so that the selection indicators do not not appear. */
+    protected void paintWithoutSelectionsShowing(Graphics g)
+    {
+        // Turn off selections.
+        HashSet<Controller> originalSelection = this.getSelectionSet();
+        setMultipleSelected(originalSelection, SelectionState.SS_UNSELECTED);
+        try {
+            // Paint w/o selections.
+            this.paint(g);
+        }
+        finally {
+            // Restore selection state.
+            setSelectionSet(originalSelection);
+        }
     }
 
     /** Called when the diagram has been changed.  This does a repaint
@@ -1352,14 +1389,14 @@ public class DiagramController extends JPanel
         }
     }
 
-    /** Return the current lasso rectangle. */
-    protected Rectangle getLassoRect()
+    /** Set the set of selected controllers to those in 'toSelect'. */
+    protected void setSelectionSet(final Set<Controller> toSelect)
     {
-        return new Rectangle(
-            Math.min(this.lassoStart.x, this.lassoEnd.x),
-            Math.min(this.lassoStart.y, this.lassoEnd.y),
-            Math.abs(this.lassoEnd.x - this.lassoStart.x),
-            Math.abs(this.lassoEnd.y - this.lassoStart.y));
+        selectAccordingToFilter(new ControllerFilter() {
+            public boolean satisfies(Controller c) {
+                return toSelect.contains(c);
+            }
+        });
     }
 
     /** Set the set of selected controllers according to the filter. */
@@ -1388,24 +1425,29 @@ public class DiagramController extends JPanel
 
         // Deselect everything that should not be selected but
         // previously was.
-        for (Controller c : toDeselect) {
-            c.setSelected(SelectionState.SS_UNSELECTED);
-        }
+        setMultipleSelected(toDeselect, SelectionState.SS_UNSELECTED);
 
         if (toSelect.size() == 1) {
             // Exclusively select the one lasso'd controller.  (Using
-            // a 'for' loop is merely syntactically convenient.)
-            for (Controller c : toSelect) {
-                // This will show resize controls.
-                c.setSelected(SelectionState.SS_EXCLUSIVE);
-            }
+            // the "multi" call is merely syntactically convenient.)
+            //
+            // This will show resize controls.
+            setMultipleSelected(toSelect, SelectionState.SS_EXCLUSIVE);
         }
         else {
             // Set state of all selected controls.
-            for (Controller c : toSelect) {
-                c.setSelected(SelectionState.SS_SELECTED);
-            }
+            setMultipleSelected(toSelect, SelectionState.SS_SELECTED);
         }
+    }
+
+    /** Return the current lasso rectangle. */
+    protected Rectangle getLassoRect()
+    {
+        return new Rectangle(
+            Math.min(this.lassoStart.x, this.lassoEnd.x),
+            Math.min(this.lassoStart.y, this.lassoEnd.y),
+            Math.abs(this.lassoEnd.x - this.lassoStart.x),
+            Math.abs(this.lassoEnd.y - this.lassoStart.y));
     }
 
     /** Set the set of selected controllers according to the lasso. */
