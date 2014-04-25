@@ -37,7 +37,7 @@ uicheck:
 	run-abbot-test tests/abbot/*.xml
 
 # ------------------- Coverity -----------------
-PREV_ROOT := $(HOME)/enc/prevent-git/objs/linux64/root
+PREV_ROOT := $(HOME)/enc/prevent-current/objs/linux64/root
 PREV_CONFIG := cov/config/coverity_config.xml
 
 $(PREV_CONFIG):
@@ -48,7 +48,7 @@ cov-build: $(PREV_CONFIG)
 	$(PREV_ROOT)/bin/cov-build -c $(PREV_CONFIG) --dir cov/dir make clean all
 
 cov-analyze:
-	$(PREV_ROOT)/bin/cov-analyze-java --dir cov/dir --all -j 8
+	$(PREV_ROOT)/bin/cov-analyze-java --dir cov/dir --all -j 8 --export-summaries true
 
 cov-format:
 	$(PREV_ROOT)/bin/cov-format-errors --dir cov/dir
