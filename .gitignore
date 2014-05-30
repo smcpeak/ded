@@ -2,3 +2,4 @@ bin
 in
 cov
 dist
+data-coverity
