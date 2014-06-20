@@ -33,6 +33,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -218,6 +220,9 @@ public class DiagramController extends JPanel
         this.addFocusListener(this);
 
         this.setFocusable(true);
+        
+        // I want to see Tab and Shift Tab keys in my KeyListener.
+        this.setFocusTraversalKeysEnabled(false);
     }
 
     public Diagram getDiagram()
@@ -535,9 +540,79 @@ public class DiagramController extends JPanel
             case KeyEvent.VK_H:
                 this.showHelpBox();
                 break;
+                
+            case KeyEvent.VK_TAB:
+                this.selectNextController(!SwingUtil.shiftPressed(e) /*forward*/);
+                break;
         }
     }
 
+    /** Compare Controllers by their 'getLoc()'  point, ordering them
+      * first top to bottom then left to right. */
+    public static class ControllerLocationComparator implements Comparator<Controller> {
+        @Override
+        public int compare(Controller a, Controller b)
+        {
+            Point aLoc = a.getLoc();
+            Point bLoc = b.getLoc();
+            
+            int cmp = Util.compareInts(aLoc.y, bLoc.y);
+            if (cmp != 0) {
+                return cmp;
+            }
+            
+            cmp = Util.compareInts(aLoc.x, bLoc.x);
+            if (cmp != 0) {
+                return cmp;
+            }
+            
+            return 0;
+        }
+    }
+    
+    /** If a controller is selected, cycle to either the next or
+      * previous depending on 'forward' (true means next).
+      * 
+      * Otherwise, select the first controller if there is one. */
+    public void selectNextController(boolean forward)
+    {
+        // Make a list of cyclable controllers.  In particular, we need
+        // to ignore resize handles.
+        ArrayList<Controller> controllerCycle = new ArrayList<Controller>();
+        for (Controller c : this.controllers) {
+            if (c.wantLassoSelection()) {
+                controllerCycle.add(c);
+            }
+        }
+
+        // The insertion order isn't very meaningful and cannot be
+        // easily changed by the user.  So, instead, sort by the
+        // controllers' locations to make the cycle order more
+        // predictable.
+        Collections.sort(controllerCycle, new ControllerLocationComparator());
+        
+        // Locate the currently selected controller in the sorted cycle.
+        int curSelIndex = controllerCycle.indexOf(this.getUniqueSelected());
+        if (curSelIndex == -1) {
+            // Nothing selected, start with first controller if
+            // there is one.
+            if (!controllerCycle.isEmpty()) {
+                selectOnly(controllerCycle.get(0));
+            }
+            return;
+        }
+
+        // Compute index of next to select, cycling as necessary.
+        // The extra size() term is to ensure the dividend does not
+        // become negative.
+        int nextSelIndex =
+            (controllerCycle.size() + curSelIndex + (forward? +1 : -1)) %
+            controllerCycle.size();
+
+        // Select it.
+        selectOnly(controllerCycle.get(nextSelIndex));
+    }
+    
     /** Show the box with the key bindings. */
     public void showHelpBox()
     {
