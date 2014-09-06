@@ -138,15 +138,32 @@ public class SwingUtil {
         return pane;
     }
 
-    /** Show an error message dialog box with message word wrapping. */
-    public static void errorMessageBox(Component parent, String message)
+    /** Show a message dialog box with message word wrapping, specified
+      * title and type.  Type must be one of the JOptionPane *_MESSAGE
+      * constants.
+      *
+      * @see JOptionPane.setMessageType */
+    public static void messageBox(Component parent, String title,
+                                  int messageType, String message)
     {
         JOptionPane pane = makeWordWrapJOptionPane();
         pane.setMessage(message);
-        pane.setMessageType(JOptionPane.ERROR_MESSAGE);
+        pane.setMessageType(messageType);
 
-        JDialog dialog = pane.createDialog(parent, "Error");
+        JDialog dialog = pane.createDialog(parent, title);
         dialog.setVisible(true);
+    }
+
+    /** Show an error message dialog box with message word wrapping. */
+    public static void errorMessageBox(Component parent, String message)
+    {
+        messageBox(parent, "Error", JOptionPane.ERROR_MESSAGE, message);
+    }
+
+    /** Show a warning message dialog box with message word wrapping. */
+    public static void warningMessageBox(Component parent, String message)
+    {
+        messageBox(parent, "Warning", JOptionPane.WARNING_MESSAGE, message);
     }
 
     /** Show a confirmation message box with line wrapped message. */

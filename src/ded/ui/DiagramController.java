@@ -816,7 +816,12 @@ public class DiagramController extends JPanel
             g.dispose();
 
             // Now, write that image to a file in PNG format.
-            ImageFileUtil.writeImageToPNGFile(bi, file);
+            String warning = ImageFileUtil.writeImageToPNGFile(bi, file);
+            if (warning != null) {
+                SwingUtil.warningMessageBox(this,
+                    "File save completed successfully, but while exporting to PNG, "+
+                    "there was a warning: "+warning);
+            }
         }
         finally {
             this.setCursor(Cursor.getDefaultCursor());
