@@ -12,15 +12,25 @@ import java.util.Iterator;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
+import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
+
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 /** Utilities related to manipulating image files. */
 public class ImageFileUtil {
+    /** The name of the root node of the "native" metadata XML format
+      * for PNG images in the 'imageio' library. */
+    public static final String pngMetadataFormatName = "javax_imageio_png_1.0";
+
     /** Write the 'bi' to 'file' in PNG format.
       *
       * If 'comment' is not null, it will be added as an image comment.
@@ -94,6 +104,20 @@ public class ImageFileUtil {
             writer.dispose();
         }
 
+        // Double-check that reading the comment back gets the same string.
+        if (comment != null && warningReturn == null) {
+            String c2 = getPNGComment(file);
+            if (c2 != null && comment.equals(c2)) {
+                // Everything is good.
+            }
+            else {
+                warningReturn = "PNG comment did not survive write/read cycle intact.  "+
+                                "That is a bug, please report it.";
+                System.err.println("Original comment: "+comment);
+                System.err.println("After wr comment: "+(c2==null?"(null)":c2));
+            }
+        }
+
         return warningReturn;
     }
 
@@ -113,7 +137,8 @@ public class ImageFileUtil {
         // http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/6-b14/com/sun/imageio/plugins/png/PNGImageWriter.java#PNGImageWriter.write_iTXt%28%29
         //
         // because if the compression flag is set, then the characters are
-        // simply truncated to [0,255] prior to compression.
+        // simply truncated to [0,255] prior to compression.  The bug only
+        // happens with compressed text, but I always want these compressed.
         {
             for (int i=0; i < value.length(); i++) {
                 int c = value.charAt(i);
@@ -127,11 +152,10 @@ public class ImageFileUtil {
 
         // Construct a magic XML document that can be "merged"
         // into the metadata to create a text chunk.  The only way
-        // to know to do this is to read the source code of
+        // to know how to do this is to read the source code of
         // com.sun.imageio.plugins.png.PNGMetadata, and/or follow
         // an example from someone else like:
         // http://stackoverflow.com/questions/6495518/writing-image-metadata-in-java-preferably-png
-        String metadataFormatName = "javax_imageio_png_1.0";
         IIOMetadataNode commentMetadata;
         {
             IIOMetadataNode textEntry = new IIOMetadataNode(compressed? "zTXtEntry" : "tEXtEntry");
@@ -149,7 +173,7 @@ public class ImageFileUtil {
             IIOMetadataNode text = new IIOMetadataNode(compressed? "zTXt" : "tEXt");
             text.appendChild(textEntry);
 
-            commentMetadata = new IIOMetadataNode(metadataFormatName);
+            commentMetadata = new IIOMetadataNode(pngMetadataFormatName);
             commentMetadata.appendChild(text);
 
             // At this point, 'commentMetadata' looks like this:
@@ -173,6 +197,75 @@ public class ImageFileUtil {
         // document and copies the values it recognizes into fields
         // of the PNGMetadata object, which will then be added to
         // the output PNG file when it is written.
-        iiomd.mergeTree(metadataFormatName, commentMetadata);
+        iiomd.mergeTree(pngMetadataFormatName, commentMetadata);
+    }
+
+    /** Read PNG 'file' and extract its comment string.  If the file
+      * is a valid PNG but has no comment, return null.  Otherwise,
+      * throw an exception. */
+    public static String getPNGComment(File file)
+        throws Exception
+    {
+        // Get a reader than can read PNG.
+        ImageReader reader;
+        {
+            Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("png");
+            if (!readers.hasNext()) {
+                throw new RuntimeException(
+                    "Unable to read PNG image because there is no registered "+
+                    "image reader for that format.  That might mean the Java "+
+                    "run time library is incomplete somehow.");
+            }
+            reader = readers.next();
+        }
+
+        try {
+            // Prepare to read the file.
+            FileImageInputStream fiis = new FileImageInputStream(file);
+            try {
+                reader.setInput(fiis);
+                ImageReadParam irp = reader.getDefaultReadParam();
+
+                // Read it, including metadata, which is where comment is.
+                IIOImage iioImage = reader.readAll(reader.getMinIndex(), irp);
+                IIOMetadata metadata = iioImage.getMetadata();
+
+                // Traverse metadata tree to find a comment.
+                Node tree = metadata.getAsTree(pngMetadataFormatName);
+                for (Node elem = tree.getFirstChild(); elem != null;
+                     elem = elem.getNextSibling())
+                {
+                    String name = elem.getNodeName();
+
+                    // For now, I only handle 'zTXt' because that is what I am
+                    // using to write, since 'compression' is always true.
+                    if (name.equals("zTXt")) {
+                        for (Node entry = elem.getFirstChild(); entry != null;
+                             entry = entry.getNextSibling())
+                        {
+                            if (entry.getNodeName().equals("zTXtEntry")) {
+                                NamedNodeMap nnm = entry.getAttributes();
+
+                                Node keyword = nnm.getNamedItem("keyword");
+                                Node text = nnm.getNamedItem("text");
+                                if (keyword != null && text != null &&
+                                    keyword.getNodeValue().equals("Comment"))
+                                {
+                                    return text.getNodeValue();
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return null;
+            }
+            finally {
+                fiis.close();
+            }
+        }
+        finally {
+            reader.dispose();
+        }
     }
 }
