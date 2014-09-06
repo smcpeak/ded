@@ -1,0 +1,22 @@
+{
+  "drawFileName": true,
+  "entities": [{
+    "loc": {
+      "x": 25,
+      "y": 35
+    },
+    "name": "non-ascii: 日本の",
+    "size": {
+      "h": 45,
+      "w": 140
+    }
+  }],
+  "inheritances": [],
+  "relations": [],
+  "type": "Diagram Editor Diagram",
+  "version": 11,
+  "windowSize": {
+    "h": 121,
+    "w": 255
+  }
+}

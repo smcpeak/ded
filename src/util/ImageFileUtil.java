@@ -24,6 +24,7 @@ public class ImageFileUtil {
     /** Write the 'bi' to 'file' in PNG format.
       *
       * If 'comment' is not null, it will be added as an image comment.
+      * However, it must only contain ASCII characters.
       *
       * If this fails, it will throw an Exception.  If it succeeds
       * but there is a warning, that warning will be returned as a
@@ -102,6 +103,28 @@ public class ImageFileUtil {
                                        String value, boolean compressed)
         throws Exception
     {
+        // Check that the comment only uses ASCII characters, since
+        // otherwise the comment will be corrupted.
+        //
+        // It would be natural here to use "iTXt", since that would allow
+        // all Unicode characters to be used.  However, I can see that there
+        // is a bug in the imageio library:
+        //
+        // http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/6-b14/com/sun/imageio/plugins/png/PNGImageWriter.java#PNGImageWriter.write_iTXt%28%29
+        //
+        // because if the compression flag is set, then the characters are
+        // simply truncated to [0,255] prior to compression.
+        {
+            for (int i=0; i < value.length(); i++) {
+                int c = value.charAt(i);
+                if (c >= 127) {
+                    throw new RuntimeException(String.format(
+                        "Comment contains non-ASCII character U+%04X, "+
+                        "so it cannot be represented in a PNG comment.", c));
+                }
+            }
+        }
+
         // Construct a magic XML document that can be "merged"
         // into the metadata to create a text chunk.  The only way
         // to know to do this is to read the source code of

@@ -770,17 +770,44 @@ public class DiagramController extends JPanel
         // Additionally, always export to PNG.
         String pngFname = fname+".png";
         try {
-            // Save the document source JSON as a comment in the image
+            // I will save the document source JSON as a comment in the image
             // file so if the source gets separated, I can still edit
             // the image.  One place this really helps is with diagrams
             // on a wiki: there is no easy way to upload both an image
             // and its source, nor even uninterpreted source files alone
             // for that matter.  It also helps with email attachments,
             // where again it is awkward to send pairs of files.
+
+            // First, get the JSON as a string.
             String comment = this.diagram.toJSONString();
 
+            // Now, this string might contain non-ASCII characters inside
+            // the JSON strings.  They need to be changed to use JSON
+            // escapes to conform to the requirements of comments in PNG
+            // files.
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < comment.length(); i++) {
+                char c = comment.charAt(i);
+                if (c >= 127) {
+                    // Render this using a JSON escape sequence.  (We
+                    // simply assume that non-ASCII characters will only
+                    // appear inside quoted strings.)
+                    //
+                    // JSON escapes use UTF-16 code units, with all the
+                    // surrogate pair ugliness, just like Java Strings,
+                    // so there is no transformation to do on them.
+                    sb.append(String.format("\\u%04X", (int)c));
+                }
+                else {
+                    // Note that 'c' here will be printable because the
+                    // procedure for rendering JSON as a string already
+                    // maps the control characters to escape sequences.
+                    sb.append(c);
+                }
+            }
+
             // Write the image to the PNG file, including with the comment.
-            writeToPNG(new File(pngFname), comment);
+            writeToPNG(new File(pngFname), sb.toString());
         }
         catch (Exception e) {
             this.exnErrorMessageBox(
@@ -801,8 +828,7 @@ public class DiagramController extends JPanel
     }
 
     /** Write the diagram in PNG format to 'file' with an optional comment.
-      *
-      * TODO: The comment will be mangled if it contains any non-ASCII characters. */
+      * The comment must only use ASCII characters. */
     public void writeToPNG(File file, String comment)
         throws Exception
     {

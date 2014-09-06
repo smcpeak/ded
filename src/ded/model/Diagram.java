@@ -8,10 +8,11 @@ import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
@@ -253,15 +254,21 @@ public class Diagram implements JSONable {
     public void saveToFile(String fname) throws Exception
     {
         JSONObject serialized = this.toJSON();
-        Writer w = null;
+        FileOutputStream fos = new FileOutputStream(fname);
         try {
-            w = new BufferedWriter(new FileWriter(fname));
-            serialized.write(w, 2, 0);
-            w.append('\n');
+            Writer w = new BufferedWriter(new OutputStreamWriter(fos, "UTF-8"));
+            try {
+                serialized.write(w, 2, 0);
+                w.append('\n');
+            }
+            finally {
+                w.close();
+                fos = null;
+            }
         }
         finally {
-            if (w != null) {
-                w.close();
+            if (fos != null) {
+                fos.close();
             }
         }
     }
@@ -270,18 +277,24 @@ public class Diagram implements JSONable {
     public static Diagram readFromFile(String fname)
         throws Exception
     {
-        Reader r = null;
-        JSONObject obj;
+        FileInputStream fis = new FileInputStream(fname);
         try {
-            r = new BufferedReader(new FileReader(fname));
-            obj = new JSONObject(new JSONTokener(r));
+            Reader r = new BufferedReader(new InputStreamReader(fis, "UTF-8"));
+            JSONObject obj;
+            try {
+                obj = new JSONObject(new JSONTokener(r));
+            }
+            finally {
+                r.close();
+                fis = null;
+            }
+            return new Diagram(obj);
         }
         finally {
-            if (r != null) {
-                r.close();
+            if (fis != null) {
+                fis.close();
             }
         }
-        return new Diagram(obj);
     }
 
     /** Serialize as a JSON string. */
