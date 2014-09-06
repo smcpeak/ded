@@ -770,7 +770,17 @@ public class DiagramController extends JPanel
         // Additionally, always export to PNG.
         String pngFname = fname+".png";
         try {
-            writeToPNG(new File(pngFname));
+            // Save the document source JSON as a comment in the image
+            // file so if the source gets separated, I can still edit
+            // the image.  One place this really helps is with diagrams
+            // on a wiki: there is no easy way to upload both an image
+            // and its source, nor even uninterpreted source files alone
+            // for that matter.  It also helps with email attachments,
+            // where again it is awkward to send pairs of files.
+            String comment = this.diagram.toJSONString();
+
+            // Write the image to the PNG file, including with the comment.
+            writeToPNG(new File(pngFname), comment);
         }
         catch (Exception e) {
             this.exnErrorMessageBox(
@@ -790,8 +800,10 @@ public class DiagramController extends JPanel
         this.repaint();
     }
 
-    /** Write the diagram in PNG format to 'file'. */
-    public void writeToPNG(File file)
+    /** Write the diagram in PNG format to 'file' with an optional comment.
+      *
+      * TODO: The comment will be mangled if it contains any non-ASCII characters. */
+    public void writeToPNG(File file, String comment)
         throws Exception
     {
         // For a large-ish diagram, this operation takes ~200ms.  For now,
@@ -816,7 +828,7 @@ public class DiagramController extends JPanel
             g.dispose();
 
             // Now, write that image to a file in PNG format.
-            String warning = ImageFileUtil.writeImageToPNGFile(bi, file);
+            String warning = ImageFileUtil.writeImageToPNGFile(bi, file, comment);
             if (warning != null) {
                 SwingUtil.warningMessageBox(this,
                     "File save completed successfully, but while exporting to PNG, "+

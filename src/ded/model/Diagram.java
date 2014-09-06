@@ -287,7 +287,7 @@ public class Diagram implements JSONable {
     /** Serialize as a JSON string. */
     public String toJSONString()
     {
-        return toJSON().toString();
+        return this.toJSON().toString();
     }
 
     /** Deserialize a JSON string; may throw JSONException. */

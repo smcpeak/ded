@@ -23,10 +23,12 @@ import javax.imageio.stream.ImageOutputStream;
 public class ImageFileUtil {
     /** Write the 'bi' to 'file' in PNG format.
       *
+      * If 'comment' is not null, it will be added as an image comment.
+      *
       * If this fails, it will throw an Exception.  If it succeeds
       * but there is a warning, that warning will be returned as a
       * String.  If there is no warning, then null is returned. */
-    public static String writeImageToPNGFile(BufferedImage bi, File file)
+    public static String writeImageToPNGFile(BufferedImage bi, File file, String comment)
         throws Exception
     {
         String warningReturn = null;
@@ -51,15 +53,17 @@ public class ImageFileUtil {
             ImageTypeSpecifier its = new ImageTypeSpecifier(bi);
             IIOMetadata iiomd = writer.getDefaultImageMetadata(its, iwp);
 
-            // Add the comment.
-            try {
-                // PNG text chunk keywords are explained at:
-                // http://www.libpng.org/pub/png/spec/iso/index-object.html#11keywords
-                addPNGTextChunk(iiomd, "Comment", "This is another test comment.");
-            }
-            catch (Exception e) {
-                warningReturn = "Failed to add PNG text chunk comment: " +
-                                Util.getExceptionMessage(e);
+            // Possibly add the comment.
+            if (comment != null) {
+                try {
+                    // PNG text chunk keywords are explained at:
+                    // http://www.libpng.org/pub/png/spec/iso/index-object.html#11keywords
+                    addPNGTextChunk(iiomd, "Comment", comment, true /*compressed*/);
+                }
+                catch (Exception e) {
+                    warningReturn = "Failed to add PNG text chunk comment: " +
+                                    Util.getExceptionMessage(e);
+                }
             }
 
             // Open the output file.
@@ -92,8 +96,10 @@ public class ImageFileUtil {
         return warningReturn;
     }
 
-    /** Add a PNG "tEXt" chunk to 'iiomd'. */
-    public static void addPNGTextChunk(IIOMetadata iiomd, String keyword, String value)
+    /** Add a PNG "tEXt" (compressed=false) or "zTXt" (compressed=true)
+      * chunk to 'iiomd'. */
+    public static void addPNGTextChunk(IIOMetadata iiomd, String keyword,
+                                       String value, boolean compressed)
         throws Exception
     {
         // Construct a magic XML document that can be "merged"
@@ -105,13 +111,19 @@ public class ImageFileUtil {
         String metadataFormatName = "javax_imageio_png_1.0";
         IIOMetadataNode commentMetadata;
         {
-            // tEXt keywords are explained at:
-            // http://www.libpng.org/pub/png/spec/iso/index-object.html#11keywords
-            IIOMetadataNode textEntry = new IIOMetadataNode("tEXtEntry");
+            IIOMetadataNode textEntry = new IIOMetadataNode(compressed? "zTXtEntry" : "tEXtEntry");
             textEntry.setAttribute("keyword", keyword);
-            textEntry.setAttribute("value", value);
+            textEntry.setAttribute((compressed? "text" : "value"), value);
+            if (compressed) {
+                // There is only one compression method defined for "zTXt"
+                // chunks.  The magic string "deflate" is embedded in the
+                // code that processes this magic XML document, and must
+                // be specified, otherwise writing the PNG throws an
+                // exception.
+                textEntry.setAttribute("compressionMethod", "deflate");
+            }
 
-            IIOMetadataNode text = new IIOMetadataNode("tEXt");
+            IIOMetadataNode text = new IIOMetadataNode(compressed? "zTXt" : "tEXt");
             text.appendChild(textEntry);
 
             commentMetadata = new IIOMetadataNode(metadataFormatName);
@@ -119,11 +131,19 @@ public class ImageFileUtil {
 
             // At this point, 'commentMetadata' looks like this:
             //
-            // <javax_imageio_png_1.0>
-            //   <tEXt>
-            //     <tEXtEntry keyword="$KEYWORD" value="$VALUE" />
-            //   </tEXt>
-            // </javax_imageio_png_1.0>
+            //   <javax_imageio_png_1.0>
+            //     <tEXt>
+            //       <tEXtEntry keyword="$KEYWORD" value="$VALUE" />
+            //     </tEXt>
+            //   </javax_imageio_png_1.0>
+            //
+            // or:
+            //
+            //   <javax_imageio_png_1.0>
+            //     <zTXt>
+            //       <zTXtEntry keyword="$KEYWORD" text="$VALUE" compressionMethod="deflate" />
+            //     </zTXt>
+            //   </javax_imageio_png_1.0>
         }
 
         // Merge it into 'iiomd'.  Internally, this reads the XML
