@@ -5,7 +5,6 @@ package ded;
 
 import java.awt.Font;
 import java.awt.Frame;
-import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -458,21 +457,7 @@ public class Ded extends JFrame implements WindowListener {
     @Override
     public void windowOpened(WindowEvent e)
     {
-        // Check the font metrics.  The line height should be 14, but
-        // OpenJDK gets the wrong answer.  OpenJDK 6 gets 13, which
-        // slightly messes up the diagrams.  OpenJDK 7 gets 0, which
-        // makes virtually all text unreadable.
-        Graphics g = this.getGraphics();
-        g.setFont(this.diagramFont);
-        int lineHeight = g.getFontMetrics().getHeight();
-        if (lineHeight != 14) {
-            SwingUtil.errorMessageBox(null /*component*/,
-                "The font line height should be 14, but is "+lineHeight+
-                ".  This indicates there is a problem with this the "+
-                "TrueType library, which can happen with OpenJDK.  Try "+
-                "using an Oracle Java run-time if you are not already. "+
-                "ded will start anyway, but the rendering may be broken.");
-        }
+        this.diagramController.checkFontRendering();
     }
 
     // WindowListener events I do not care about.

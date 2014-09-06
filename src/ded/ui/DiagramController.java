@@ -29,6 +29,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.font.LineMetrics;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -855,6 +856,102 @@ public class DiagramController extends JPanel
         finally {
             // Restore selection state.
             setSelectionSet(originalSelection);
+        }
+    }
+
+    /** Check to see if the font is rendering properly.  I have had a
+      * lot of trouble getting this to work on a wide range of
+      * machines and JVMs.  If the font rendering does not work, just
+      * alert the user to the problem but keep going. */
+    public void checkFontRendering()
+    {
+        // Render the glyph for 'A' in a box just large enough to
+        // contain it when rendered properly.
+        int width = 9;
+        int height = 11;
+        BufferedImage bi =
+            new BufferedImage(width, height,
+                              BufferedImage.TYPE_INT_ARGB);
+        Graphics g = bi.createGraphics();
+        ColorModel colorModel = bi.getColorModel();
+
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, width, height);
+
+        g.setColor(Color.BLACK);
+        g.setFont(this.dedWindow.diagramFont);
+        g.drawString("A", 0, 10);
+
+        // Print that glyph as a string.
+        StringBuilder sb = new StringBuilder();
+        for (int y=0; y < height; y++) {
+            int bits = 0;
+            for (int x=0; x < width; x++) {
+                int pixel = bi.getRGB(x,y);
+                int red = colorModel.getRed(pixel);
+                int green = colorModel.getGreen(pixel);
+                int blue = colorModel.getBlue(pixel);
+                int alpha = colorModel.getAlpha(pixel);
+                boolean isWhite = (red==255 && green==255 && blue==255 && alpha==255);
+                boolean isBlack = (red==0 && green==0 && blue==0 && alpha==255);
+                sb.append(isWhite? "_" :
+                          isBlack? "X" :
+                                   ("("+red+","+green+","+blue+","+alpha+")"));
+
+                bits <<= 1;
+                if (!isWhite) {
+                    bits |= 1;
+                }
+            }
+            sb.append(String.format("  (0x%03X)\n", bits));
+        }
+
+        // Also include some of the font metrics.
+        FontMetrics fm = g.getFontMetrics();
+        sb.append("fm: ascent="+fm.getAscent()+
+                  " leading="+fm.getLeading()+
+                  " charWidth('A')="+fm.charWidth('A')+
+                  " descent="+fm.getDescent()+
+                  " height="+fm.getHeight()+
+                  "\n");
+
+        String actualGlyph = sb.toString();
+
+        g.dispose();
+
+        // The expected glyph and metrics.
+        String expectedGlyph =
+            "_________  (0x000)\n"+
+            "____X____  (0x010)\n"+
+            "___X_X___  (0x028)\n"+
+            "___X_X___  (0x028)\n"+
+            "__X___X__  (0x044)\n"+
+            "__X___X__  (0x044)\n"+
+            "__XXXXX__  (0x07C)\n"+
+            "_X_____X_  (0x082)\n"+
+            "_X_____X_  (0x082)\n"+
+            "_X_____X_  (0x082)\n"+
+            "_________  (0x000)\n"+
+            "fm: ascent=10 leading=1 charWidth('A')=9 descent=3 height=14\n";
+
+        if (!expectedGlyph.equals(actualGlyph)) {
+            // Currently, this is known to happen when using OpenJDK 6
+            // and 7, with 6 being close to right and 7 being very bad.
+            // I also have reports of it happening on certain Mac OS/X
+            // systems, but I haven't been able to determine what the
+            // important factor there is.
+            String warningMessage =
+                "There is a problem with the font rendering.  The glyph "+
+                "for the letter 'A' should look like:\n"+
+                expectedGlyph+
+                "but it renders as:\n"+
+                actualGlyph+
+                "\n"+
+                "This probably means there is a bug in the TrueType "+
+                "font library.  You might try a different Java version.  "+
+                "(I'm working on how to solve this permanently.)";
+            System.err.println(warningMessage);
+            SwingUtil.errorMessageBox(null /*component*/, warningMessage);
         }
     }
 
