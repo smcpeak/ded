@@ -4,6 +4,7 @@
 package util;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -104,6 +105,26 @@ public class Util {
         else {
             return Arrays.copyOf(src, src.length);
         }
+    }
+
+    /** Given an Exception, extract a human-readable error message. */
+    public static String getExceptionMessage(Exception e)
+    {
+        // Many Java exceptions, especially those in the standard
+        // libraries, only convey the conflict in the name of the
+        // exception class.  That is a really bad practice, but I
+        // have to live with it.
+        String conflict = e.getClass().getSimpleName();
+
+        // Even so, some of the class names are misleading, so
+        // fix them.
+        if (e instanceof FileNotFoundException) {
+            // This really mean any failure to open a file,
+            // including permission errors.
+            conflict = "Could not open file";
+        }
+
+        return conflict+": "+e.getMessage();
     }
 }
 

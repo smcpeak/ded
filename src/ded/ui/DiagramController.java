@@ -30,17 +30,23 @@ import java.awt.event.MouseMotionListener;
 import java.awt.font.LineMetrics;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -755,17 +761,26 @@ public class DiagramController extends JPanel
     {
         try {
             this.diagram.saveToFile(fname);
-
-            // If it worked, remember the new name.
-            this.dirty = false;
-            this.importedFile = false;
-            this.setFileName(fname);
-
-            // Additionally, always export to PNG.
-            writeToPNG(new File(fname+".png"));
         }
         catch (Exception e) {
-            this.exnErrorMessageBox("Error while writing to \""+fname+"\"", e);
+            this.exnErrorMessageBox("Error while saving \""+fname+"\"", e);
+            return;
+        }
+
+        // If it worked, remember the new name.
+        this.dirty = false;
+        this.importedFile = false;
+        this.setFileName(fname);
+
+        // Additionally, always export to PNG.
+        String pngFname = fname+".png";
+        try {
+            writeToPNG(new File(pngFname));
+        }
+        catch (Exception e) {
+            this.exnErrorMessageBox(
+                "The primary diagram file \""+fname+"\" was saved successfully, "+
+                "but exporting the PNG to \""+pngFname+"\" failed", e);
         }
     }
 
@@ -782,6 +797,7 @@ public class DiagramController extends JPanel
 
     /** Write the diagram in PNG format to 'file'. */
     public void writeToPNG(File file)
+        throws Exception
     {
         // For a large-ish diagram, this operation takes ~200ms.  For now,
         // I will just acknowledge the delay.  An idea for the future is
@@ -805,40 +821,62 @@ public class DiagramController extends JPanel
             g.dispose();
 
             // Now, write that image to a file in PNG format.
-            try {
-                // This is a very convenient call, but it has many flaws.
-                //
-                // First, it unconditionally deletes 'file' before writing.
-                // That means it won't work as a symlink, does not interact
-                // with permissions as expected, etc.
-                //
-                // Second, worse, the error handling is atrocious.  In my
-                // testing, when there is a permission problem, this code
-                // prints the "Permission denied" exception to *stderr*, with
-                // no opportunity to do something reasonable with it, and
-                // then throws a totally uninformative NullPointerException.
-                //
-                // I made a brief attempt to fix these problems by copying
-                // some of the implementation code into my code, but the
-                // problems go pretty deep so I gave up.
-                //
-                // Since all of these are simply bugs in the Java libraries
-                // (my code is not doing anything incorrect), I will simply
-                // hope that eventually those bugs get fixed by Sun/Oracle.
-                ImageIO.write(bi, "png", file);
-            }
-            catch (Exception e) {
-                this.exnErrorMessageBox(
-                    "While writing PNG to \""+file+"\", the "+
-                    "following exception was raised by the ImageIO "+
-                    "library, whose error handling is really bad, so "+
-                    "good luck figuring out the real problem "+
-                    "(maybe check stderr)", e);
-            }
-
+            writeImageToPNGFile(bi, file);
         }
         finally {
             this.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
+    /** Write the 'bi' to 'file' in PNG format. */
+    public static void writeImageToPNGFile(BufferedImage bi, File file)
+        throws Exception
+    {
+        // This method's code is approximately equivalent to:
+        //   ImageIO.write(bi, "png", file);
+        // except that its file error handling is not atrocious,
+        // it works correctly when 'file' is a symlink,
+        // and I can extend it in the future to write PNG comments.
+
+        // Get a writer than can write PNG.
+        ImageWriter writer;
+        {
+            Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("png");
+            if (!writers.hasNext()) {
+                throw new RuntimeException(
+                    "Unable to write PNG image because there is no registered "+
+                    "image writer for that format.  That might mean the Java "+
+                    "run time library is incomplete somehow.");
+            }
+            writer = writers.next();
+        }
+
+        try {
+            // Open the output file.
+            OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
+            try {
+                ImageOutputStream ios = ImageIO.createImageOutputStream(os);
+                if (ios == null) {
+                    throw new RuntimeException("ImageIO.createImageOutputStream(OutputStream) failed!");
+                }
+
+                try {
+                    // Write the image data to that file.
+                    writer.setOutput(ios);
+                    writer.write(bi);
+                }
+                finally {
+                    ios.close();
+                }
+            }
+            finally {
+                // You have to dig into the source code to discover this, but
+                // closing 'ios' will *not* close 'os'.
+                os.close();
+            }
+        }
+        finally {
+            writer.dispose();
         }
     }
 
@@ -1732,11 +1770,7 @@ public class DiagramController extends JPanel
     /** Show an error message arising from Exception 'e'. */
     public void exnErrorMessageBox(String context, Exception e)
     {
-        // Java error messages are really bad.  Maybe I will fix this
-        // at some point.
-        errorMessageBox(context+": "+
-                        e.getClass().getSimpleName()+": "+e.getMessage());
-
+        errorMessageBox(context+": "+Util.getExceptionMessage(e));
     }
 
     /** Get an image for a given file name.  Save the result in an
