@@ -411,7 +411,10 @@ public class Ded extends JFrame implements WindowListener {
                 "Program version: "+version+"\n"+
                 "Maximum file version: "+Diagram.currentFileVersion+"\n"+
                 "This software is made available under the terms of the BSD license:\n"+
-                "http://opensource.org/licenses/BSD-2-Clause",
+                "http://opensource.org/licenses/BSD-2-Clause\n"+
+                "\n"+
+                "It uses the following third-party libraries:\n"+
+                "json.org JSON parser, JRE runtime.",
             "About Diagram Editor",
             JOptionPane.INFORMATION_MESSAGE,
             windowIcon32);
