@@ -166,7 +166,11 @@ public class SwingUtil {
         messageBox(parent, "Warning", JOptionPane.WARNING_MESSAGE, message);
     }
 
-    /** Show a confirmation message box with line wrapped message. */
+    /** Show a confirmation message box with line wrapped message.
+      *
+      * 'optionType' is one of the JOptionPane.XXX_OPTION combination
+      * constants, and the return value is one of the single-value
+      * constants. */
     public static int confirmationBox(
         Component parent,
         String message,
@@ -178,7 +182,7 @@ public class SwingUtil {
         pane.setMessageType(JOptionPane.QUESTION_MESSAGE);
         pane.setOptionType(optionType);
 
-        JDialog dialog = pane.createDialog(parent, "Error");
+        JDialog dialog = pane.createDialog(parent, title);
         dialog.setVisible(true);
 
         Object result = pane.getValue();

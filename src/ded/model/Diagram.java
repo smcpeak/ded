@@ -280,21 +280,30 @@ public class Diagram implements JSONable {
         FileInputStream fis = new FileInputStream(fname);
         try {
             Reader r = new BufferedReader(new InputStreamReader(fis, "UTF-8"));
-            JSONObject obj;
             try {
-                obj = new JSONObject(new JSONTokener(r));
+                return readFromReader(r);
             }
             finally {
                 r.close();
                 fis = null;
             }
-            return new Diagram(obj);
         }
         finally {
             if (fis != null) {
                 fis.close();
             }
         }
+    }
+
+    /** Read Diagram JSON out of 'r'. */
+    public static Diagram readFromReader(Reader r)
+        throws Exception
+    {
+        // Parse the raw characters into a JSON tree.
+        JSONObject obj = new JSONObject(new JSONTokener(r));
+
+        // Parse the JSON tree into a Diagram object graph.
+        return new Diagram(obj);
     }
 
     /** Serialize as a JSON string. */

@@ -33,6 +33,7 @@ import java.awt.image.ColorModel;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -616,7 +617,8 @@ public class DiagramController extends JPanel
         JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(this.currentFileChooserDirectory);
         chooser.addChoosableFileFilter(
-            new FileNameExtensionFilter("Diagram and ER Editor Files (.ded, .er)", "ded", "er"));
+            new FileNameExtensionFilter(
+                "Diagram and ER Editor Files (.ded, .png, .er)", "ded", "png", "er"));
         int res = chooser.showOpenDialog(this);
         if (res == JFileChooser.APPROVE_OPTION) {
             this.currentFileChooserDirectory = chooser.getCurrentDirectory();
@@ -627,25 +629,41 @@ public class DiagramController extends JPanel
     /** Load from the given file, replacing the current diagram. */
     public void loadFromNamedFile(String name)
     {
+        if (!new File(name).exists()) {
+            SwingUtil.errorMessageBox(this, "File \""+name+"\" does not exist.");
+            return;
+        }
+
         try {
-            // For compatibility with the C++ implementation, start
-            // by trying to read it in the ER format.
-            Diagram d = Diagram.readFromERFile(name);
-            if (d != null) {
-                // Success; but we need to indicate that the file will
-                // be saved in a different format, lest people lose
-                // their original file unexpectedly.
-                this.importedFile = true;
+            Diagram d;
+
+            // See if this is a PNG file with a DED-created comment.
+            if (name.endsWith(".png") || name.endsWith(".PNG")) {
+                d = loadFromPNG(name);
+                if (d == null) {
+                    return;     // canceled, or error already reported
+                }
             }
             else {
-                // Read the file as JSON.
-                d = Diagram.readFromFile(name);
-                this.importedFile = false;
-            }
+                // For compatibility with the C++ implementation, start
+                // by trying to read it in the ER format.
+                d = Diagram.readFromERFile(name);
+                if (d != null) {
+                    // Success; but we need to indicate that the file will
+                    // be saved in a different format, lest people lose
+                    // their original file unexpectedly.
+                    this.importedFile = true;
+                }
+                else {
+                    // Read the file as JSON.
+                    d = Diagram.readFromFile(name);
+                    this.importedFile = false;
+                }
 
-            // Success.  First, update file name.
-            this.dirty = false;
-            this.setFileName(name);
+                // Success.  Update file name.
+                this.dirty = false;
+                this.setFileName(name);
+            }
 
             // Sizing is achieved by specifying a preferred size for
             // the content pane, then packing other controls and the
@@ -659,6 +677,86 @@ public class DiagramController extends JPanel
         catch (Exception e) {
             this.exnErrorMessageBox("Error while reading \""+name+"\"", e);
         }
+    }
+
+    /** Try to load a diagram by reading the JSON out of the comment
+      * section of the PNG file 'pngName'.  If that succeeds, return
+      * non-null, and also set:
+      *
+      *   * this.importedFile
+      *   * this.dirty
+      *   * this.fileName
+      *
+      * Return null if this failed but we already explained the problem
+      * to the user, or the user cancels; or throw an exception otherwise. */
+    private Diagram loadFromPNG(String pngName)
+        throws Exception
+    {
+        // Get the name of the image source file.
+        String sourceFileName = pngName.substring(0, pngName.length()-4);
+        File sourceFile = new File(sourceFileName);
+        if (sourceFile.exists()) {
+            if (SwingUtil.confirmationBox(this,
+                    "You are trying to open a diagram PNG file \""+pngName+
+                        "\", but the source DED file \""+sourceFileName+
+                        "\" is right next to it.  Usually, you should open "+
+                        "the source file instead.  Otherwise, that source file "+
+                        "will be overwritten when you next save.  Are you sure you want to "+
+                        "read the diagram out of the PNG comment?",
+                    "Are you sure?", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION)
+            {
+                return null;
+            }
+        }
+
+        // Try to read the comment from the file.  If the file is corrupt
+        // or cannot be read, this will throw.  But if the comment is merely
+        // absent, then this will return null.
+        String comment = ImageFileUtil.getPNGComment(new File(pngName));
+        if (comment == null || comment.isEmpty()) {
+            SwingUtil.errorMessageBox(this,
+                "The PNG file \""+pngName+"\" does not contain a comment, "+
+                "so it is not possible to read the diagram source from it.");
+            return null;
+        }
+
+        // Do a preliminary sanity check on the comment.
+        if (!comment.startsWith("{")) {
+            SwingUtil.errorMessageBox(this,
+                "The PNG file \""+pngName+"\" contains a comment, "+
+                "but it does not begin with '{', so it is not a comment "+
+                "created by DED, "+
+                "so it is not possible to read the diagram source from it.");
+            return null;
+        }
+
+        // Try parsing the comment as diagram JSON.
+        Diagram d;
+        try {
+            d = Diagram.readFromReader(new StringReader(comment));
+        }
+        catch (Exception e) {
+            this.exnErrorMessageBox(
+                "The PNG file \""+pngName+"\" has a comment that might "+
+                "have been created by DED, but parsing that comment as "+
+                "a diagram source file failed", e);
+            return null;
+        }
+
+        // That worked.  Update the editor state variables.
+        this.importedFile = false;
+
+        // Note: We chop off ".png" and treat that as the name for
+        // subsequent saves.
+        this.setFileName(sourceFileName);
+
+        // The file is not considered dirty because they are no
+        // unsaved changes, even though the next save may cause
+        // on-disk changes due to overwriting a source file if the
+        // user ignored the warning above.
+        this.dirty = false;
+
+        return d;
     }
 
     /** Rebuild all the controllers from 'diagram'. */
