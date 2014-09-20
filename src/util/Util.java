@@ -5,6 +5,8 @@ package util;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -125,6 +127,15 @@ public class Util {
         }
 
         return conflict+": "+e.getMessage();
+    }
+
+    /** Given an Exception, get its stack trace as a string. */
+    public static String getExceptionStackTrace(Exception e)
+    {
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter);
+        e.printStackTrace(printWriter);
+        return stringWriter.toString();
     }
 }
 

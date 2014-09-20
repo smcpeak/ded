@@ -9,6 +9,8 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
@@ -34,6 +36,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -197,6 +200,23 @@ public class DiagramController extends JPanel
     /** Accumulated log messages. */
     private StringBuilder logMessages;
 
+    /** When true, we use a "triple buffer" render technique to
+      * avoid problems on Apple HiDPI/Retina displays. */
+    private boolean doTripleBuffer = false;
+
+    /** When true, we render frames as fast as possible and measure
+      * the resulting frames per second. */
+    private boolean fpsMeasurementMode = false;
+
+    /** Number of frames rendered since entering FPS mode. */
+    private int fpsFrameCount = 0;
+
+    /** System.currentTimeMillis() when we entered FPS mode. */
+    private long fpsStartMillis = 0;
+
+    /** Last FPS measurement. */
+    private String fpsMeasurement = null;
+
     // ------------- public methods ---------------
     public DiagramController(Ded dedWindow)
     {
@@ -213,7 +233,10 @@ public class DiagramController extends JPanel
         this.imageCache = new HashMap<String, Image>();
 
         this.logMessages = new StringBuilder();
-        this.logMessages.append("Diagram Editor started at "+(new Date())+"\n");
+        this.log("Diagram Editor started at "+(new Date()));
+
+        this.doTripleBuffer = System.getenv("DED_TRIPLE_BUFFER")!=null;
+        this.log("Triple buffer enabled: "+this.doTripleBuffer);
 
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
@@ -231,6 +254,43 @@ public class DiagramController extends JPanel
 
     @Override
     public void paint(Graphics g)
+    {
+        // Swing JPanel is double buffered already, but that is not
+        // sufficient to avoid rendering bugs on Apple computers
+        // with HiDPI/Retina displays.  This is an attempt at a
+        // hack that might circumvent it, effectively triple-buffering
+        // the rendering step.
+        if (this.doTripleBuffer) {
+            // The idea here is if I create an in-memory image with no
+            // initial association with the display, whatever hacks Apple
+            // has added should not kick in, and I get unscaled pixel
+            // rendering.
+            //
+            // This is not well optimized because the color representation
+            // for this hidden image may not match that of the display,
+            // necessitating a conversion during 'drawImage'.
+            BufferedImage bi =
+                new BufferedImage(this.getWidth(), this.getHeight(),
+                                  BufferedImage.TYPE_INT_ARGB);
+            Graphics g2 = bi.createGraphics();
+            this.innerPaint(g2);
+            g2.dispose();
+
+            g.drawImage(bi, 0, 0, null /*imageObserver*/);
+        }
+        else {
+            this.innerPaint(g);
+        }
+
+        if (this.fpsMeasurementMode) {
+            // Immediately trigger another paint cycle.
+            this.repaint();
+        }
+    }
+
+    /** The core of the paint routine, after we decide whether to interpose
+      * another buffer. */
+    private void innerPaint(Graphics g)
     {
         super.paint(g);
 
@@ -277,6 +337,22 @@ public class DiagramController extends JPanel
         // Mode label.
         if (this.mode != Mode.DCM_SELECT) {
             g.drawString("Mode: " + this.mode.description, 3, this.getHeight()-4);
+        }
+        else if (this.fpsMeasurementMode) {
+            this.fpsFrameCount++;
+            long current = System.currentTimeMillis();
+            long millis = current - this.fpsStartMillis;
+            if (millis > 1000) {
+                // Update the FPS measurement with the results for this
+                // interval.
+                this.fpsMeasurement = "FPS: "+this.fpsFrameCount+
+                    " (millis="+millis+")";
+
+                // Reset the counters.
+                this.fpsStartMillis = current;
+                this.fpsFrameCount = 0;
+            }
+            g.drawString(this.fpsMeasurement, 3, this.getHeight()-4);
         }
     }
 
@@ -530,7 +606,30 @@ public class DiagramController extends JPanel
         // Note: Some of the key bindings shown in the help dialog
         // have been moved to the menu created in Ded.java.
 
-        if (SwingUtil.controlPressed(e) || SwingUtil.altPressed(e)) {
+        if (SwingUtil.controlPressed(e)) {
+            switch (e.getKeyCode()) {
+                case KeyEvent.VK_F:
+                    if (this.fpsMeasurementMode == false) {
+                        this.fpsMeasurementMode = true;
+                        this.fpsStartMillis = System.currentTimeMillis();
+                        this.fpsFrameCount = 0;
+                        this.fpsMeasurement = "(FPS measurement in progress)";
+                        this.repaint();
+                    }
+                    else {
+                        // FPS mode already active.  We get lots of key
+                        // events due to auto-repeat.
+                    }
+                    break;
+
+                case KeyEvent.VK_G:
+                    this.fpsMeasurementMode = false;
+                    break;
+            }
+            return;
+        }
+
+        if (SwingUtil.altPressed(e)) {
             return;
         }
 
@@ -972,8 +1071,12 @@ public class DiagramController extends JPanel
         HashSet<Controller> originalSelection = this.getSelectionSet();
         setMultipleSelected(originalSelection, SelectionState.SS_UNSELECTED);
         try {
-            // Paint w/o selections.
-            this.paint(g);
+            // Paint now that selections are turned off.
+            //
+            // This uses 'innerPaint' to bypass the additional buffering
+            // logic, which is unnecessary here since we are already
+            // rendering to a hidden image to write to a file.
+            this.innerPaint(g);
         }
         finally {
             // Restore selection state.
@@ -1041,6 +1144,10 @@ public class DiagramController extends JPanel
 
         g.dispose();
 
+        // Log the actual glyph and metrics.
+        this.log("Rendering and font metrics for the letter \"A\":");
+        this.logNoNewline(actualGlyph);
+
         // The expected glyph and metrics.
         String expectedGlyph =
             "_________  (0x000)\n"+
@@ -1074,6 +1181,54 @@ public class DiagramController extends JPanel
                 "(I'm working on how to solve this permanently.)";
             System.err.println(warningMessage);
             SwingUtil.errorMessageBox(null /*component*/, warningMessage);
+        }
+    }
+
+    /** Get and log some details related to display scaling, particularly
+      * to help diagnose the graphics bugs on HiDPI/Retina displays. */
+    public void logDisplayScaling()
+    {
+        // Based on code from
+        // http://lubosplavucha.com/java/2013/09/02/retina-support-in-java-for-awt-swing/
+
+        try {
+            // Dump a bunch of possibly interesting JVM properties.
+            String propertyNames[] = {
+                "awt.toolkit",
+                "java.awt.graphicsenv",
+                "java.runtime.name",
+                "java.runtime.version",
+                "java.vendor",
+                "java.version",
+                "java.vm.name",
+                "java.vm.vendor",
+                "java.vm.version",
+            };
+            for (String name : propertyNames) {
+                this.log("property "+name+": "+System.getProperty(name));
+            }
+
+            // Try a property specific to the Apple JVM.
+            this.log("apple.awt.contentScaleFactor: " +
+                Toolkit.getDefaultToolkit().getDesktopProperty("apple.awt.contentScaleFactor"));
+
+            // Try something specific to OpenJDK.  Here, we
+            // reflectively query some private field.  Yuck.
+            GraphicsDevice gd =
+                GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+            try {
+                Field field = gd.getClass().getDeclaredField("scale");
+                field.setAccessible(true);
+                this.log("GraphicsEnvironment.scale: "+field.get(gd));
+            }
+            catch (NoSuchFieldException e) {
+                this.log("GraphicsEnvironment does not have a 'scale' field");
+            }
+        }
+        catch (Exception e) {
+            this.log("exception during logDisplayScaling(): " +
+                Util.getExceptionMessage(e));
+            this.logNoNewline(Util.getExceptionStackTrace(e));
         }
     }
 
@@ -1901,18 +2056,15 @@ public class DiagramController extends JPanel
             is = new FileInputStream(imageFile);
             Image image = ImageIO.read(is);
             if (image == null) {
-                this.logMessages.append(
-                    "no registered image reader for: "+imageFile+"\n");
+                this.log("no registered image reader for: "+imageFile);
                 return null;
             }
 
-            this.logMessages.append("loaded: "+imageFileName+"\n");
+            this.log("loaded: "+imageFileName);
             return image;
         }
         catch (Exception e) {
-            this.logMessages.append(
-                "while loading \""+imageFileName+"\": "+
-                e.getClass().getSimpleName()+": "+e.getMessage()+"\n");
+            this.log("while loading \""+imageFileName+"\": "+Util.getExceptionMessage(e));
             return null;
         }
         finally {
@@ -1928,7 +2080,7 @@ public class DiagramController extends JPanel
     /** Clear the image cache and redraw so we reload the images. */
     public void reloadEntityImages()
     {
-        this.logMessages.append("image cache cleared at "+(new Date())+"\n");
+        this.log("image cache cleared at "+(new Date()));
 
         this.imageCache.clear();
 
@@ -1938,6 +2090,21 @@ public class DiagramController extends JPanel
         }
 
         this.repaint();
+    }
+
+    /** Log the given one-line message.  A newline will be added after
+      * it to mark its end in the total accumulated log. */
+    public void log(String message)
+    {
+        this.logNoNewline(message+"\n");
+    }
+
+    /** Add a string to the accumulated log without adding a newline.
+      * This is appropriate when the message may have multiple lines,
+      * all of which are already newline-terminated. */
+    public void logNoNewline(String message)
+    {
+        this.logMessages.append(message);
     }
 
     /** If 'front' is true, make selected entities top-most so they

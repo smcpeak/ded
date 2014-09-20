@@ -461,6 +461,7 @@ public class Ded extends JFrame implements WindowListener {
     public void windowOpened(WindowEvent e)
     {
         this.diagramController.checkFontRendering();
+        this.diagramController.logDisplayScaling();
     }
 
     // WindowListener events I do not care about.
