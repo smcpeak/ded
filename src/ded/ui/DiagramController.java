@@ -352,7 +352,8 @@ public class DiagramController extends JPanel
                 this.fpsStartMillis = current;
                 this.fpsFrameCount = 0;
             }
-            g.drawString(this.fpsMeasurement, 3, this.getHeight()-4);
+            g.drawString(this.fpsMeasurement + " (Ctrl+G to stop)",
+                         3, this.getHeight()-4);
         }
     }
 
