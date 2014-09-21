@@ -14,7 +14,6 @@ Small:
 - flag to turn off auto move/resize of window contents
 
 Medium:
-- entities with hyperlinks, export HTML link map
 - smarter relation routing
 - undo/redo
 - help bubbles
