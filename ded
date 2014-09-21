@@ -11,14 +11,31 @@ done
 
 instdir=`dirname "$me"`
 
+# running on Windows?
+case "$OS" in
+  Windows*)
+    is_windows=true
+    ;;
+
+  *)
+    is_windows=false
+    ;;
+esac
+
 # Use the JAR file if is there.
 jarfile="$instdir/dist/ded.jar"
 if [ -f "$jarfile" ]; then
+  if $is_windows; then
+    jarfile=`cygpath -w "$jarfile"`
+  fi
   exec java -ea -jar "$jarfile" "$@"
 fi
 
 classpath="$instdir/bin"
 if [ -d "$classpath" ]; then
+  if $is_windows; then
+    classpath=`cygpath -w "$classpath"`
+  fi
   exec java -classpath "$classpath" -ea ded.Ded "$@"
 else
   echo "Missing: $classpath or $jarfile"

@@ -137,6 +137,14 @@ public class Util {
         e.printStackTrace(printWriter);
         return stringWriter.toString();
     }
+    
+    // strcmp-style comparison of integers.
+    public static int compareInts(int a, int b)
+    {
+        return a < b ? -1 :
+               a > b ? +1 :
+                        0 ;
+    }
 }
 
 // EOF
