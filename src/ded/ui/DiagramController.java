@@ -9,6 +9,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
@@ -200,9 +201,12 @@ public class DiagramController extends JPanel
     /** Accumulated log messages. */
     private StringBuilder logMessages;
 
-    /** When true, we use a "triple buffer" render technique to
-      * avoid problems on Apple HiDPI/Retina displays. */
-    private boolean doTripleBuffer = false;
+    /** When not 0, we use a "triple buffer" render technique to
+      * avoid problems on Apple HiDPI/Retina displays.  Mode -1
+      * uses a "compatible" image.  Other values are treated as
+      * "imageType" arguments to BufferedImage; for example, 1
+      * is TYPE_INT_RGB, 2 is TYPE_INT_ARGB, etc. */
+    private int tripleBufferMode = 0;
 
     /** When true, we render frames as fast as possible and measure
       * the resulting frames per second. */
@@ -216,6 +220,13 @@ public class DiagramController extends JPanel
 
     /** Last FPS measurement. */
     private String fpsMeasurement = null;
+
+    /** Number of FPS samples reported.  This is useful because
+      * the effects of the JIT mean the number naturally climbs
+      * over time, so I need to know about how long I have been
+      * running FPS measurement so I can pick a consistent point
+      * to stop and consider the measurement final. */
+    private int fpsSampleCount = 0;
 
     // ------------- public methods ---------------
     public DiagramController(Ded dedWindow)
@@ -235,8 +246,17 @@ public class DiagramController extends JPanel
         this.logMessages = new StringBuilder();
         this.log("Diagram Editor started at "+(new Date()));
 
-        this.doTripleBuffer = System.getenv("DED_TRIPLE_BUFFER")!=null;
-        this.log("Triple buffer enabled: "+this.doTripleBuffer);
+        String tbm = System.getenv("DED_TRIPLE_BUFFER");
+        if (tbm != null) {
+            try {
+                this.tripleBufferMode = Integer.valueOf(tbm);
+            }
+            catch (NumberFormatException e) {
+                this.log("invalid DED_TRIPLE_BUFFER value \""+tbm+
+                         "\": "+Util.getExceptionMessage(e));
+            }
+        }
+        this.log("DED_TRIPLE_BUFFER: "+this.tripleBufferMode);
 
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
@@ -260,18 +280,50 @@ public class DiagramController extends JPanel
         // with HiDPI/Retina displays.  This is an attempt at a
         // hack that might circumvent it, effectively triple-buffering
         // the rendering step.
-        if (this.doTripleBuffer) {
+        if (this.tripleBufferMode != 0) {
             // The idea here is if I create an in-memory image with no
             // initial association with the display, whatever hacks Apple
             // has added should not kick in, and I get unscaled pixel
             // rendering.
-            //
-            // This is not well optimized because the color representation
-            // for this hidden image may not match that of the display,
-            // necessitating a conversion during 'drawImage'.
-            BufferedImage bi =
-                new BufferedImage(this.getWidth(), this.getHeight(),
-                                  BufferedImage.TYPE_INT_ARGB);
+            BufferedImage bi;
+
+            if (this.tripleBufferMode == -1) {
+                // This is not right because we might be drawing on a
+                // different screen than the "default" screen.  Also, I
+                // am worried that a "compatible" image might be one
+                // subject to the scaling effects I'm trying to avoid.
+                GraphicsDevice gd =
+                    GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+                GraphicsConfiguration gc = gd.getDefaultConfiguration();
+                bi = gc.createCompatibleImage(this.getWidth(), this.getHeight());
+            }
+            else {
+                // This is not ideal because the color representation
+                // for this hidden image may not match that of the display,
+                // necessitating a conversion during 'drawImage'.
+                try {
+                    bi = new BufferedImage(this.getWidth(), this.getHeight(),
+                                           this.tripleBufferMode);
+                }
+                catch (IllegalArgumentException e) {
+                    // This would happen if 'tripleBufferMode' were invalid.
+                    if (this.tripleBufferMode == BufferedImage.TYPE_INT_ARGB) {
+                        // I don't know how this could happen.  Re-throw.
+                        this.log("creating a BufferedImage with TYPE_INT_ARGB failed: "+Util.getExceptionMessage(e));
+                        this.log("re-throwing exception...");
+                        throw e;
+                    }
+                    else {
+                        // Change it to something known to be valid and try again.
+                        this.log("creating a BufferedImage with imageType "+this.tripleBufferMode+
+                                 " failed: "+Util.getExceptionMessage(e));
+                        this.log("switching type to TYPE_INT_ARGB and re-trying...");
+                        this.tripleBufferMode = BufferedImage.TYPE_INT_ARGB;
+                        this.paint(g);
+                        return;
+                    }
+                }
+            }
             Graphics g2 = bi.createGraphics();
             this.innerPaint(g2);
             g2.dispose();
@@ -345,8 +397,9 @@ public class DiagramController extends JPanel
             if (millis > 1000) {
                 // Update the FPS measurement with the results for this
                 // interval.
+                this.fpsSampleCount++;
                 this.fpsMeasurement = "FPS: "+this.fpsFrameCount+
-                    " (millis="+millis+")";
+                    " (millis="+millis+", samples="+this.fpsSampleCount+")";
 
                 // Reset the counters.
                 this.fpsStartMillis = current;
@@ -1145,10 +1198,6 @@ public class DiagramController extends JPanel
 
         g.dispose();
 
-        // Log the actual glyph and metrics.
-        this.log("Rendering and font metrics for the letter \"A\":");
-        this.logNoNewline(actualGlyph);
-
         // The expected glyph and metrics.
         String expectedGlyph =
             "_________  (0x000)\n"+
@@ -1181,6 +1230,7 @@ public class DiagramController extends JPanel
                 "font library.  You might try a different Java version.  "+
                 "(I'm working on how to solve this permanently.)";
             System.err.println(warningMessage);
+            this.log(warningMessage);
             SwingUtil.errorMessageBox(null /*component*/, warningMessage);
         }
     }
@@ -1225,6 +1275,23 @@ public class DiagramController extends JPanel
             catch (NoSuchFieldException e) {
                 this.log("GraphicsEnvironment does not have a 'scale' field");
             }
+
+            // Check some details of "compatible" images.
+            GraphicsConfiguration gc = gd.getDefaultConfiguration();
+            BufferedImage bi = gc.createCompatibleImage(64,64);
+            ColorModel cm = bi.getColorModel();
+            this.log("compatible image color model: "+cm);
+
+            // Do the same for a specific imageType that seems to be
+            // commonly used, and that I am using when saving to PNG.
+            bi = new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB);
+            cm = bi.getColorModel();
+            this.log("TYPE_INT_ARGB color model: "+cm);
+
+            // And one more.
+            bi = new BufferedImage(64, 64, BufferedImage.TYPE_INT_RGB);
+            cm = bi.getColorModel();
+            this.log("TYPE_INT_RGB color model: "+cm);
         }
         catch (Exception e) {
             this.log("exception during logDisplayScaling(): " +

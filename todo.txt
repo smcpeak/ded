@@ -21,4 +21,20 @@ Big:
 - add entity shapes to allow mocking UIs
 - add automated testing for the UI
 
+
+
+
+
+
+
+----------------
+Measuring effect of various "triple buffering" image types
+
+Using test.ded, on 20th sample:
+  normal: 810 FPS (no "triple" buffering)
+  ARGB: 345 FPS
+  RGB: 602 FPS
+  compatible: 547 FPS (but was about to hit 600; think is same as RGB)
+  USHORT_555_RGB: 142 FPS
+
 EOF
