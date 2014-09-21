@@ -267,7 +267,7 @@ public class DiagramController extends JPanel
         this.addFocusListener(this);
 
         this.setFocusable(true);
-        
+
         // I want to see Tab and Shift Tab keys in my KeyListener.
         this.setFocusTraversalKeysEnabled(false);
     }
@@ -713,7 +713,7 @@ public class DiagramController extends JPanel
             case KeyEvent.VK_H:
                 this.showHelpBox();
                 break;
-                
+
             case KeyEvent.VK_TAB:
                 this.selectNextController(!SwingUtil.shiftPressed(e) /*forward*/);
                 break;
@@ -728,24 +728,24 @@ public class DiagramController extends JPanel
         {
             Point aLoc = a.getLoc();
             Point bLoc = b.getLoc();
-            
+
             int cmp = Util.compareInts(aLoc.y, bLoc.y);
             if (cmp != 0) {
                 return cmp;
             }
-            
+
             cmp = Util.compareInts(aLoc.x, bLoc.x);
             if (cmp != 0) {
                 return cmp;
             }
-            
+
             return 0;
         }
     }
-    
+
     /** If a controller is selected, cycle to either the next or
       * previous depending on 'forward' (true means next).
-      * 
+      *
       * Otherwise, select the first controller if there is one. */
     public void selectNextController(boolean forward)
     {
@@ -763,7 +763,7 @@ public class DiagramController extends JPanel
         // controllers' locations to make the cycle order more
         // predictable.
         Collections.sort(controllerCycle, new ControllerLocationComparator());
-        
+
         // Locate the currently selected controller in the sorted cycle.
         int curSelIndex = controllerCycle.indexOf(this.getUniqueSelected());
         if (curSelIndex == -1) {
@@ -785,7 +785,7 @@ public class DiagramController extends JPanel
         // Select it.
         selectOnly(controllerCycle.get(nextSelIndex));
     }
-    
+
     /** Show the box with the key bindings. */
     public void showHelpBox()
     {
