@@ -37,6 +37,10 @@ public class Relation {
     /** Text label for the relation. */
     public String label = "";
 
+    /** Optional line width.  If null, use default, which depends
+      * on whether this is an inheritance edge. */
+    public Integer lineWidth = null;
+
     // -------------------- methods ----------------------
     public Relation(RelationEndpoint start, RelationEndpoint end)
     {
@@ -56,6 +60,7 @@ public class Relation {
 
         this.routingAlg = obj.routingAlg;
         this.label = obj.label;
+        this.lineWidth = obj.lineWidth;
     }
 
     /** True if either endpoint is referentially equal to 'e'. */
@@ -91,7 +96,8 @@ public class Relation {
                    this.end.equals(r.end) &&
                    this.controlPts.equals(r.controlPts) &&
                    this.routingAlg.equals(r.routingAlg) &&
-                   this.label.equals(r.label);
+                   this.label.equals(r.label) &&
+                   Util.nullableEquals(this.lineWidth, r.lineWidth);
         }
         return false;
     }
@@ -105,6 +111,7 @@ public class Relation {
         h = h*31 + Util.collectionHashCode(this.controlPts);
         h = h*31 + this.routingAlg.hashCode();
         h = h*31 + this.label.hashCode();
+        h = h*31 + Util.nullableHashCode(this.lineWidth);
         return h;
     }
 
@@ -133,6 +140,10 @@ public class Relation {
 
             if (!this.label.isEmpty()) {
                 o.put("label", this.label);
+            }
+
+            if (this.lineWidth != null) {
+                o.put("lineWidth", this.lineWidth.intValue());
             }
         }
         catch (JSONException e) { assert(false); }
@@ -168,6 +179,10 @@ public class Relation {
         if (version < 9) {
             // The end arrowhead style was associated with the relation itself.
             this.setLegacyOwning(o.optBoolean("owning", false));
+        }
+
+        if (o.has("lineWidth")) {
+            this.lineWidth = Integer.valueOf(o.getInt("lineWidth"));
         }
     }
 

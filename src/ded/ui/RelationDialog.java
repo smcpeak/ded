@@ -8,7 +8,9 @@ import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 
+import util.Util;
 import util.swing.ModalDialog;
+import util.swing.SwingUtil;
 
 import ded.model.ArrowStyle;
 import ded.model.Relation;
@@ -24,6 +26,7 @@ public class RelationDialog extends ModalDialog {
 
     // Controls.
     private JTextField labelField;
+    private JTextField lineWidthField;
     private JComboBox routingChooser;
     private JComboBox startArrowStyleChooser, endArrowStyleChooser;
 
@@ -37,6 +40,10 @@ public class RelationDialog extends ModalDialog {
         Box vb = ModalDialog.makeMarginVBox(this, ModalDialog.OUTER_MARGIN);
 
         this.labelField = ModalDialog.makeLineEdit(vb, "Label:", 'l', this.relation.label);
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+
+        this.lineWidthField = ModalDialog.makeLineEdit(vb, "Line width:", 'w',
+                this.relation.lineWidth==null? "" : String.valueOf(this.relation.lineWidth));
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
         // Routing algorithm.
@@ -79,6 +86,31 @@ public class RelationDialog extends ModalDialog {
         ArrowStyle endStyle = (ArrowStyle)this.endArrowStyleChooser.getSelectedItem();
 
         this.relation.label = this.labelField.getText();
+
+        String lwt = this.lineWidthField.getText();
+        try {
+            if (lwt.isEmpty()) {
+                this.relation.lineWidth = null;
+            }
+            else {
+                this.relation.lineWidth = Integer.valueOf(lwt);
+
+                // I'd actually like 0 to be allowed and mean to not draw
+                // the line.  But, at the moment, 0 is treated the same as
+                // 1, so make it illegal.
+                if (this.relation.lineWidth < 1) {
+                    SwingUtil.errorMessageBox(this,
+                        "Line width must be positive: "+this.relation.lineWidth);
+                    return;      // no super.okPressed
+                }
+            }
+        }
+        catch (NumberFormatException e) {
+            SwingUtil.errorMessageBox(this,
+                "Cannot parse line width \""+lwt+"\": "+Util.getExceptionMessage(e));
+            return;     // do *not* call super.okPressed()
+        }
+
         this.relation.routingAlg = ra;
         this.relation.start.arrowStyle = startStyle;
         this.relation.end.arrowStyle = endStyle;
