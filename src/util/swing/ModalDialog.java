@@ -151,7 +151,7 @@ public class ModalDialog extends JDialog {
                                           String initialValue)
     {
         Box hbox = ModalDialog.makeHBox(parent);
-        JLabel labelControl = new JLabel(label);
+        JLabel labelControl = new JLabel(label+":");
         labelControl.setDisplayedMnemonic(mnemonic);
         hbox.add(labelControl);
 
@@ -193,6 +193,24 @@ public class ModalDialog extends JDialog {
         disallowVertStretch(hbox);
 
         return ret;
+    }
+
+    /** Same as 'makeLineEdit', except also add a help button that will
+      * pop up a help dialog on top of 'parentWindow' with 'helpText'. */
+    public static JTextField makeLineEditWithHelp(
+        Container parentBox,
+        String label,
+        char mnemonic,
+        String initialValue,
+        Component parentWindow,
+        String helpText)
+    {
+        Box hb = ModalDialog.makeHBox(parentBox);
+        JTextField textField = ModalDialog.makeLineEdit(hb,
+            label, mnemonic, initialValue);
+        hb.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
+        hb.add(ModalDialog.makeHelpButton(parentWindow, label, helpText));
+        return textField;
     }
 
     /** Set min/max height to preferred height in order to disallow
@@ -278,7 +296,7 @@ public class ModalDialog extends JDialog {
     {
         Box hbox = ModalDialog.makeHBox(containingBox);
 
-        JLabel lbl = new JLabel(label);
+        JLabel lbl = new JLabel(label+":");
         lbl.setDisplayedMnemonic(labelMnemonic);
         hbox.add(lbl);
         hbox.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
@@ -292,6 +310,28 @@ public class ModalDialog extends JDialog {
         ModalDialog.disallowVertStretch(hbox);
 
         return comboBox;
+    }
+
+    /** Create a button that, when pressed, shows a help dialog with
+      * 'helpText' in it.  The help dialog caption will be
+      * "Help: $labelText". */
+    public static JButton makeHelpButton(
+        final Component parentWindow,
+        final String labelText,
+        final String helpText)
+    {
+        // This label causes the help button to be a bit wider than
+        // I would like, but I tried setting the size explicitly and
+        // it did not work (was ignored).
+        JButton helpButton = new JButton("?");
+
+        helpButton.addActionListener(new ActionListener() {
+            @Override public void actionPerformed(ActionEvent e) {
+                SwingUtil.informationMessageBox(parentWindow,
+                    "Help: "+labelText, helpText);
+            }
+        });
+        return helpButton;
     }
 
     /** Create Cancel and OK buttons and add them to 'containingVBox'. */

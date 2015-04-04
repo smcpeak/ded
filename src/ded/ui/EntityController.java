@@ -773,6 +773,19 @@ public class EntityController extends Controller
             });
         }
         menu.add(shapeMenu);
+
+        menu.add(new AbstractAction("Set anchor name to entity name") {
+            public void actionPerformed(ActionEvent e) {
+                ths.diagramController.setSelectedEntitiesAnchorName(
+                    DiagramController.SetAnchorCommand.SAC_SET_TO_ENTITY_NAME);
+            }
+        });
+        menu.add(new AbstractAction("Clear anchor name") {
+            public void actionPerformed(ActionEvent e) {
+                ths.diagramController.setSelectedEntitiesAnchorName(
+                    DiagramController.SetAnchorCommand.SAC_CLEAR);
+            }
+        });
     }
 
     /** Create a new entity at location 'p' in 'dc'.  This corresponds to
@@ -898,6 +911,14 @@ public class EntityController extends Controller
             this.setSelected(this.selState);
 
             this.diagramController.diagramChanged();
+        }
+        else {
+            // There is an odd bug in Swing: if I double-click an entity,
+            // then inside the entity dialog, open a help bubble, then
+            // cancel all the way out, then the portion of the entity box
+            // that was hidden by the entity dialog will not be redrawn
+            // correctly.  So, force a repaint when the dialog closes.
+            this.diagramController.repaint();
         }
     }
 

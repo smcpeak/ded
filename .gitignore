@@ -3,3 +3,5 @@ in
 cov
 dist
 data-coverity
+tests/image-map/output.html
+*.bak

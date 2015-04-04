@@ -37,13 +37,13 @@ public class RelationDialog extends ModalDialog {
 
         Box vb = ModalDialog.makeMarginVBox(this, ModalDialog.OUTER_MARGIN);
 
-        this.labelField = ModalDialog.makeLineEdit(vb, "Label:", 'l', this.relation.label);
+        this.labelField = ModalDialog.makeLineEdit(vb, "Label", 'l', this.relation.label);
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
         // Routing algorithm.
         this.routingChooser = ModalDialog.makeEnumChooser(
             vb,
-            "Routing algorithm:",
+            "Routing algorithm",
             'r',
             RoutingAlgorithm.class,
             this.relation.routingAlg);
@@ -52,14 +52,14 @@ public class RelationDialog extends ModalDialog {
         // Arrow styles.
         this.startArrowStyleChooser = ModalDialog.makeEnumChooser(
             vb,
-            "Start arrow style:",
+            "Start arrow style",
             's',
             ArrowStyle.class,
             this.relation.start.arrowStyle);
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
         this.endArrowStyleChooser = ModalDialog.makeEnumChooser(
             vb,
-            "End arrow style:",
+            "End arrow style",
             'e',
             ArrowStyle.class,
             this.relation.end.arrowStyle);

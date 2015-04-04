@@ -61,6 +61,12 @@ public class Entity implements JSONable {
     /** Shape-specific flags. */
     public EnumSet<ShapeFlag> shapeFlags = ShapeFlag.defaultFlagsForShape(defaultShape);
 
+    /** Name of anchor in an HTML document for a section that describes
+      * this entity.  This is only used by a separate Python script,
+      * 'insert-ded-image-map' that reads the 'ded' JSON format and
+      * writes an HTML image map. */
+    public String anchorName = "";
+
     /** File name of image to draw as the entity background instead of
       * 'fillColor' (which is then not used for most shapes).  When
       * rendered, if relative, the this will be interpreted as relative
@@ -170,6 +176,10 @@ public class Entity implements JSONable {
                 o.put("fillColor", this.fillColor);
             }
 
+            if (!this.anchorName.isEmpty()) {
+                o.put("anchorName", this.anchorName);
+            }
+
             if (!this.imageFileName.isEmpty()) {
                 o.put("imageFileName", this.imageFileName);
             }
@@ -209,6 +219,10 @@ public class Entity implements JSONable {
 
         if (ver >= 5) {
             this.fillColor = o.optString("fillColor", defaultFillColor);
+        }
+
+        if (ver >= 12) {
+            this.anchorName = o.optString("anchorName", "");
         }
 
         if (ver >= 7) {

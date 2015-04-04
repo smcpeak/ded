@@ -1,0 +1,73 @@
+{
+  "drawFileName": true,
+  "entities": [
+    {
+      "anchorName": "anchor-a",
+      "loc": {
+        "x": 15,
+        "y": 30
+      },
+      "name": "Box A",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "anchorName": "anchor-b-blah",
+      "attributes": "some attrib1\nattrib2",
+      "loc": {
+        "x": 125,
+        "y": 30
+      },
+      "name": "Box B",
+      "size": {
+        "h": 65,
+        "w": 100
+      }
+    },
+    {
+      "attributes": "has no anchor\n",
+      "loc": {
+        "x": 235,
+        "y": 30
+      },
+      "name": "Box C",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 345,
+        "y": 30
+      },
+      "name": "Box D",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "anchorName": "BoxE",
+      "loc": {
+        "x": 455,
+        "y": 30
+      },
+      "name": "BoxE",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    }
+  ],
+  "inheritances": [],
+  "relations": [],
+  "type": "Diagram Editor Diagram",
+  "version": 12,
+  "windowSize": {
+    "h": 113,
+    "w": 580
+  }
+}

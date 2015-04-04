@@ -44,9 +44,9 @@ public class RelationControlPointDialog extends ModalDialog {
         {
             Point curPt = this.relation.controlPts.get(this.whichCP);
             Box locBox = ModalDialog.makeHBox(vb);
-            this.xText = ModalDialog.makeLineEdit(locBox, "X:", 'x', String.valueOf(curPt.x));
+            this.xText = ModalDialog.makeLineEdit(locBox, "X", 'x', String.valueOf(curPt.x));
             locBox.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
-            this.yText = ModalDialog.makeLineEdit(locBox, "Y:", 'y', String.valueOf(curPt.y));
+            this.yText = ModalDialog.makeLineEdit(locBox, "Y", 'y', String.valueOf(curPt.y));
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
             ModalDialog.disallowVertStretch(locBox);
         }

@@ -166,6 +166,13 @@ public class SwingUtil {
         messageBox(parent, "Warning", JOptionPane.WARNING_MESSAGE, message);
     }
 
+    /** Show an information message dialog box with message word wrapping. */
+    public static void informationMessageBox(Component parent,
+        String caption, String message)
+    {
+        messageBox(parent, caption, JOptionPane.INFORMATION_MESSAGE, message);
+    }
+
     /** Show a confirmation message box with line wrapped message.
       *
       * 'optionType' is one of the JOptionPane.XXX_OPTION combination

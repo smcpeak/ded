@@ -2151,6 +2151,45 @@ public class DiagramController extends JPanel
         this.diagramChanged();
     }
 
+    public static enum SetAnchorCommand {
+        // Set the anchor name to equal the entity name.
+        SAC_SET_TO_ENTITY_NAME,
+
+        // Clear the anchor name.
+        SAC_CLEAR
+    }
+
+    /** Change the selected entities' anchor names in accordance with
+      * 'command'. */
+    public void setSelectedEntitiesAnchorName(SetAnchorCommand command)
+    {
+        int count = 0;
+        for (Controller c : this.controllers) {
+            if (c.isSelected() && c instanceof EntityController) {
+                EntityController ec = (EntityController)c;
+                switch (command) {
+                    case SAC_SET_TO_ENTITY_NAME:
+                        ec.entity.anchorName = ec.entity.name;
+                        break;
+
+                    case SAC_CLEAR:
+                        ec.entity.anchorName = "";
+                        break;
+                }
+                count++;
+            }
+        }
+
+        if (count == 0) {
+            errorMessageBox("There were no selected entities?  Should not happen.");
+        }
+        else {
+            SwingUtil.informationMessageBox(this, "Updated entities",
+                "Updated the anchor names of "+count+" entities.");
+        }
+        this.diagramChanged();
+    }
+
     /** Show an error message dialog box with 'message'. */
     public void errorMessageBox(String message)
     {

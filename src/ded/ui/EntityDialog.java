@@ -60,6 +60,7 @@ public class EntityDialog extends ModalDialog
     private JTextField xText, yText, wText, hText;
     private JLabel paramsLabel;
     private JTextField pText, qText;
+    private JTextField anchorNameText;
     private JTextField imageFileNameText;
     private JComboBox<ImageFillStyle> imageFillStyleChooser;
 
@@ -79,7 +80,7 @@ public class EntityDialog extends ModalDialog
 
         Box vb = ModalDialog.makeMarginVBox(this, ModalDialog.OUTER_MARGIN);
 
-        this.nameText = ModalDialog.makeLineEdit(vb, "Name:", 'n', this.entity.name);
+        this.nameText = ModalDialog.makeLineEdit(vb, "Name", 'n', this.entity.name);
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
         // attributes
@@ -115,7 +116,7 @@ public class EntityDialog extends ModalDialog
 
             this.shapeChooser = ModalDialog.makeEnumChooser(
                 shapeBox,
-                "Shape:",
+                "Shape",
                 's',
                 EntityShape.class,
                 this.entity.shape);
@@ -153,7 +154,7 @@ public class EntityDialog extends ModalDialog
 
             this.fillColorChooser = ModalDialog.makeVectorChooser(
                 vb,
-                "Fill color:",
+                "Fill color",
                 'f',
                 colors,
                 this.entity.fillColor);
@@ -164,9 +165,9 @@ public class EntityDialog extends ModalDialog
         // x, y
         {
             Box locBox = ModalDialog.makeHBox(vb);
-            this.xText = ModalDialog.makeLineEdit(locBox, "X:", 'x', String.valueOf(this.entity.loc.x));
+            this.xText = ModalDialog.makeLineEdit(locBox, "X", 'x', String.valueOf(this.entity.loc.x));
             locBox.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
-            this.yText = ModalDialog.makeLineEdit(locBox, "Y:", 'y', String.valueOf(this.entity.loc.y));
+            this.yText = ModalDialog.makeLineEdit(locBox, "Y", 'y', String.valueOf(this.entity.loc.y));
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
             ModalDialog.disallowVertStretch(locBox);
         }
@@ -174,9 +175,9 @@ public class EntityDialog extends ModalDialog
         // w, h
         {
             Box sizeBox = ModalDialog.makeHBox(vb);
-            this.wText = ModalDialog.makeLineEdit(sizeBox, "W:", 'w', String.valueOf(this.entity.size.width));
+            this.wText = ModalDialog.makeLineEdit(sizeBox, "W", 'w', String.valueOf(this.entity.size.width));
             sizeBox.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
-            this.hText = ModalDialog.makeLineEdit(sizeBox, "H:", 'h', String.valueOf(this.entity.size.height));
+            this.hText = ModalDialog.makeLineEdit(sizeBox, "H", 'h', String.valueOf(this.entity.size.height));
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
             ModalDialog.disallowVertStretch(sizeBox);
         }
@@ -202,23 +203,46 @@ public class EntityDialog extends ModalDialog
             }
 
             Box hb = ModalDialog.makeHBox(vb);
-            this.pText = ModalDialog.makeLineEdit(hb, "P:", 'p', p);
+            this.pText = ModalDialog.makeLineEdit(hb, "P", 'p', p);
             hb.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
-            this.qText = ModalDialog.makeLineEdit(hb, "Q:", 'q', q);
+            this.qText = ModalDialog.makeLineEdit(hb, "Q", 'q', q);
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
             ModalDialog.disallowVertStretch(hb);
         }
 
+        // HTML anchor name
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
-        this.imageFileNameText = ModalDialog.makeLineEdit(vb,
-            "Image file name:", 'i', this.entity.imageFileName);
+        this.anchorNameText = ModalDialog.makeLineEditWithHelp(vb,
+            "HTML anchor name", 'c', this.entity.anchorName, this,
 
-        // shape
+            "The anchor name is used by the 'insert-ded-image-map' "+
+            "script, which inserts an image map into an HTML "+
+            "document.  The script is in the root of the 'ded' "+
+            "repo, and has comments inside explaining how to "+
+            "use it.  The anchor name should *not* contain an "+
+            "initial '#' character.\n\n"+
+
+            "Often, one wants the anchor name to be the same as the "+
+            "entity name.  There is a right-click menu option on "+
+            "entities that will set the anchor name to the entity name "+
+            "for any set of selected entities.");
+
+        // image file name
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+        this.imageFileNameText = ModalDialog.makeLineEditWithHelp(vb,
+            "Image file name", 'i', this.entity.imageFileName, this,
+
+            "Name of an image file residing in the same directory as "+
+            "this diagram's .ded file.  The image will be drawn inside "+
+            "the entity box, possibly tiled, etc., according to the "+
+            "image fill style dropdown.");
+
+        // image fill style
         {
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
             this.imageFillStyleChooser = ModalDialog.makeEnumChooser(
                 vb,
-                "Image fill style:",
+                "Image fill style",
                 'm',
                 ImageFillStyle.class,
                 this.entity.imageFillStyle);
@@ -319,6 +343,7 @@ public class EntityDialog extends ModalDialog
         this.entity.loc.y = y;
         this.entity.size.width = w;
         this.entity.size.height = h;
+        this.entity.anchorName = this.anchorNameText.getText();
         this.entity.imageFileName = this.imageFileNameText.getText();
         this.entity.imageFillStyle = imageFillStyle;
 
