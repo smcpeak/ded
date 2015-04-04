@@ -25,7 +25,6 @@
       }
     },
     {
-      "anchorName": "relation-endpoint",
       "attributes": "Point pt",
       "loc": {
         "x": 196,
@@ -74,7 +73,6 @@
       }
     },
     {
-      "anchorName": "entity",
       "attributes": "Point loc\nSize size\nstring name\nstring attributes\nshape in\n  { box, ellipse, ... }",
       "loc": {
         "x": 13,

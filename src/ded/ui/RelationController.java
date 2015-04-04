@@ -374,14 +374,27 @@ public class RelationController extends Controller {
             return;
         }
 
-        // Special lines for inheritacne.
-        if (this.relation.end.isInheritance()) {
-            g.setStroke(new BasicStroke(
-                InheritanceController.inheritLineWidth,
-                BasicStroke.CAP_BUTT,
-                BasicStroke.JOIN_MITER));
-            g.setColor(InheritanceController.inheritLineColor);
+        // Choose line width.
+        int lineWidth = 1;
+        if (this.relation.lineWidth != null) {
+            lineWidth = this.relation.lineWidth.intValue();
         }
+        else if (this.relation.end.isInheritance()) {
+            lineWidth = InheritanceController.inheritLineWidth;
+        }
+
+        // Choose line color.
+        Color lineColor = Color.BLACK;
+        if (this.relation.end.isInheritance()) {
+            lineColor = InheritanceController.inheritLineColor;
+        }
+
+        // Activate width and color.
+        g.setStroke(new BasicStroke(
+            lineWidth,
+            BasicStroke.CAP_BUTT,
+            BasicStroke.JOIN_MITER));
+        g.setColor(lineColor);
 
         // Draw each segment.
         for (int i=1; i < points.size(); i++) {
