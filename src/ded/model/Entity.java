@@ -294,6 +294,7 @@ public class Entity implements JSONable {
         this.attributes = obj.attributes;
         this.shapeParams = Util.copyArray(obj.shapeParams);
         this.shapeFlags = obj.shapeFlags.clone();
+        this.anchorName = obj.anchorName;
         this.imageFileName = obj.imageFileName;
         this.imageFillStyle = obj.imageFillStyle;
     }
@@ -314,6 +315,7 @@ public class Entity implements JSONable {
                    this.attributes.equals(e.attributes) &&
                    Arrays.equals(this.shapeParams, e.shapeParams) &&
                    this.shapeFlags.equals(e.shapeFlags) &&
+                   this.anchorName.equals(e.anchorName) &&
                    this.imageFileName.equals(e.imageFileName) &&
                    this.imageFillStyle.equals(e.imageFillStyle);
         }
@@ -332,6 +334,7 @@ public class Entity implements JSONable {
         h = h*31 + this.attributes.hashCode();
         h = h*31 + Arrays.hashCode(this.shapeParams);
         h = h*31 + this.shapeFlags.hashCode();
+        h = h*31 + this.anchorName.hashCode();
         h = h*31 + this.imageFileName.hashCode();
         h = h*31 + this.imageFillStyle.hashCode();
         return h;
