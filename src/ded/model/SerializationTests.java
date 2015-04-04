@@ -23,7 +23,7 @@ public class SerializationTests {
 
         // Parse inputs specified on command line.
         for (String a : args) {
-            t.testParseFile(a);
+            testParseFile(a);
         }
     }
 
@@ -93,7 +93,7 @@ public class SerializationTests {
         assert(ser2.equals(serialized));
     }
 
-    private void testParseFile(String fname) throws Exception
+    private static void testParseFile(String fname) throws Exception
     {
         System.out.println("testing: "+fname);
 

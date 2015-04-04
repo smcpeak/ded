@@ -567,6 +567,14 @@ public class DiagramController extends JPanel
                 }
                 break;
             }
+
+            case DCM_DRAGGING:
+            case DCM_RECT_LASSO:
+                // These modes are entered with a mouse press and
+                // exited with mouse release, so we should not get
+                // a mouse press while already in such a mode.
+                // Ignore it if it happens.
+                break;
         }
     }
 

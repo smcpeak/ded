@@ -241,7 +241,7 @@ public class ModalDialog extends JDialog {
       * 'elementType' is the enumeration type.
       *
       * 'initialValue' what to initially set the box to. */
-    public static <E extends Enum<E>> JComboBox makeEnumChooser(
+    public static <E extends Enum<E>> JComboBox<E> makeEnumChooser(
         Box containingBox,
         String label,
         char labelMnemonic,
@@ -269,7 +269,7 @@ public class ModalDialog extends JDialog {
       * 'elements' is the vector of choices.
       *
       * 'initialValue' what to initially set the box to. */
-    public static <E> JComboBox makeVectorChooser(
+    public static <E> JComboBox<E> makeVectorChooser(
         Box containingBox,
         String label,
         char labelMnemonic,
@@ -284,7 +284,7 @@ public class ModalDialog extends JDialog {
         hbox.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
 
         // Build the combo box.
-        JComboBox comboBox = new JComboBox(elements);
+        JComboBox<E> comboBox = new JComboBox<E>(elements);
         comboBox.setSelectedItem(initialValue);
         lbl.setLabelFor(comboBox);
         hbox.add(comboBox);

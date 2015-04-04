@@ -24,8 +24,9 @@ public class RelationDialog extends ModalDialog {
 
     // Controls.
     private JTextField labelField;
-    private JComboBox routingChooser;
-    private JComboBox startArrowStyleChooser, endArrowStyleChooser;
+    private JComboBox<RoutingAlgorithm> routingChooser;
+    private JComboBox<ArrowStyle> startArrowStyleChooser,
+                                  endArrowStyleChooser;
 
     // ------------------- methods ----------------------
     public RelationDialog(Component parent, Relation relation)

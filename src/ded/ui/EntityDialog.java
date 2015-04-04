@@ -54,14 +54,14 @@ public class EntityDialog extends ModalDialog
     // Controls.
     private JTextField nameText;
     private JTextArea attributeText;
-    private JComboBox shapeChooser;
+    private JComboBox<EntityShape> shapeChooser;
     private JButton shapeFlagsButton;
-    private JComboBox fillColorChooser;
+    private JComboBox<String> fillColorChooser;
     private JTextField xText, yText, wText, hText;
     private JLabel paramsLabel;
     private JTextField pText, qText;
     private JTextField imageFileNameText;
-    private JComboBox imageFillStyleChooser;
+    private JComboBox<ImageFillStyle> imageFillStyleChooser;
 
     // -------------- methods ---------------
     public EntityDialog(Component documentParent, Diagram diagram, Entity entity)
