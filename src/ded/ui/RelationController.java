@@ -803,7 +803,18 @@ public class RelationController extends Controller {
                     break;
 
                 case KeyEvent.VK_O:
+                    // This key binding is not documented in the help box
+                    // because it is the old way to do what "." now does.
+                    // It is retained for backward compatibility.
                     this.relation.end.toggleOwning();
+                    break;
+
+                case KeyEvent.VK_PERIOD:         // mnemonic: ">"
+                    this.relation.end.cycleArrowStyle();
+                    break;
+
+                case KeyEvent.VK_COMMA:          // mnemonic: "<"
+                    this.relation.start.cycleArrowStyle();
                     break;
 
                 default:

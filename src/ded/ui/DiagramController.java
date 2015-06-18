@@ -101,7 +101,7 @@ public class DiagramController extends JPanel
         "\n"+
         "When entity selected, F/B to move to front/back.\n"+
         "When relation selected, H/V/D to change routing,\n"+
-        "and O to toggle owned/shared.\n"+
+        "and comma/period to cycle arrow heads at start/end.\n"+
         "When inheritance selected, O to change open/closed.\n"+
         "When dragging, hold Shift to turn off 5-pixel snap.\n"+
         "\n"+

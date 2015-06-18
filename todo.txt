@@ -2,8 +2,6 @@ TODOs for Diagram Editor
 ------------------------
 
 Small:
-- separate field to specify HTML anchor name
-- key binding to toggle arrow at start of relation
 - add menu option to create a new diagram window
 - entity grouping
 - better self-loop rendering
