@@ -137,30 +137,7 @@ public class EntityDialog extends ModalDialog
         }
 
         // fill color
-        {
-            Vector<String> colors = new Vector<String>();
-
-            // Defensive: If the current entity color is not in the
-            // diagram colors, add it to the vector so that it is
-            // in the dropdown.
-            if (!diagram.namedColors.containsKey(this.entity.fillColor)) {
-                colors.add(this.entity.fillColor);
-            }
-
-            // Add the diagram colors.
-            for (String c : diagram.namedColors.keySet()) {
-                colors.add(c);
-            }
-
-            this.fillColorChooser = ModalDialog.makeVectorChooser(
-                vb,
-                "Fill color",
-                'f',
-                colors,
-                this.entity.fillColor);
-
-            vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
-        }
+        this.fillColorChooser = makeColorChooser(diagram, vb, this.entity.fillColor);
 
         // x, y
         {
@@ -251,6 +228,37 @@ public class EntityDialog extends ModalDialog
 
         this.updateControls();
         this.finishBuildingDialog(vb);
+    }
+
+    /** Make a color chooser dropdown, add it to 'vb', and return it.
+      * 'diagram' holds the list of all colors.  'currentColor' is
+      * the initially selected value. */
+    public static JComboBox<String> makeColorChooser(Diagram diagram, Box vb, String currentColor)
+    {
+        Vector<String> colors = new Vector<String>();
+
+        // Defensive: If the current entity color is not in the
+        // diagram colors, add it to the vector so that it is
+        // in the dropdown.
+        if (!diagram.namedColors.containsKey(currentColor)) {
+            colors.add(currentColor);
+        }
+
+        // Add the diagram colors.
+        for (String c : diagram.namedColors.keySet()) {
+            colors.add(c);
+        }
+
+        JComboBox<String> ret = ModalDialog.makeVectorChooser(
+            vb,
+            "Fill color",
+            'f',
+            colors,
+            currentColor);
+
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+
+        return ret;
     }
 
     /** Open the dialog for choosing the shape flags. */

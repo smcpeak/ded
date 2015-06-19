@@ -42,8 +42,6 @@ import ded.model.RoutingAlgorithm;
 /** Provides UI for manipulating a Relation. */
 public class RelationController extends Controller {
     // ---------------------- constants -------------------------
-    public static final Color arrowFillColor = Color.BLACK;
-
     public static final int selfRelationRadius = 20;
     public static final int arrowHeadLength = 10;
     public static final int relationBoundsSlop = 10;
@@ -255,7 +253,9 @@ public class RelationController extends Controller {
       * 'end' is irrelevant.
       *
       * The shape of the arrowhead is determined by 'arrowStyle'.  If it
-      * is AS_NONE, do not draw anything. */
+      * is AS_NONE, do not draw anything.
+      *
+      * The color is the current color of 'g0'. */
     private static void drawArrowhead(Graphics g0, Point start, Point end, ArrowStyle arrowStyle)
     {
         if (arrowStyle == ArrowStyle.AS_NONE) {
@@ -317,7 +317,6 @@ public class RelationController extends Controller {
             Point2D.Double downPoint = GeomUtil.add(endFloat, down);
 
             // Fill the arrowhead.
-            g.setColor(arrowFillColor);
             GeneralPath pts = new GeneralPath();
             pts.moveTo(endFloat.x, endFloat.y);
             pts.lineTo(upPoint.x, upPoint.y);
@@ -384,10 +383,7 @@ public class RelationController extends Controller {
         }
 
         // Choose line color.
-        Color lineColor = Color.BLACK;
-        if (this.relation.end.isInheritance()) {
-            lineColor = InheritanceController.inheritLineColor;
-        }
+        Color lineColor = this.getLineColor();
 
         // Activate width and color.
         g.setStroke(new BasicStroke(
@@ -417,7 +413,21 @@ public class RelationController extends Controller {
         }
 
         // Label near midpoint of first segment.
+        g.setColor(Color.BLACK);
         this.drawLabelAtSegment(g, points.get(0), points.get(1), this.relation.label);
+    }
+
+    /** Get the color to use to draw this Relation's line. */
+    public Color getLineColor()
+    {
+        Color c = this.diagramController.diagram.namedColors.get(this.relation.lineColor);
+        if (c != null) {
+            return c;
+        }
+        else {
+            // Fall back on default if color is not recognized.
+            return Color.BLACK;
+        }
     }
 
     /** Return the angle of a line that goes from the center of an
@@ -658,7 +668,8 @@ public class RelationController extends Controller {
     @Override
     public void edit()
     {
-        if (RelationDialog.exec(this.diagramController, this.relation)) {
+        if (RelationDialog.exec(this.diagramController, this.diagramController.diagram,
+                                this.relation)) {
             // User pressed OK.
             this.diagramController.diagramChanged();
         }
