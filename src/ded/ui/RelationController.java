@@ -23,6 +23,8 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.AbstractAction;
+import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
 import util.IntRange;
@@ -794,6 +796,23 @@ public class RelationController extends Controller {
                 RelationController.this.insertControlPointAt(ev.getPoint());
             }
         });
+
+        JMenu colorMenu = new JMenu("Set line color");
+        colorMenu.setMnemonic(KeyEvent.VK_C);
+        for (final String color : this.diagramController.diagram.namedColors.keySet()) {
+            colorMenu.add(new AbstractAction(color) {
+                public void actionPerformed(ActionEvent e) {
+                    RelationController.this.diagramController.setSelectedEntitiesLineColor(color);
+                }
+            });
+        }
+        menu.add(colorMenu);
+    }
+
+    @Override
+    public void setLineColor(String color)
+    {
+        this.relation.lineColor = color;
     }
 
     @Override

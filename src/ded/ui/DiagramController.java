@@ -2138,6 +2138,19 @@ public class DiagramController extends JPanel
         this.diagramChanged();
     }
 
+    /** Change the selected entities' line colors to the named color. */
+    public void setSelectedEntitiesLineColor(String colorName)
+    {
+        // Iterate over selected entities, changing their color.
+        for (Controller c : this.controllers) {
+            if (c.isSelected()) {
+                c.setLineColor(colorName);
+            }
+        }
+
+        this.diagramChanged();
+    }
+
     /** Change the selected entities' shapes to the indicated shape. */
     public void setSelectedEntitiesShape(EntityShape shape)
     {
