@@ -24,6 +24,9 @@ public class Relation {
     public static final RoutingAlgorithm defaultRoutingAlgorithm =
         RoutingAlgorithm.RA_MANHATTAN_HORIZ;
 
+    /** Default line color when none is specified in file. */
+    public static final String defaultLineColor = "Black";
+
     // ------------------ instance data -----------------------
     /** Endpoints, including their arrow style. */
     public RelationEndpoint start, end;
@@ -40,6 +43,9 @@ public class Relation {
     /** Optional line width.  If null, use default, which depends
       * on whether this is an inheritance edge. */
     public Integer lineWidth = null;
+
+    /** Color of the line. */
+    public String lineColor = defaultLineColor;
 
     // -------------------- methods ----------------------
     public Relation(RelationEndpoint start, RelationEndpoint end)
@@ -61,6 +67,7 @@ public class Relation {
         this.routingAlg = obj.routingAlg;
         this.label = obj.label;
         this.lineWidth = obj.lineWidth;
+        this.lineColor = obj.lineColor;
     }
 
     /** True if either endpoint is referentially equal to 'e'. */
@@ -97,7 +104,8 @@ public class Relation {
                    this.controlPts.equals(r.controlPts) &&
                    this.routingAlg.equals(r.routingAlg) &&
                    this.label.equals(r.label) &&
-                   Util.nullableEquals(this.lineWidth, r.lineWidth);
+                   Util.nullableEquals(this.lineWidth, r.lineWidth) &&
+                   this.lineColor.equals(r.lineColor);
         }
         return false;
     }
@@ -112,6 +120,7 @@ public class Relation {
         h = h*31 + this.routingAlg.hashCode();
         h = h*31 + this.label.hashCode();
         h = h*31 + Util.nullableHashCode(this.lineWidth);
+        h = h*31 + this.lineColor.hashCode();
         return h;
     }
 
@@ -144,6 +153,10 @@ public class Relation {
 
             if (this.lineWidth != null) {
                 o.put("lineWidth", this.lineWidth.intValue());
+            }
+
+            if (!this.lineColor.equals(defaultLineColor)) {
+                o.put("lineColor", this.lineColor);
             }
         }
         catch (JSONException e) { assert(false); }
@@ -183,6 +196,10 @@ public class Relation {
 
         if (o.has("lineWidth")) {
             this.lineWidth = Integer.valueOf(o.getInt("lineWidth"));
+        }
+
+        if (o.has("lineColor")) {
+            this.lineColor = o.getString("lineColor");
         }
     }
 

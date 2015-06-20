@@ -112,6 +112,24 @@ public class RelationEndpoint {
         }
     }
 
+    /** Cycle among the arrow styles, including "none". */
+    public void cycleArrowStyle()
+    {
+        switch (this.arrowStyle) {
+            case AS_NONE:
+                this.arrowStyle = ArrowStyle.AS_FILLED_TRIANGLE;
+                break;
+
+            case AS_FILLED_TRIANGLE:
+                this.arrowStyle = ArrowStyle.AS_DOUBLE_ANGLE;
+                break;
+
+            case AS_DOUBLE_ANGLE:
+                this.arrowStyle = ArrowStyle.AS_NONE;
+                break;
+        }
+    }
+
     public void globalSelfCheck(Diagram d)
     {
         assert((this.entity==null?0:1) +

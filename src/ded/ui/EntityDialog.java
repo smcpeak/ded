@@ -57,6 +57,7 @@ public class EntityDialog extends ModalDialog
     private JComboBox<EntityShape> shapeChooser;
     private JButton shapeFlagsButton;
     private JComboBox<String> fillColorChooser;
+    private JComboBox<String> lineColorChooser;
     private JTextField xText, yText, wText, hText;
     private JLabel paramsLabel;
     private JTextField pText, qText;
@@ -136,31 +137,9 @@ public class EntityDialog extends ModalDialog
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
         }
 
-        // fill color
-        {
-            Vector<String> colors = new Vector<String>();
-
-            // Defensive: If the current entity color is not in the
-            // diagram colors, add it to the vector so that it is
-            // in the dropdown.
-            if (!diagram.namedColors.containsKey(this.entity.fillColor)) {
-                colors.add(this.entity.fillColor);
-            }
-
-            // Add the diagram colors.
-            for (String c : diagram.namedColors.keySet()) {
-                colors.add(c);
-            }
-
-            this.fillColorChooser = ModalDialog.makeVectorChooser(
-                vb,
-                "Fill color",
-                'f',
-                colors,
-                this.entity.fillColor);
-
-            vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
-        }
+        // colors
+        this.fillColorChooser = makeColorChooser(diagram, vb, this.entity.fillColor, "Fill color", 'f');
+        this.lineColorChooser = makeColorChooser(diagram, vb, this.entity.lineColor, "Line color", 'l');
 
         // x, y
         {
@@ -253,6 +232,42 @@ public class EntityDialog extends ModalDialog
         this.finishBuildingDialog(vb);
     }
 
+    /** Make a color chooser dropdown, add it to 'vb', and return it.
+      * 'diagram' holds the list of all colors.  'currentColor' is
+      * the initially selected value. */
+    public static JComboBox<String> makeColorChooser(
+            Diagram diagram,
+            Box vb,
+            String currentColor,
+            String label,
+            char mnemonic)
+    {
+        Vector<String> colors = new Vector<String>();
+
+        // Defensive: If the current entity color is not in the
+        // diagram colors, add it to the vector so that it is
+        // in the dropdown.
+        if (!diagram.namedColors.containsKey(currentColor)) {
+            colors.add(currentColor);
+        }
+
+        // Add the diagram colors.
+        for (String c : diagram.namedColors.keySet()) {
+            colors.add(c);
+        }
+
+        JComboBox<String> ret = ModalDialog.makeVectorChooser(
+            vb,
+            label,
+            mnemonic,
+            colors,
+            currentColor);
+
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+
+        return ret;
+    }
+
     /** Open the dialog for choosing the shape flags. */
     private void openShapeFlagsDialog()
     {
@@ -327,6 +342,7 @@ public class EntityDialog extends ModalDialog
         }
 
         String fillColor = (String)this.fillColorChooser.getSelectedItem();
+        String lineColor = (String)this.lineColorChooser.getSelectedItem();
 
         ImageFillStyle imageFillStyle = (ImageFillStyle)this.imageFillStyleChooser.getSelectedItem();
 
@@ -339,6 +355,7 @@ public class EntityDialog extends ModalDialog
         this.entity.setShape(shape);      // Sets 'shapeParams' too.
         this.entity.shapeFlags = this.shapeFlagsWorkingCopy.clone();
         this.entity.setFillColor(fillColor);
+        this.entity.lineColor = lineColor;
         this.entity.loc.x = x;
         this.entity.loc.y = y;
         this.entity.size.width = w;

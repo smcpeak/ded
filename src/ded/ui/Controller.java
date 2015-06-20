@@ -251,6 +251,10 @@ public abstract class Controller {
       * diagram.  The controller might need to take further action. */
     public void updateAfterImageReload()
     {}
+
+    /** Update this element's line color, if it has one. */
+    public void setLineColor(String color)
+    {}
 }
 
 // EOF

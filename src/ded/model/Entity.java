@@ -32,6 +32,9 @@ public class Entity implements JSONable {
       * specified in the input file. */
     public static final String defaultFillColor = "Gray";
 
+    /** Default entity line color. */
+    public static final String defaultLineColor = "Black";
+
     /** Default image fill style. */
     public static final ImageFillStyle defaultImageFillStyle = ImageFillStyle.IFS_UPPER_LEFT;
 
@@ -48,6 +51,9 @@ public class Entity implements JSONable {
     /** Name of fill color.  For the moment, this must be one of
       * a fixed set, but I plan on making it customizable. */
     public String fillColor = defaultFillColor;
+
+    /** Name of line color. */
+    public String lineColor = defaultLineColor;
 
     /** Name/title of the entity. */
     public String name = "";
@@ -176,6 +182,10 @@ public class Entity implements JSONable {
                 o.put("fillColor", this.fillColor);
             }
 
+            if (!this.lineColor.equals(defaultLineColor)) {
+                o.put("lineColor", this.lineColor);
+            }
+
             if (!this.anchorName.isEmpty()) {
                 o.put("anchorName", this.anchorName);
             }
@@ -220,6 +230,8 @@ public class Entity implements JSONable {
         if (ver >= 5) {
             this.fillColor = o.optString("fillColor", defaultFillColor);
         }
+
+        this.lineColor = o.optString("lineColor", defaultLineColor);
 
         if (ver >= 12) {
             this.anchorName = o.optString("anchorName", "");
@@ -290,6 +302,7 @@ public class Entity implements JSONable {
         this.size = new Dimension(obj.size);
         this.shape = obj.shape;
         this.fillColor = obj.fillColor;
+        this.lineColor = obj.lineColor;
         this.name = obj.name;
         this.attributes = obj.attributes;
         this.shapeParams = Util.copyArray(obj.shapeParams);
@@ -311,6 +324,7 @@ public class Entity implements JSONable {
                    this.size.equals(e.size) &&
                    this.shape.equals(e.shape) &&
                    this.fillColor.equals(e.fillColor) &&
+                   this.lineColor.equals(e.lineColor) &&
                    this.name.equals(e.name) &&
                    this.attributes.equals(e.attributes) &&
                    Arrays.equals(this.shapeParams, e.shapeParams) &&
@@ -330,6 +344,7 @@ public class Entity implements JSONable {
         h = h*31 + this.size.hashCode();
         h = h*31 + this.shape.hashCode();
         h = h*31 + this.fillColor.hashCode();
+        h = h*31 + this.lineColor.hashCode();
         h = h*31 + this.name.hashCode();
         h = h*31 + this.attributes.hashCode();
         h = h*31 + Arrays.hashCode(this.shapeParams);

@@ -4,10 +4,8 @@ TODOs for Diagram Editor
 Small:
 - do not allow user to accidentally save ded as .png extension,
   since then can't load it
-- add menu option to create a new diagram window
 - entity grouping
 - better self-loop rendering
-- choose relation line thickness
 - dashed lines for relations
 - specify initial size (etc.?) for new relations
 - option to automatically expand entities to contain their title and attributes

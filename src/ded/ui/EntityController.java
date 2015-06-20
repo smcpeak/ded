@@ -42,8 +42,11 @@ public class EntityController extends Controller
       * is somehow invalid. */
     public static final Color fallbackEntityFillColor = new Color(192, 192, 192);
 
-    /** Color to draw the outline of an entity. */
-    public static final Color entityOutlineColor = new Color(0, 0, 0);
+    /** Line color when it is invalid. */
+    public static final Color fallbackEntityLineColor = Color.BLACK;
+
+    /** Color to draw the text of an entity. */
+    public static final Color entityTextColor = Color.BLACK;
 
     /** Width of border to draw with XOR around selected entities,
       * beyond changing the background color (which may be ignored). */
@@ -269,7 +272,7 @@ public class EntityController extends Controller
         // Entity outline with proper shape.
         switch (this.entity.shape) {
             case ES_NO_SHAPE:
-                g.setColor(entityOutlineColor);
+                g.setColor(this.getLineColor());
                 break;
 
             case ES_RECTANGLE:
@@ -285,7 +288,7 @@ public class EntityController extends Controller
 
                 }
 
-                g.setColor(entityOutlineColor);
+                g.setColor(this.getLineColor());
                 g.drawRect(r.x, r.y, r.width-1, r.height-1);
 
                 if (this.entity.shape == EntityShape.ES_SCROLLBAR) {
@@ -308,7 +311,7 @@ public class EntityController extends Controller
 
                 }
 
-                g.setColor(entityOutlineColor);
+                g.setColor(this.getLineColor());
                 g.drawOval(r.x, r.y, r.width-1, r.height-1);
                 break;
 
@@ -321,6 +324,7 @@ public class EntityController extends Controller
             this.entity.shape != EntityShape.ES_WINDOW)
         {
             // Name is vertically and horizontally centered in the space.
+            g.setColor(entityTextColor);
             SwingUtil.drawCenteredText(g, GeomUtil.getCenter(r), this.entity.name);
         }
         else {
@@ -360,6 +364,7 @@ public class EntityController extends Controller
                     }
                 }
 
+                g.setColor(entityTextColor);
                 SwingUtil.drawCenteredText(g, GeomUtil.getCenter(nameRect), this.entity.name);
             }
 
@@ -371,6 +376,7 @@ public class EntityController extends Controller
             Graphics g2 = g.create();      // localize effect of clipRect
             g2.clipRect(attributeRect.x, attributeRect.y,
                         attributeRect.width, attributeRect.height);
+            g2.setColor(entityTextColor);
             SwingUtil.drawTextWithNewlines(g2,
                 this.entity.attributes,
                 attributeRect.x,
@@ -525,6 +531,19 @@ public class EntityController extends Controller
         }
     }
 
+    /** Get the color to use to draw Entity lines. */
+    public Color getLineColor()
+    {
+        Color c = this.diagramController.diagram.namedColors.get(this.entity.lineColor);
+        if (c != null) {
+            return c;
+        }
+        else {
+            // Fall back on default if color is not recognized.
+            return fallbackEntityLineColor;
+        }
+    }
+
     /** Draw the part of a cuboid outside the main rectangle 'r'. */
     public void drawCuboidSides(Graphics g, Rectangle r)
     {
@@ -569,7 +588,7 @@ public class EntityController extends Controller
         // Fill it and draw its edges.
         g.setColor(this.getFillColor());
         g.fillPolygon(p);
-        g.setColor(entityOutlineColor);
+        g.setColor(this.getLineColor());
         g.drawPolygon(p);
 
         // Draw line CF.
@@ -600,7 +619,7 @@ public class EntityController extends Controller
                        r.width, r.height - entityNameHeight);
         }
 
-        g.setColor(entityOutlineColor);
+        g.setColor(this.getLineColor());
 
         // Draw upper ellipse.
         g.drawOval(r.x, r.y,
@@ -752,16 +771,27 @@ public class EntityController extends Controller
     {
         final EntityController ths = this;
 
-        JMenu colorMenu = new JMenu("Set fill color");
-        colorMenu.setMnemonic(KeyEvent.VK_C);
+        JMenu fillColorMenu = new JMenu("Set fill color");
+        fillColorMenu.setMnemonic(KeyEvent.VK_C);
         for (final String color : this.diagramController.diagram.namedColors.keySet()) {
-            colorMenu.add(new AbstractAction(color) {
+            fillColorMenu.add(new AbstractAction(color) {
                 public void actionPerformed(ActionEvent e) {
                     ths.diagramController.setSelectedEntitiesFillColor(color);
                 }
             });
         }
-        menu.add(colorMenu);
+        menu.add(fillColorMenu);
+
+        JMenu lineColorMenu = new JMenu("Set line color");
+        lineColorMenu.setMnemonic(KeyEvent.VK_L);
+        for (final String color : this.diagramController.diagram.namedColors.keySet()) {
+            lineColorMenu.add(new AbstractAction(color) {
+                public void actionPerformed(ActionEvent e) {
+                    EntityController.this.diagramController.setSelectedEntitiesLineColor(color);
+                }
+            });
+        }
+        menu.add(lineColorMenu);
 
         JMenu shapeMenu = new JMenu("Set shape");
         shapeMenu.setMnemonic(KeyEvent.VK_S);
@@ -786,6 +816,12 @@ public class EntityController extends Controller
                     DiagramController.SetAnchorCommand.SAC_CLEAR);
             }
         });
+    }
+
+    @Override
+    public void setLineColor(String color)
+    {
+        this.entity.lineColor = color;
     }
 
     /** Create a new entity at location 'p' in 'dc'.  This corresponds to

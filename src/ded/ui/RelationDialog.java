@@ -4,6 +4,7 @@
 package ded.ui;
 
 import java.awt.Component;
+
 import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
@@ -13,6 +14,7 @@ import util.swing.ModalDialog;
 import util.swing.SwingUtil;
 
 import ded.model.ArrowStyle;
+import ded.model.Diagram;
 import ded.model.Relation;
 import ded.model.RoutingAlgorithm;
 
@@ -30,9 +32,10 @@ public class RelationDialog extends ModalDialog {
     private JComboBox<RoutingAlgorithm> routingChooser;
     private JComboBox<ArrowStyle> startArrowStyleChooser,
                                   endArrowStyleChooser;
+    private JComboBox<String> lineColorChooser;
 
     // ------------------- methods ----------------------
-    public RelationDialog(Component parent, Relation relation)
+    public RelationDialog(Component parent, Diagram diagram, Relation relation)
     {
         super(parent, "Edit Relation");
 
@@ -72,6 +75,9 @@ public class RelationDialog extends ModalDialog {
             this.relation.end.arrowStyle);
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
+        this.lineColorChooser =
+            EntityDialog.makeColorChooser(diagram, vb, this.relation.lineColor, "Line color", 'i');
+
         // It might be nice to allow the endpoints to be edited, but
         // that is challenging due to the ability to connect them to
         // Entities and Inheritances.
@@ -98,7 +104,7 @@ public class RelationDialog extends ModalDialog {
 
                 // I'd actually like 0 to be allowed and mean to not draw
                 // the line.  But, at the moment, 0 is treated the same as
-                // 1, so make it illegal.
+                // 1 during painting, so make it illegal.
                 if (this.relation.lineWidth < 1) {
                     SwingUtil.errorMessageBox(this,
                         "Line width must be positive: "+this.relation.lineWidth);
@@ -115,6 +121,7 @@ public class RelationDialog extends ModalDialog {
         this.relation.routingAlg = ra;
         this.relation.start.arrowStyle = startStyle;
         this.relation.end.arrowStyle = endStyle;
+        this.relation.lineColor = (String)this.lineColorChooser.getSelectedItem();
 
         super.okPressed();
     }
@@ -123,9 +130,9 @@ public class RelationDialog extends ModalDialog {
       * If the user presses OK, 'relation' will be updated and true
       * returned.  Otherwise, false is returned and 'relation' is
       * not modified. */
-    public static boolean exec(Component parent, Relation relation)
+    public static boolean exec(Component parent, Diagram diagram, Relation relation)
     {
-        return (new RelationDialog(parent, relation)).exec();
+        return (new RelationDialog(parent, diagram, relation)).exec();
     }
 }
 
