@@ -526,6 +526,31 @@
         "h": 95,
         "w": 130
       }
+    },
+    {
+      "lineColor": "Orange",
+      "loc": {
+        "x": 590,
+        "y": 365
+      },
+      "name": "Orange Line",
+      "size": {
+        "h": 20,
+        "w": 85
+      }
+    },
+    {
+      "attributes": "With attr",
+      "lineColor": "Orange",
+      "loc": {
+        "x": 590,
+        "y": 385
+      },
+      "name": "Orange Line",
+      "size": {
+        "h": 45,
+        "w": 85
+      }
     }
   ],
   "inheritances": [{

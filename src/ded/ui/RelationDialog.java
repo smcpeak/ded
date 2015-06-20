@@ -76,7 +76,7 @@ public class RelationDialog extends ModalDialog {
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
         this.lineColorChooser =
-            EntityDialog.makeColorChooser(diagram, vb, this.relation.lineColor);
+            EntityDialog.makeColorChooser(diagram, vb, this.relation.lineColor, "Line color", 'i');
 
         // It might be nice to allow the endpoints to be edited, but
         // that is challenging due to the ability to connect them to

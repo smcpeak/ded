@@ -57,6 +57,7 @@ public class EntityDialog extends ModalDialog
     private JComboBox<EntityShape> shapeChooser;
     private JButton shapeFlagsButton;
     private JComboBox<String> fillColorChooser;
+    private JComboBox<String> lineColorChooser;
     private JTextField xText, yText, wText, hText;
     private JLabel paramsLabel;
     private JTextField pText, qText;
@@ -136,8 +137,9 @@ public class EntityDialog extends ModalDialog
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
         }
 
-        // fill color
-        this.fillColorChooser = makeColorChooser(diagram, vb, this.entity.fillColor);
+        // colors
+        this.fillColorChooser = makeColorChooser(diagram, vb, this.entity.fillColor, "Fill color", 'f');
+        this.lineColorChooser = makeColorChooser(diagram, vb, this.entity.lineColor, "Line color", 'l');
 
         // x, y
         {
@@ -233,7 +235,12 @@ public class EntityDialog extends ModalDialog
     /** Make a color chooser dropdown, add it to 'vb', and return it.
       * 'diagram' holds the list of all colors.  'currentColor' is
       * the initially selected value. */
-    public static JComboBox<String> makeColorChooser(Diagram diagram, Box vb, String currentColor)
+    public static JComboBox<String> makeColorChooser(
+            Diagram diagram,
+            Box vb,
+            String currentColor,
+            String label,
+            char mnemonic)
     {
         Vector<String> colors = new Vector<String>();
 
@@ -251,8 +258,8 @@ public class EntityDialog extends ModalDialog
 
         JComboBox<String> ret = ModalDialog.makeVectorChooser(
             vb,
-            "Fill color",
-            'f',
+            label,
+            mnemonic,
             colors,
             currentColor);
 
@@ -335,6 +342,7 @@ public class EntityDialog extends ModalDialog
         }
 
         String fillColor = (String)this.fillColorChooser.getSelectedItem();
+        String lineColor = (String)this.lineColorChooser.getSelectedItem();
 
         ImageFillStyle imageFillStyle = (ImageFillStyle)this.imageFillStyleChooser.getSelectedItem();
 
@@ -347,6 +355,7 @@ public class EntityDialog extends ModalDialog
         this.entity.setShape(shape);      // Sets 'shapeParams' too.
         this.entity.shapeFlags = this.shapeFlagsWorkingCopy.clone();
         this.entity.setFillColor(fillColor);
+        this.entity.lineColor = lineColor;
         this.entity.loc.x = x;
         this.entity.loc.y = y;
         this.entity.size.width = w;
