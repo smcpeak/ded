@@ -2,8 +2,8 @@ TODOs for Diagram Editor
 ------------------------
 
 Small:
-- separate field to specify HTML anchor name
-- key binding to toggle arrow at start of relation
+- do not allow user to accidentally save ded as .png extension,
+  since then can't load it
 - add menu option to create a new diagram window
 - entity grouping
 - better self-loop rendering
