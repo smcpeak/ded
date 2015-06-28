@@ -2407,6 +2407,24 @@ public class DiagramController extends JPanel
         }
         this.diagramChanged();
     }
+
+    /** Set every selected entity that has a line style to style 'lds'. */
+    public void setSelectedEntitiesLineDashStyle(LineDashStyle lds)
+    {
+        for (Controller c : this.controllers) {
+            if (c.isSelected() && c instanceof RelationController) {
+                RelationController rc = (RelationController)c;
+                if (lds.dashStructureString == null) {
+                    rc.relation.dashStructure = new ArrayList<Integer>();
+                }
+                else {
+                    rc.relation.dashStructure =
+                        RelationDialog.stringToDashStructure(lds.dashStructureString);
+                }
+            }
+        }
+        this.diagramChanged();
+    }
 }
 
 // EOF

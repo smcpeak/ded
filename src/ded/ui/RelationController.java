@@ -387,15 +387,33 @@ public class RelationController extends Controller {
             lineWidth = InheritanceController.inheritLineWidth;
         }
 
-        // Choose line color.
-        Color lineColor = this.getLineColor();
+        // Dashed line?
+        if (!this.relation.dashStructure.isEmpty()) {
+            // Copy the integers to a float array for BasicStroke.
+            float[] flens = new float[this.relation.dashStructure.size()];
+            for (int i=0; i < this.relation.dashStructure.size(); i++) {
+                flens[i] = (float)this.relation.dashStructure.get(i);
+            }
 
-        // Activate width and color.
-        g.setStroke(new BasicStroke(
-            lineWidth,
-            BasicStroke.CAP_BUTT,
-            BasicStroke.JOIN_MITER));
-        g.setColor(lineColor);
+            // Create a dashed stroke.
+            g.setStroke(new BasicStroke(
+                lineWidth,
+                BasicStroke.CAP_BUTT,
+                BasicStroke.JOIN_MITER,
+                10.0f,       // miter limit (default)
+                flens,
+                0.0f));      // dash phase
+        }
+        else {
+            // Solid line.
+            g.setStroke(new BasicStroke(
+                lineWidth,
+                BasicStroke.CAP_BUTT,
+                BasicStroke.JOIN_MITER));
+        }
+
+        // Choose line color.
+        g.setColor(this.getLineColor());
 
         // Draw the line segments.
         int nPoints = points.size();
@@ -413,6 +431,9 @@ public class RelationController extends Controller {
             // to draw the corners correctly (JOIN_MITER) for thick lines.
             g.drawPolyline(xPoints, yPoints, nPoints);
         }
+
+        // Solid line for arrow heads.
+        g.setStroke(new BasicStroke(lineWidth));
 
         // Arrowhead at start.
         {
@@ -821,6 +842,17 @@ public class RelationController extends Controller {
             });
         }
         menu.add(colorMenu);
+
+        JMenu dashMenu = new JMenu("Set line dash style");
+        dashMenu.setMnemonic(KeyEvent.VK_D);
+        for (final LineDashStyle lds : EnumSet.allOf(LineDashStyle.class)) {
+            dashMenu.add(new MenuAction(lds.name, lds.mnemonicKey) {
+               public void actionPerformed(ActionEvent ev) {
+                   RelationController.this.diagramController.setSelectedEntitiesLineDashStyle(lds);
+               }
+            });
+        }
+        menu.add(dashMenu);
 
         menu.add(new MenuAction("Swap relation arrows", KeyEvent.VK_S) {
             public void actionPerformed(ActionEvent e) {

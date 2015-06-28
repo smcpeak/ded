@@ -5,6 +5,8 @@ package ded.ui;
 
 import java.awt.Component;
 
+import java.util.ArrayList;
+
 import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
@@ -33,6 +35,7 @@ public class RelationDialog extends ModalDialog {
     private JComboBox<ArrowStyle> startArrowStyleChooser,
                                   endArrowStyleChooser;
     private JComboBox<String> lineColorChooser;
+    private JTextField dashStructureField;
 
     // ------------------- methods ----------------------
     public RelationDialog(Component parent, Diagram diagram, Relation relation)
@@ -81,12 +84,90 @@ public class RelationDialog extends ModalDialog {
 
         this.lineColorChooser =
             EntityDialog.makeColorChooser(diagram, vb, this.relation.lineColor, "Line color", 'i');
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+
+        this.dashStructureField = ModalDialog.makeLineEditWithHelp(vb, "Dash structure", 'd',
+            dashStructureToString(this.relation.dashStructure),
+            parent,
+            "When this box is empty, the line is solid.  Otherwise, "+
+            "the box contains a space-separated sequence of non-negative integers "+
+            "representing the lengths, in pixels, of alternately opaque "+
+            "and transparent line segments, beginning with opaque.\n"+
+            "\n"+
+            "Typical values:\n"+
+            "* Dashed: 5 2\n"+
+            "* Dotted: 1 2\n"+
+            "* Dash-dot: 5 2 1 2\n");
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
         // It might be nice to allow the endpoints to be edited, but
         // that is challenging due to the ability to connect them to
         // Entities and Inheritances.
 
         this.finishBuildingDialog(vb);
+    }
+
+    /** Convert a Relation 'dashStructure' sequence into a string of
+      * space-separated integers. */
+    private static String dashStructureToString(ArrayList<Integer> dashStructure)
+    {
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (Integer i : dashStructure) {
+            if (!first) {
+                sb.append(" ");
+            }
+            first = false;
+            sb.append(i.toString());
+        }
+        return sb.toString();
+    }
+
+    /** Convert a space-separated sequence of integers into an array.
+      * Throws RuntimeException if the input is malformed. */
+    public static ArrayList<Integer> stringToDashStructure(String str)
+    {
+        ArrayList<Integer> ret = new ArrayList<Integer>();
+
+        String intro = "The dash structure must consist of a space-separated sequence "+
+                       "of non-negative integers.  ";
+
+        boolean atLeastOne = false;
+        boolean atLeastOnePositive = false;
+        for (String tok : str.split("\\s+")) {
+            if (tok.isEmpty()) {
+                // Entire string is empty, and/or it begins with whitespace
+                // (curiously, trailing whitespace is discarded by 'split').
+                continue;
+            }
+            try {
+                Integer i = Integer.valueOf(tok);
+                if (i < 0) {
+                    throw new RuntimeException(intro +
+                        "However, the element \""+i+"\" is negative.");
+                }
+                ret.add(i);
+
+                atLeastOne = true;
+                if (i > 0) {
+                    atLeastOnePositive = true;
+                }
+            }
+            catch (NumberFormatException e) {
+                throw new RuntimeException(intro +
+                    "However, the element \""+tok+
+                    "\" cannot be parsed as an integer.");
+            }
+        }
+
+        if (atLeastOne && !atLeastOnePositive) {
+            throw new RuntimeException(
+                "All elements of the dash structure list are zero.  "+
+                "At least one must be positive, or else the "+
+                "list must be empty.");
+        }
+
+        return ret;
     }
 
     @Override
@@ -96,22 +177,20 @@ public class RelationDialog extends ModalDialog {
         ArrowStyle startStyle = (ArrowStyle)this.startArrowStyleChooser.getSelectedItem();
         ArrowStyle endStyle = (ArrowStyle)this.endArrowStyleChooser.getSelectedItem();
 
-        this.relation.label = this.labelField.getText();
+        String label = this.labelField.getText();
 
         String lwt = this.lineWidthField.getText();
+        Integer lineWidth = null;
         try {
-            if (lwt.isEmpty()) {
-                this.relation.lineWidth = null;
-            }
-            else {
-                this.relation.lineWidth = Integer.valueOf(lwt);
+            if (!lwt.isEmpty()) {
+                lineWidth = Integer.valueOf(lwt);
 
                 // I'd actually like 0 to be allowed and mean to not draw
                 // the line.  But, at the moment, 0 is treated the same as
                 // 1 during painting, so make it illegal.
-                if (this.relation.lineWidth < 1) {
+                if (lineWidth < 1) {
                     SwingUtil.errorMessageBox(this,
-                        "Line width must be positive: "+this.relation.lineWidth);
+                        "Line width must be positive: "+lineWidth);
                     return;      // no super.okPressed
                 }
             }
@@ -122,10 +201,24 @@ public class RelationDialog extends ModalDialog {
             return;     // do *not* call super.okPressed()
         }
 
+        ArrayList<Integer> dashStructure;
+        try {
+            dashStructure = stringToDashStructure(this.dashStructureField.getText());
+        }
+        catch (RuntimeException e) {
+            SwingUtil.errorMessageBox(this, e.getLocalizedMessage());
+            return;
+        }
+
+        // We are now committed to closing the dialog without an error message.
+        // Update the underlying model object.
+        this.relation.label = label;
         this.relation.routingAlg = ra;
         this.relation.start.arrowStyle = startStyle;
         this.relation.end.arrowStyle = endStyle;
         this.relation.lineColor = (String)this.lineColorChooser.getSelectedItem();
+        this.relation.lineWidth = lineWidth;
+        this.relation.dashStructure = dashStructure;
 
         super.okPressed();
     }

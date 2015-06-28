@@ -139,7 +139,9 @@ public class EntityDialog extends ModalDialog
 
         // colors
         this.fillColorChooser = makeColorChooser(diagram, vb, this.entity.fillColor, "Fill color", 'f');
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
         this.lineColorChooser = makeColorChooser(diagram, vb, this.entity.lineColor, "Line color", 'l');
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
         // x, y
         {
@@ -262,8 +264,6 @@ public class EntityDialog extends ModalDialog
             mnemonic,
             colors,
             currentColor);
-
-        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
         return ret;
     }

@@ -299,7 +299,7 @@ public class Ded extends JFrame implements WindowListener {
 
         this.drawFileNameCheckbox =
             new JCheckBoxMenuItem("Draw file name in upper-left corner", true);
-        this.drawFileNameCheckbox.setMnemonic(KeyEvent.VK_F);
+        this.drawFileNameCheckbox.setMnemonic(KeyEvent.VK_N);
         this.drawFileNameCheckbox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.toggleDrawFileName();
@@ -325,6 +325,23 @@ public class Ded extends JFrame implements WindowListener {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.moveSelectedEntitiesToFrontOrBack(false /*front*/);
             }
+        });
+
+        m.addSeparator();
+
+        m.add(new MenuAction("Check data consistency invariants", KeyEvent.VK_I) {
+           public void actionPerformed(ActionEvent e) {
+               try {
+                   Ded.this.diagramController.diagram.selfCheck();
+                   SwingUtil.informationMessageBox(Ded.this,
+                       "Self check passed", "Self check passed.");
+               }
+               catch (Exception exn) {
+                   SwingUtil.warningMessageBox(Ded.this,
+                       "Self check failed: "+exn.getLocalizedMessage()+
+                       ".  Additional info may have been printed to console (stderr).");
+               }
+           }
         });
 
         return m;
