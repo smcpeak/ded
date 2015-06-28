@@ -46,8 +46,11 @@ public class RelationDialog extends ModalDialog {
         this.labelField = ModalDialog.makeLineEdit(vb, "Label", 'l', this.relation.label);
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
-        this.lineWidthField = ModalDialog.makeLineEdit(vb, "Line width", 'w',
-                this.relation.lineWidth==null? "" : String.valueOf(this.relation.lineWidth));
+        this.lineWidthField = ModalDialog.makeLineEditWithHelp(vb, "Line width", 'w',
+            this.relation.lineWidth==null? "" : String.valueOf(this.relation.lineWidth),
+            parent,
+            "This is the width of the relation lines in pixels.  "+
+            "If this box is empty, the default of one pixel is used.");
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
         // Routing algorithm.
