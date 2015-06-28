@@ -369,6 +369,9 @@ public class RelationController extends Controller {
         Graphics2D g = (Graphics2D)g0.create();
 
         ArrayList<Point> points = computePoints();
+        if (points.isEmpty()) {
+            return;      // defensive; should not happen
+        }
 
         if (points.size() == 1) {
             this.paintSelfLoop(g, points.get(0));
@@ -394,24 +397,35 @@ public class RelationController extends Controller {
             BasicStroke.JOIN_MITER));
         g.setColor(lineColor);
 
-        // Draw each segment.
-        for (int i=1; i < points.size(); i++) {
-            Point a = points.get(i-1);
-            Point b = points.get(i);
-
-            // Line segment.
-            g.drawLine(a.x, a.y, b.x, b.y);
-
-            // Possibly draw arrowhead at start.
-            if (i == 1) {
-                drawArrowhead(g, b, a, this.relation.start.arrowStyle);
+        // Draw the line segments.
+        int nPoints = points.size();
+        {
+            // Construct a pair of arrays containing the points along
+            // the line, in order to pass to drawPolyline.
+            int xPoints[] = new int[nPoints];
+            int yPoints[] = new int[nPoints];
+            for (int i=0; i < nPoints; i++) {
+                xPoints[i] = points.get(i).x;
+                yPoints[i] = points.get(i).y;
             }
 
-            // Possibly draw arrowhead at end.  But if it ends on an
-            // inheritance, then don't.
-            if (i == points.size()-1 && !this.relation.end.isInheritance()) {
-                drawArrowhead(g, a, b, this.relation.end.arrowStyle);
-            }
+            // Draw them all with one call.  This is important in order
+            // to draw the corners correctly (JOIN_MITER) for thick lines.
+            g.drawPolyline(xPoints, yPoints, nPoints);
+        }
+
+        // Arrowhead at start.
+        {
+            Point first = points.get(0);
+            Point second = points.get(1);
+            drawArrowhead(g, second, first, this.relation.start.arrowStyle);
+        }
+
+        // Arrowhead at end, if not an inheritance.
+        if (!this.relation.end.isInheritance()) {
+            Point secondToLast = points.get(nPoints-2);
+            Point last = points.get(nPoints-1);
+            drawArrowhead(g, secondToLast, last, this.relation.end.arrowStyle);
         }
 
         // Label near midpoint of first segment.
