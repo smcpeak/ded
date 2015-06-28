@@ -50,7 +50,8 @@ public class RelationDialog extends ModalDialog {
             this.relation.lineWidth==null? "" : String.valueOf(this.relation.lineWidth),
             parent,
             "This is the width of the relation lines in pixels.  "+
-            "If this box is empty, the default of one pixel is used.");
+            "If this box is empty, the default is used: 1 for "+
+            "normal relations, 2 for inheritances.");
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
         // Routing algorithm.
