@@ -97,11 +97,12 @@ public class DiagramController extends JPanel
         "Left click - select\n"+
         "Ctrl+Left click - multiselect\n"+
         "Left click+drag - multiselect rectangle\n"+
-        "Right click - properties\n"+
+        "Right click - action menu for selection(s)\n"+
         "\n"+
         "When entity selected, F/B to move to front/back.\n"+
         "When relation selected, H/V/D to change routing,\n"+
-        "and comma/period to cycle arrow heads at start/end.\n"+
+        "comma/period to cycle arrow heads at start/end,\n"+
+        "and S to swap start/end arrowheads.\n"+
         "When inheritance selected, O to change open/closed.\n"+
         "When dragging, hold Shift to turn off 5-pixel snap.\n"+
         "\n"+
@@ -2393,6 +2394,18 @@ public class DiagramController extends JPanel
     public Image getResourceImage(String resourceName)
     {
         return this.dedWindow.resourceImageCache.getResourceImage(resourceName);
+    }
+
+    /** Swap the endpoint arrowheads for all selected relations. */
+    public void swapSelectedRelationEndpoints()
+    {
+        for (Controller c : this.controllers) {
+            if (c.isSelected() && c instanceof RelationController) {
+                RelationController rc = (RelationController)c;
+                rc.relation.swapArrows();
+            }
+        }
+        this.diagramChanged();
     }
 }
 

@@ -807,6 +807,12 @@ public class RelationController extends Controller {
             });
         }
         menu.add(colorMenu);
+
+        menu.add(new MenuAction("Swap relation arrows", KeyEvent.VK_S) {
+            public void actionPerformed(ActionEvent e) {
+                RelationController.this.diagramController.swapSelectedRelationEndpoints();
+            }
+        });
     }
 
     @Override
@@ -845,6 +851,10 @@ public class RelationController extends Controller {
 
                 case KeyEvent.VK_COMMA:          // mnemonic: "<"
                     this.relation.start.cycleArrowStyle();
+                    break;
+
+                case KeyEvent.VK_S:
+                    this.relation.swapArrows();
                     break;
 
                 default:

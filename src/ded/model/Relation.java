@@ -246,6 +246,14 @@ public class Relation {
 
         this.setLegacyOwning(flat.readBoolean());
     }
+
+    /** Swap the arrowheads between start and end. */
+    public void swapArrows()
+    {
+        ArrowStyle tmp = this.start.arrowStyle;
+        this.start.arrowStyle = this.end.arrowStyle;
+        this.end.arrowStyle = tmp;
+    }
 }
 
 // EOF
