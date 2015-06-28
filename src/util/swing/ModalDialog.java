@@ -155,7 +155,7 @@ public class ModalDialog extends JDialog {
         labelControl.setDisplayedMnemonic(mnemonic);
         hbox.add(labelControl);
 
-        hbox.add(Box.createHorizontalStrut(5));
+        hbox.add(Box.createHorizontalStrut(CONTROL_PADDING));
 
         final JTextField ret = new JTextField(initialValue);
         hbox.add(ret);
