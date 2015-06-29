@@ -5,6 +5,7 @@ package ded.model;
 
 import java.awt.Color;
 import java.awt.Dimension;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
@@ -16,6 +17,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -26,6 +28,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import util.FlattenInputStream;
+import util.StringUtil;
 import util.Util;
 import util.XParse;
 import util.awt.AWTJSONUtil;
@@ -50,7 +53,7 @@ public class Diagram implements JSONable {
       * should include a bump--even though the old code might be
       * able to read the file without choking, the semantics would
       * not be preserved. */
-    public static final int currentFileVersion = 15;
+    public static final int currentFileVersion = 16;
 
     // ---------- public data ------------
     /** Size of window to display diagram.  Some elements might not fit
@@ -100,6 +103,7 @@ public class Diagram implements JSONable {
         // is the same as the selection color, which introduces
         // some ambiguity, but it is a really nice color so I do
         // not want to lose it in either place.
+        m.put("Black", Color.BLACK);
         m.put("Gray", new Color(192, 192, 192));
         m.put("White", Color.WHITE);
         m.put("Light Gray", new Color(224, 224, 224));
@@ -112,6 +116,33 @@ public class Diagram implements JSONable {
         m.put("Red", new Color(248, 50, 50));         // Very intense...
 
         return m;
+    }
+
+    /** Given a color name, get a Color object.  Return 'fallback' if the
+      * name cannot be found or interpreted. */
+    public Color getNamedColor(String namedColor, Color fallback)
+    {
+        Color c = this.namedColors.get(namedColor);
+        if (c != null) {
+            return c;
+        }
+        else {
+            // Check for the RGB syntax.
+            String[] elts = StringUtil.parseByRegex(namedColor, "^RGB\\(([0-9]+),([0-9]+),([0-9]+)\\)$");
+            if (elts != null) {
+                try {
+                    int r = Integer.valueOf(elts[1]);
+                    int g = Integer.valueOf(elts[2]);
+                    int b = Integer.valueOf(elts[3]);
+                    return new Color(r, g, b);
+                }
+                catch (Exception e) {
+                    return fallback;
+                }
+            }
+
+            return fallback;
+        }
     }
 
     public void selfCheck()

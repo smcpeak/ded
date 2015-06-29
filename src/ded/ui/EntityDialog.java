@@ -3,6 +3,7 @@
 
 package ded.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
@@ -11,11 +12,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+
 import java.util.EnumSet;
 import java.util.Vector;
 
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -238,15 +241,17 @@ public class EntityDialog extends ModalDialog
       * 'diagram' holds the list of all colors.  'currentColor' is
       * the initially selected value. */
     public static JComboBox<String> makeColorChooser(
-            Diagram diagram,
-            Box vb,
+            final Diagram diagram,
+            final Box vb,
             String currentColor,
             String label,
             char mnemonic)
     {
+        Box hbox = ModalDialog.makeHBox(vb);
+
         Vector<String> colors = new Vector<String>();
 
-        // Defensive: If the current entity color is not in the
+        // If the current entity color is not in the
         // diagram colors, add it to the vector so that it is
         // in the dropdown.
         if (!diagram.namedColors.containsKey(currentColor)) {
@@ -258,12 +263,39 @@ public class EntityDialog extends ModalDialog
             colors.add(c);
         }
 
-        JComboBox<String> ret = ModalDialog.makeVectorChooser(
-            vb,
+        final JComboBox<String> ret = ModalDialog.makeVectorChooser(
+            hbox,
             label,
             mnemonic,
             colors,
             currentColor);
+        ret.setEditable(true);
+
+        hbox.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
+
+        JButton chooserButton = new JButton("Choose...");
+        hbox.add(chooserButton);
+
+        chooserButton.addActionListener(new ActionListener() {
+            @Override public void actionPerformed(ActionEvent e) {
+                String editBoxColor = (String)ret.getSelectedItem();
+                Color current = diagram.getNamedColor(editBoxColor, Color.BLACK);
+
+                Color newColor =
+                    JColorChooser.showDialog(vb, "Choose color", current);
+                if (newColor != null) {
+                    ret.setSelectedItem("RGB("+newColor.getRed()+","+newColor.getGreen()+","+newColor.getBlue()+")");
+                }
+            }
+        });
+
+        hbox.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
+        hbox.add(ModalDialog.makeHelpButton(ret, label,
+            "The color can be one of a set of named colors, or a string "+
+            "of the form \"RGB(r,g,b)\" where r,g,b are integers in [0-255].  "+
+            "The Choose button can be used to pick an RGB color visually.  "+
+            "If the chosen color string is not recognized, a fallback color "+
+            "will be used, usually black or gray."));
 
         return ret;
     }

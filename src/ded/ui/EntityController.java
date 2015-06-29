@@ -521,27 +521,15 @@ public class EntityController extends Controller
     /** Get the color to use to fill this Entity. */
     public Color getFillColor()
     {
-        Color c = this.diagramController.diagram.namedColors.get(this.entity.fillColor);
-        if (c != null) {
-            return c;
-        }
-        else {
-            // Fall back on default if color is not recognized.
-            return fallbackEntityFillColor;
-        }
+        return this.diagramController.diagram.getNamedColor(
+            this.entity.fillColor, fallbackEntityFillColor);
     }
 
     /** Get the color to use to draw Entity lines. */
     public Color getLineColor()
     {
-        Color c = this.diagramController.diagram.namedColors.get(this.entity.lineColor);
-        if (c != null) {
-            return c;
-        }
-        else {
-            // Fall back on default if color is not recognized.
-            return fallbackEntityLineColor;
-        }
+        return this.diagramController.diagram.getNamedColor(
+            this.entity.lineColor, fallbackEntityLineColor);
     }
 
     /** Draw the part of a cuboid outside the main rectangle 'r'. */

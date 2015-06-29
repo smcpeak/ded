@@ -1047,22 +1047,10 @@
         "x": 50,
         "y": 545
       }}
-    },
-    {
-      "end": {"pt": {
-        "x": 240,
-        "y": 535
-      }},
-      "label": "dark purple",
-      "lineColor": "RGB(102,0,102)",
-      "start": {"pt": {
-        "x": 170,
-        "y": 535
-      }}
     }
   ],
   "type": "Diagram Editor Diagram",
-  "version": 16,
+  "version": 15,
   "windowSize": {
     "h": 575,
     "w": 725

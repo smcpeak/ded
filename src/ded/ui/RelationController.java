@@ -457,14 +457,8 @@ public class RelationController extends Controller {
     /** Get the color to use to draw this Relation's line. */
     public Color getLineColor()
     {
-        Color c = this.diagramController.diagram.namedColors.get(this.relation.lineColor);
-        if (c != null) {
-            return c;
-        }
-        else {
-            // Fall back on default if color is not recognized.
-            return Color.BLACK;
-        }
+        return this.diagramController.diagram.getNamedColor(
+            this.relation.lineColor, Color.BLACK);
     }
 
     /** Return the angle of a line that goes from the center of an

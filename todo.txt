@@ -2,11 +2,11 @@ TODOs for Diagram Editor
 ------------------------
 
 Small:
+- allow custom text label colors
 - entity grouping
 - better self-loop rendering
 - specify initial size (etc.?) for new relations
 - option to automatically expand entities to contain their title and attributes
-- allow arbitrary fg/bg colors for UI mockups
 - left-aligned titles of entities
 - flag to turn off auto move/resize of window contents
 
