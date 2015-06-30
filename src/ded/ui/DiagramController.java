@@ -501,6 +501,19 @@ public class DiagramController extends JPanel
         //System.out.println(e.toString());
     }
 
+    /** Return e.getPoint(), except snapped to SNAP_DIST if shift not held. */
+    public Point getSnappedPoint(MouseEvent e)
+    {
+        Point p = e.getPoint();
+
+        // Snap if Shift not held.
+        if (!SwingUtil.shiftPressed(e)) {
+            p = GeomUtil.snapPoint(p, SNAP_DIST);
+        }
+
+        return p;
+    }
+
     @Override
     public void mousePressed(MouseEvent e)
     {
@@ -538,7 +551,8 @@ public class DiagramController extends JPanel
 
             case DCM_CREATE_RELATION: {
                 // Make a Relation that starts and ends at the current location.
-                RelationEndpoint start = this.getRelationEndpoint(e.getPoint());
+                Point startPoint = this.getSnappedPoint(e);
+                RelationEndpoint start = this.getRelationEndpoint(startPoint);
                 RelationEndpoint end = new RelationEndpoint(start);
                 end.arrowStyle = ArrowStyle.AS_FILLED_TRIANGLE;
                 Relation r = new Relation(start, end);
@@ -550,13 +564,14 @@ public class DiagramController extends JPanel
                 this.selectOnly(rc);
 
                 // Drag the end point while the mouse button is held.
-                this.beginDragging(rc.getEndHandle(), e.getPoint());
+                this.beginDragging(rc.getEndHandle(), startPoint);
 
                 this.repaint();
                 break;
             }
 
             case DCM_CREATE_ENTITY: {
+                // This does respect snap, but that happens inside 'createEntityAt'.
                 EntityController.createEntityAt(this, e.getPoint());
                 this.setMode(Mode.DCM_SELECT);
                 this.setDirty();

@@ -2,11 +2,11 @@ TODOs for Diagram Editor
 ------------------------
 
 Small:
-- initial point of relation should respect snap
 - select entities, align L/R/T/B
 - bidirectional relations with separate labels for each direction
 - allow label on inheritance edge
 - allow custom text label colors
+- arrow keys to move; ctrl-arrow to resize; shift to not snap
 - entity grouping
 - better self-loop rendering
 - specify initial size (etc.?) for new relations
