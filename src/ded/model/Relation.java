@@ -51,7 +51,9 @@ public class Relation {
       * Otherwise, this is a sequence of lengths, in pixels, of
       * alternating segments of opaque and transparent
       * segments, starting with an opaque segment.  All elements must
-      * be non-negative, and at least one must be positive. */
+      * be non-negative, and at least one must be positive.  Once
+      * the sequence is exhausted, it repeats, starting again with
+      * an opaque segment. */
     public ArrayList<Integer> dashStructure = new ArrayList<Integer>();
 
     // -------------------- methods ----------------------

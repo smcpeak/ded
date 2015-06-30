@@ -92,12 +92,15 @@ public class RelationDialog extends ModalDialog {
             "When this box is empty, the line is solid.  Otherwise, "+
             "the box contains a space-separated sequence of non-negative integers "+
             "representing the lengths, in pixels, of alternately opaque "+
-            "and transparent line segments, beginning with opaque.\n"+
+            "and transparent line segments, beginning with opaque.  When "+
+            "the sequence is exhausted, it repeats, starting again with opaque.\n"+
             "\n"+
             "Typical values:\n"+
             "* Dashed: 5 2\n"+
             "* Dotted: 1 2\n"+
-            "* Dash-dot: 5 2 1 2\n");
+            "* Dash-dot: 5 2 1 2\n"+
+            "\n"+
+            "Also useful is \"0 10 2\" with line width 2 for an ellipsis effect.");
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
         // It might be nice to allow the endpoints to be edited, but

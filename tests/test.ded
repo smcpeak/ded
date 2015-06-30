@@ -564,6 +564,28 @@
         "h": 20,
         "w": 130
       }
+    },
+    {
+      "loc": {
+        "x": 10,
+        "y": 440
+      },
+      "name": "A",
+      "size": {
+        "h": 20,
+        "w": 20
+      }
+    },
+    {
+      "loc": {
+        "x": 10,
+        "y": 505
+      },
+      "name": "B",
+      "size": {
+        "h": 20,
+        "w": 20
+      }
     }
   ],
   "inheritances": [{
@@ -1059,6 +1081,20 @@
         "x": 170,
         "y": 535
       }}
+    },
+    {
+      "dashStructure": [
+        0,
+        10,
+        2
+      ],
+      "end": {
+        "arrowStyle": "AS_NONE",
+        "entityRef": 47
+      },
+      "label": "ellipsis",
+      "lineWidth": 2,
+      "start": {"entityRef": 46}
     }
   ],
   "type": "Diagram Editor Diagram",

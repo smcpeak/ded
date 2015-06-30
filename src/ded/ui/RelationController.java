@@ -389,10 +389,21 @@ public class RelationController extends Controller {
 
         // Dashed line?
         if (!this.relation.dashStructure.isEmpty()) {
+            // Determine how many segments to pass to BasicStroke.
+            int numSegments = this.relation.dashStructure.size();
+            if ((numSegments & 1) == 1) {
+                // BasicStroke has (to me) unexpected behavior with an
+                // odd number of segments: it repeats the segments, but
+                // swapping what is opaque and what is transparent.
+                // Therefore, I will add one more zero-length segment
+                // to preserve the opaque and transparent roles.
+                numSegments++;
+            }
+
             // Copy the integers to a float array for BasicStroke.
-            float[] flens = new float[this.relation.dashStructure.size()];
+            float[] segments = new float[numSegments];    // zero-initialized
             for (int i=0; i < this.relation.dashStructure.size(); i++) {
-                flens[i] = (float)this.relation.dashStructure.get(i);
+                segments[i] = (float)this.relation.dashStructure.get(i);
             }
 
             // Create a dashed stroke.
@@ -401,7 +412,7 @@ public class RelationController extends Controller {
                 BasicStroke.CAP_BUTT,
                 BasicStroke.JOIN_MITER,
                 10.0f,       // miter limit (default)
-                flens,
+                segments,
                 0.0f));      // dash phase
         }
         else {
