@@ -2,7 +2,6 @@ TODOs for Diagram Editor
 ------------------------
 
 Small:
-- select entities, align L/R/T/B
 - bidirectional relations with separate labels for each direction
 - allow label on inheritance edge
 - allow custom text label colors

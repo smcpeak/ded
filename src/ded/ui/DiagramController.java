@@ -2146,11 +2146,8 @@ public class DiagramController extends JPanel
     public void setSelectedEntitiesFillColor(String colorName)
     {
         // Iterate over selected entities, changing their color.
-        for (Controller c : this.controllers) {
-            if (c.isSelected() && c instanceof EntityController) {
-                EntityController ec = (EntityController)c;
-                ec.entity.setFillColor(colorName);
-            }
+        for (EntityController ec : this.getSelectedEntities()) {
+            ec.entity.setFillColor(colorName);
         }
 
         this.diagramChanged();
@@ -2169,17 +2166,63 @@ public class DiagramController extends JPanel
         this.diagramChanged();
     }
 
+    /** Return a sequence containing all of the selected entity controllers. */
+    public ArrayList<EntityController> getSelectedEntities()
+    {
+        ArrayList<EntityController> ret = new ArrayList<EntityController>();
+        for (Controller c : this.controllers) {
+            if (c.isSelected() && c instanceof EntityController) {
+                ret.add((EntityController)c);
+            }
+        }
+        return ret;
+    }
+
     /** Change the selected entities' shapes to the indicated shape. */
     public void setSelectedEntitiesShape(EntityShape shape)
     {
-        for (Controller c : this.controllers) {
-            if (c.isSelected() && c instanceof EntityController) {
-                EntityController ec = (EntityController)c;
-                ec.entity.setShape(shape);
-            }
+        for (EntityController ec : this.getSelectedEntities()) {
+            ec.entity.setShape(shape);
         }
 
         this.diagramChanged();
+    }
+
+    /** Align selected entities according to 'ac'. */
+    public void alignSelectedEntities(AlignCommand ac)
+    {
+        ArrayList<EntityController> ents = this.getSelectedEntities();
+        if (ents.isEmpty()) {
+            return;
+        }
+
+        // Get the most extreme value for the chosen edge.
+        int extreme = ents.get(0).getEdge(ac.ee);
+        for (EntityController ec : ents) {
+            int lt = ec.getEdge(ac.ee);
+            if (isMoreExtremeThan(lt, extreme, ac.ee.extremeIsGreater)) {
+                extreme = lt;
+            }
+        }
+
+        // Go over the list again, adjusting entities to all of the same
+        // extreme value.
+        for (EntityController ec : ents) {
+            ec.setEdge(ac.ee, ac.resize, extreme);
+        }
+
+        this.diagramChanged();
+    }
+
+    /** Return true if 'a' is more extreme than 'b', respecting 'extremeIsGreater'. */
+    private static boolean isMoreExtremeThan(int a, int b, boolean extremeIsGreater)
+    {
+        if (extremeIsGreater) {
+            return a > b;
+        }
+        else {
+            return a < b;
+        }
     }
 
     public static enum SetAnchorCommand {
@@ -2195,20 +2238,17 @@ public class DiagramController extends JPanel
     public void setSelectedEntitiesAnchorName(SetAnchorCommand command)
     {
         int count = 0;
-        for (Controller c : this.controllers) {
-            if (c.isSelected() && c instanceof EntityController) {
-                EntityController ec = (EntityController)c;
-                switch (command) {
-                    case SAC_SET_TO_ENTITY_NAME:
-                        ec.entity.anchorName = ec.entity.name;
-                        break;
+        for (EntityController ec : this.getSelectedEntities()) {
+            switch (command) {
+                case SAC_SET_TO_ENTITY_NAME:
+                    ec.entity.anchorName = ec.entity.name;
+                    break;
 
-                    case SAC_CLEAR:
-                        ec.entity.anchorName = "";
-                        break;
-                }
-                count++;
+                case SAC_CLEAR:
+                    ec.entity.anchorName = "";
+                    break;
             }
+            count++;
         }
 
         if (count == 0) {
@@ -2338,13 +2378,9 @@ public class DiagramController extends JPanel
         // current relative order.  I need 'selEntities' so I can
         // call 'removeAll' and 'addAll' with them.
         ArrayList<Entity> selEntities = new ArrayList<Entity>();
-        ArrayList<EntityController> selControllers = new ArrayList<EntityController>();
-        for (Controller c : this.controllers) {
-            if (c.isSelected() && c instanceof EntityController) {
-                EntityController ec = (EntityController)c;
-                selEntities.add(ec.entity);
-                selControllers.add(ec);
-            }
+        ArrayList<EntityController> selControllers = this.getSelectedEntities();
+        for (EntityController ec : selControllers) {
+            selEntities.add(ec.entity);
         }
 
         if (selEntities.isEmpty()) {

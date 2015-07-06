@@ -26,6 +26,7 @@ import util.IdentityHashSet;
 import util.awt.G;
 import util.awt.GeomUtil;
 import util.awt.HorizOrVert;
+import util.swing.MenuAction;
 import util.swing.SwingUtil;
 
 import ded.model.Diagram;
@@ -131,7 +132,9 @@ public class EntityController extends Controller
         return hv.isHoriz() ? this.getRight() : this.getBottom();
     }
 
-    /** Set right or bottom edge, depending on 'hv', w/o changing other locations. */
+    /** Set right or bottom edge, depending on 'hv', w/o changing other locations.
+      * 'direct' should be true if the user is directly resizing this entity,
+      * false if the resize happens because it is contained in a window entity. */
     public void resizeSetBottomOrRight(int v, HorizOrVert hv, boolean direct)
     {
         int diff = v - this.getBottomOrRight(hv);
@@ -190,6 +193,62 @@ public class EntityController extends Controller
     public void resizeSetBottom(int v, boolean direct)
     {
         resizeSetBottomOrRight(v, HorizOrVert.HV_VERT, direct);
+    }
+
+    /** Get one of the edge values, selected by 'ee'. */
+    public int getEdge(EntityEdge ee)
+    {
+        switch (ee) {
+            default: assert(false);
+            case EE_LEFT: return getLeft();
+            case EE_TOP: return getTop();
+            case EE_RIGHT: return getRight();
+            case EE_BOTTOM: return getBottom();
+        }
+    }
+
+    /** Set one of the edge values to 'newValue', either by moving or resizing. */
+    public void setEdge(EntityEdge ee, boolean resize, int newValue)
+    {
+        switch (ee) {
+            default: assert(false);
+
+            case EE_LEFT:
+                if (resize) {
+                    resizeSetLeft(newValue);
+                }
+                else {
+                    this.entity.loc.x = newValue;
+                }
+                break;
+
+            case EE_TOP:
+                if (resize) {
+                    resizeSetTop(newValue);
+                }
+                else {
+                    this.entity.loc.y = newValue;
+                }
+                break;
+
+            case EE_RIGHT:
+                if (resize) {
+                    resizeSetRight(newValue, true /*direct*/);
+                }
+                else {
+                    this.entity.loc.x += (newValue - this.getRight());
+                }
+                break;
+
+            case EE_BOTTOM:
+                if (resize) {
+                    resizeSetBottom(newValue, true /*direct*/);
+                }
+                else {
+                    this.entity.loc.y += (newValue - this.getBottom());
+                }
+                break;
+        }
     }
 
     /** Get the part of entity rectangle excluding the name/title portion.
@@ -791,6 +850,17 @@ public class EntityController extends Controller
             });
         }
         menu.add(shapeMenu);
+
+        JMenu alignMenu = new JMenu("Align");
+        alignMenu.setMnemonic(KeyEvent.VK_A);
+        for (final AlignCommand ac : EnumSet.allOf(AlignCommand.class)) {
+            alignMenu.add(new MenuAction(ac.label, ac.mnemonic) {
+                public void actionPerformed(ActionEvent e) {
+                    ths.diagramController.alignSelectedEntities(ac);
+                }
+            });
+        }
+        menu.add(alignMenu);
 
         menu.add(new AbstractAction("Set anchor name to entity name") {
             public void actionPerformed(ActionEvent e) {
