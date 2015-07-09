@@ -78,15 +78,17 @@ public class EntityDialog extends ModalDialog
         this.shapeFlagsWorkingCopy = this.entity.shapeFlags.clone();
         this.workingFlagsBaseShape = this.entity.shape;
 
-        // NOTE: This dialog is not laid out well.  I have not yet figured out
-        // a good way to do dialog layout well with Swing (whereas it is easy
-        // with Qt).  So the code here should not be treated as a good example
-        // on which to base other dialog implementations.
+        // The outer vbox has the name, the column container, and the ok/cancel row:
+        Box outerVb = ModalDialog.makeMarginVBox(this, ModalDialog.OUTER_MARGIN);
 
-        Box vb = ModalDialog.makeMarginVBox(this, ModalDialog.OUTER_MARGIN);
+        this.nameText = ModalDialog.makeLineEdit(outerVb, "Name", 'n', this.entity.name);
+        outerVb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
-        this.nameText = ModalDialog.makeLineEdit(vb, "Name", 'n', this.entity.name);
-        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+        // HBox two contain two columns.
+        Box columnContainer = ModalDialog.makeHBox(outerVb);
+
+        // VBox for first column, which just contains the attributes.
+        Box vb = ModalDialog.makeVBox(columnContainer);
 
         // attributes
         {
@@ -114,6 +116,13 @@ public class EntityDialog extends ModalDialog
             vb.add(scroll);
             vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
         }
+
+        // Spacing separating the columns.
+        columnContainer.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING * 2));
+
+        // Now a new vbox for the second column, containing most of the
+        // remaining controls.
+        vb = ModalDialog.makeVBox(columnContainer);
 
         // shape
         {
@@ -235,6 +244,9 @@ public class EntityDialog extends ModalDialog
                 this.entity.imageFillStyle);
             this.imageFillStyleChooser.addItemListener(this);
         }
+
+        // Now go back to populating the outer box.
+        vb = outerVb;
 
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
         this.updateControls();
