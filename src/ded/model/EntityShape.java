@@ -22,7 +22,9 @@ public enum EntityShape {
     ES_SCROLLBAR
         ("Scroll bar", 2),
     ES_PUSHBUTTON
-        ("Push button", 0);
+        ("Push button", 0),
+    ES_TEXT_EDIT
+        ("Text edit", 0);
 
     /** Name of this shape as shown in the UI. */
     public final String displayName;

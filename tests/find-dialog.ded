@@ -1,0 +1,159 @@
+{
+  "drawFileName": true,
+  "entities": [
+    {
+      "loc": {
+        "x": 15,
+        "y": 30
+      },
+      "name": "Find",
+      "shape": "ES_WINDOW",
+      "shapeFlags": ["SF_HAS_CLOSE"],
+      "shapeParams": [
+        445,
+        190
+      ],
+      "size": {
+        "h": 130,
+        "w": 390
+      }
+    },
+    {
+      "loc": {
+        "x": 20,
+        "y": 60
+      },
+      "name": "Find what:",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 65
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Gray",
+      "loc": {
+        "x": 100,
+        "y": 60
+      },
+      "shape": "ES_TEXT_EDIT",
+      "size": {
+        "h": 20,
+        "w": 200
+      }
+    },
+    {
+      "loc": {
+        "x": 310,
+        "y": 60
+      },
+      "name": "Find Next",
+      "shape": "ES_PUSHBUTTON",
+      "size": {
+        "h": 25,
+        "w": 85
+      }
+    },
+    {
+      "loc": {
+        "x": 310,
+        "y": 90
+      },
+      "name": "Cancel",
+      "shape": "ES_PUSHBUTTON",
+      "size": {
+        "h": 25,
+        "w": 85
+      }
+    },
+    {
+      "loc": {
+        "x": 25,
+        "y": 120
+      },
+      "size": {
+        "h": 20,
+        "w": 20
+      }
+    },
+    {
+      "loc": {
+        "x": 50,
+        "y": 120
+      },
+      "name": "Match case",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 65
+      }
+    },
+    {
+      "attributes": " ",
+      "loc": {
+        "x": 150,
+        "y": 95
+      },
+      "name": "Direction",
+      "size": {
+        "h": 55,
+        "w": 150
+      }
+    },
+    {
+      "loc": {
+        "x": 160,
+        "y": 120
+      },
+      "shape": "ES_ELLIPSE",
+      "size": {
+        "h": 20,
+        "w": 20
+      }
+    },
+    {
+      "loc": {
+        "x": 185,
+        "y": 120
+      },
+      "name": "Up",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 20
+      }
+    },
+    {
+      "loc": {
+        "x": 255,
+        "y": 120
+      },
+      "name": "Down",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 35
+      }
+    },
+    {
+      "loc": {
+        "x": 230,
+        "y": 120
+      },
+      "shape": "ES_ELLIPSE",
+      "size": {
+        "h": 20,
+        "w": 20
+      }
+    }
+  ],
+  "inheritances": [],
+  "relations": [],
+  "type": "Diagram Editor Diagram",
+  "version": 17,
+  "windowSize": {
+    "h": 190,
+    "w": 431
+  }
+}

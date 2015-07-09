@@ -339,6 +339,7 @@ public class EntityController extends Controller
             case ES_WINDOW:
             case ES_SCROLLBAR:
             case ES_PUSHBUTTON:
+            case ES_TEXT_EDIT:
                 if (wantSolidBackground) {
                     // Fill with the normal entity color (selected controllers
                     // get filled with selection color by super.paint).
@@ -360,6 +361,9 @@ public class EntityController extends Controller
                     inner.width -= 2;
                     inner.height -= 2;
                     this.drawBevel(g, inner);
+                }
+                if (this.entity.shape == EntityShape.ES_TEXT_EDIT) {
+                    this.drawTextEdit(g, r);
                 }
                 break;
 
@@ -780,6 +784,51 @@ public class EntityController extends Controller
         g.drawLine(r.x+r.width-2, r.y+r.height-1, r.x+r.width-2, r.y+2);   // inner right
         g.drawLine(r.x+r.width-1, r.y+r.height-1, r.x+1, r.y+r.height-1);  // outer bottom
         g.drawLine(r.x+r.width-1, r.y+r.height-2, r.x+2, r.y+r.height-2);  // inner bottom
+    }
+
+    /** Draw the text edit control shape into 'r', assuming that it has
+      * already been filled and outlined like a normal entity. */
+    public void drawTextEdit(Graphics g0, Rectangle r)
+    {
+        Graphics g = g0.create();
+
+        Color mid = this.getLineColor();
+        Color darker = adjustBrightness(mid, -0.25f);
+        Color lighter = adjustBrightness(mid, +0.15f);
+
+        // Draw one pixel of middle shading in the upper corners, one pixel
+        // inside the border corner.
+        g.setColor(mid);
+        g.drawLine(r.x+1, r.y+1, r.x+1, r.y+1);
+        g.drawLine(r.x+r.width-2, r.y+1, r.x+r.width-2, r.y+1);
+
+        // Darker shadow along the top.
+        g.setColor(darker);
+        g.drawLine(r.x+1, r.y, r.x+r.width-2, r.y);
+
+        // Lighter shadow along the bottom.
+        g.setColor(lighter);
+        g.drawLine(r.x, r.y+r.height-1, r.x+r.width, r.y+r.height-1);
+
+        // And in the bottom corners.
+        g.drawLine(r.x+1, r.y+r.height-2, r.x+1, r.y+r.height-2);
+        g.drawLine(r.x+r.width-2, r.y+r.height-2, r.x+r.width-2, r.y+r.height-2);
+    }
+
+    /** Return a new Color that has the same hue and saturation as 'orig',
+      * but with a brightness that has 'brightnessOffset' (which may be
+      * negative) added to it. */
+    static Color adjustBrightness(Color orig, float brightnessOffset)
+    {
+        float[] hsb = Color.RGBtoHSB(orig.getRed(), orig.getGreen(), orig.getBlue(), null);
+        float b = hsb[2] + brightnessOffset;
+        if (b < 0.0f) {
+            b = 0.0f;
+        }
+        else if (b > 1.0f) {
+            b = 1.0f;
+        }
+        return Color.getHSBColor(hsb[0], hsb[1], b);
     }
 
     /** Return the rectangle describing this controller's bounds. */
