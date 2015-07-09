@@ -46,9 +46,6 @@ public class EntityController extends Controller
     /** Line color when it is invalid. */
     public static final Color fallbackEntityLineColor = Color.BLACK;
 
-    /** Color to draw the text of an entity. */
-    public static final Color entityTextColor = Color.BLACK;
-
     /** Width of border to draw with XOR around selected entities,
       * beyond changing the background color (which may be ignored). */
     public static final int selectedEntityXORBorderWidth = 3;
@@ -387,7 +384,7 @@ public class EntityController extends Controller
             this.entity.shape != EntityShape.ES_WINDOW)
         {
             // Name is vertically and horizontally centered in the space.
-            g.setColor(entityTextColor);
+            g.setColor(this.getTextColor());
             SwingUtil.drawCenteredText(g, GeomUtil.getCenter(r), this.entity.name);
         }
         else {
@@ -427,7 +424,7 @@ public class EntityController extends Controller
                     }
                 }
 
-                g.setColor(entityTextColor);
+                g.setColor(this.getTextColor());
                 SwingUtil.drawCenteredText(g, GeomUtil.getCenter(nameRect), this.entity.name);
             }
 
@@ -439,7 +436,7 @@ public class EntityController extends Controller
             Graphics g2 = g.create();      // localize effect of clipRect
             g2.clipRect(attributeRect.x, attributeRect.y,
                         attributeRect.width, attributeRect.height);
-            g2.setColor(entityTextColor);
+            g2.setColor(this.getTextColor());
             SwingUtil.drawTextWithNewlines(g2,
                 this.entity.attributes,
                 attributeRect.x,
@@ -593,6 +590,13 @@ public class EntityController extends Controller
     {
         return this.diagramController.diagram.getNamedColor(
             this.entity.lineColor, fallbackEntityLineColor);
+    }
+
+    /** Get the color to use to draw text inside the Entity. */
+    public Color getTextColor()
+    {
+        return this.diagramController.diagram.getNamedColor(
+            this.entity.textColor, Color.BLACK);
     }
 
     /** Draw the part of a cuboid outside the main rectangle 'r'. */

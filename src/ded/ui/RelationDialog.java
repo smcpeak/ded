@@ -35,6 +35,7 @@ public class RelationDialog extends ModalDialog {
     private JComboBox<ArrowStyle> startArrowStyleChooser,
                                   endArrowStyleChooser;
     private JComboBox<String> lineColorChooser;
+    private JComboBox<String> textColorChooser;
     private JTextField dashStructureField;
 
     // ------------------- methods ----------------------
@@ -84,6 +85,10 @@ public class RelationDialog extends ModalDialog {
 
         this.lineColorChooser =
             EntityDialog.makeColorChooser(diagram, vb, this.relation.lineColor, "Line color", 'i');
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+
+        this.textColorChooser =
+            EntityDialog.makeColorChooser(diagram, vb, this.relation.textColor, "Text color", 't');
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
         this.dashStructureField = ModalDialog.makeLineEditWithHelp(vb, "Dash structure", 'd',
@@ -220,6 +225,7 @@ public class RelationDialog extends ModalDialog {
         this.relation.start.arrowStyle = startStyle;
         this.relation.end.arrowStyle = endStyle;
         this.relation.lineColor = (String)this.lineColorChooser.getSelectedItem();
+        this.relation.textColor = (String)this.textColorChooser.getSelectedItem();
         this.relation.lineWidth = lineWidth;
         this.relation.dashStructure = dashStructure;
 

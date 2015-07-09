@@ -27,6 +27,9 @@ public class Relation {
     /** Default line color when none is specified in file. */
     public static final String defaultLineColor = "Black";
 
+    /** Default text color when none is specified in file. */
+    public static final String defaultTextColor = "Black";
+
     // ------------------ instance data -----------------------
     /** Endpoints, including their arrow style. */
     public RelationEndpoint start, end;
@@ -46,6 +49,9 @@ public class Relation {
 
     /** Color of the line. */
     public String lineColor = defaultLineColor;
+
+    /** Color of the text label. */
+    public String textColor = defaultTextColor;
 
     /** Dash structure of the line.  When empty, the line is solid.
       * Otherwise, this is a sequence of lengths, in pixels, of
@@ -77,6 +83,7 @@ public class Relation {
         this.label = obj.label;
         this.lineWidth = obj.lineWidth;
         this.lineColor = obj.lineColor;
+        this.textColor = obj.textColor;
         this.dashStructure = new ArrayList<Integer>(obj.dashStructure);
     }
 
@@ -127,6 +134,7 @@ public class Relation {
                    this.label.equals(r.label) &&
                    Util.nullableEquals(this.lineWidth, r.lineWidth) &&
                    this.lineColor.equals(r.lineColor) &&
+                   this.textColor.equals(r.textColor) &&
                    this.dashStructure.equals(r.dashStructure);
         }
         return false;
@@ -143,6 +151,7 @@ public class Relation {
         h = h*31 + this.label.hashCode();
         h = h*31 + Util.nullableHashCode(this.lineWidth);
         h = h*31 + this.lineColor.hashCode();
+        h = h*31 + this.textColor.hashCode();
         h = h*31 + Util.collectionHashCode(this.dashStructure);
         return h;
     }
@@ -188,6 +197,10 @@ public class Relation {
                     lengths.put(i);
                 }
                 o.put("dashStructure", lengths);
+            }
+
+            if (!this.textColor.equals(defaultTextColor)) {
+                o.put("textColor", this.textColor);
             }
         }
         catch (JSONException e) { assert(false); }
@@ -238,6 +251,10 @@ public class Relation {
             for (int i=0; i < lengths.length(); i++) {
                 this.dashStructure.add(lengths.getInt(i));
             }
+        }
+
+        if (o.has("textColor")) {
+            this.textColor = o.getString("textColor");
         }
     }
 

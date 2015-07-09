@@ -461,7 +461,7 @@ public class RelationController extends Controller {
         }
 
         // Label near midpoint of first segment.
-        g.setColor(Color.BLACK);
+        g.setColor(this.getTextColor());
         this.drawLabelAtSegment(g, points.get(0), points.get(1), this.relation.label);
     }
 
@@ -470,6 +470,13 @@ public class RelationController extends Controller {
     {
         return this.diagramController.diagram.getNamedColor(
             this.relation.lineColor, Color.BLACK);
+    }
+
+    /** Get the color to use to draw this Relation's label text. */
+    public Color getTextColor()
+    {
+        return this.diagramController.diagram.getNamedColor(
+            this.relation.textColor, Color.BLACK);
     }
 
     /** Return the angle of a line that goes from the center of an

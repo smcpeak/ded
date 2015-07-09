@@ -61,6 +61,7 @@ public class EntityDialog extends ModalDialog
     private JButton shapeFlagsButton;
     private JComboBox<String> fillColorChooser;
     private JComboBox<String> lineColorChooser;
+    private JComboBox<String> textColorChooser;
     private JTextField xText, yText, wText, hText;
     private JLabel paramsLabel;
     private JTextField pText, qText;
@@ -144,6 +145,8 @@ public class EntityDialog extends ModalDialog
         this.fillColorChooser = makeColorChooser(diagram, vb, this.entity.fillColor, "Fill color", 'f');
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
         this.lineColorChooser = makeColorChooser(diagram, vb, this.entity.lineColor, "Line color", 'l');
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+        this.textColorChooser = makeColorChooser(diagram, vb, this.entity.textColor, "Text color", 't');
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
         // x, y
@@ -233,6 +236,7 @@ public class EntityDialog extends ModalDialog
             this.imageFillStyleChooser.addItemListener(this);
         }
 
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
         this.updateControls();
         this.finishBuildingDialog(vb);
     }
@@ -375,6 +379,7 @@ public class EntityDialog extends ModalDialog
 
         String fillColor = (String)this.fillColorChooser.getSelectedItem();
         String lineColor = (String)this.lineColorChooser.getSelectedItem();
+        String textColor = (String)this.textColorChooser.getSelectedItem();
 
         ImageFillStyle imageFillStyle = (ImageFillStyle)this.imageFillStyleChooser.getSelectedItem();
 
@@ -388,6 +393,7 @@ public class EntityDialog extends ModalDialog
         this.entity.shapeFlags = this.shapeFlagsWorkingCopy.clone();
         this.entity.setFillColor(fillColor);
         this.entity.lineColor = lineColor;
+        this.entity.textColor = textColor;
         this.entity.loc.x = x;
         this.entity.loc.y = y;
         this.entity.size.width = w;
