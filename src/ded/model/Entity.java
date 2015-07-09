@@ -38,6 +38,9 @@ public class Entity implements JSONable {
     /** Default entity text color. */
     public static final String defaultTextColor = "Black";
 
+    /** Default name text alignment. */
+    public static final TextAlign defaultNameAlign = TextAlign.TA_CENTER;
+
     /** Default image fill style. */
     public static final ImageFillStyle defaultImageFillStyle = ImageFillStyle.IFS_UPPER_LEFT;
 
@@ -63,6 +66,9 @@ public class Entity implements JSONable {
 
     /** Name/title of the entity. */
     public String name = "";
+
+    /** How to align the name. */
+    public TextAlign nameAlign = defaultNameAlign;
 
     /** Attributes as free text with newlines. */
     public String attributes = "";
@@ -172,6 +178,10 @@ public class Entity implements JSONable {
                 o.put("name", this.name);
             }
 
+            if (this.nameAlign != defaultNameAlign) {
+                o.put("nameAlign", this.nameAlign.name());
+            }
+
             if (!this.attributes.isEmpty()) {
                 o.put("attributes", this.attributes);
             }
@@ -222,6 +232,10 @@ public class Entity implements JSONable {
         }
 
         this.name = o.optString("name", "");
+        if (o.has("nameAlign")) {
+            this.nameAlign = TextAlign.valueOf(TextAlign.class, o.getString("nameAlign"));
+        }
+
         this.attributes = o.optString("attributes", "");
 
         JSONArray params = o.optJSONArray("shapeParams");
@@ -316,6 +330,7 @@ public class Entity implements JSONable {
         this.lineColor = obj.lineColor;
         this.textColor = obj.textColor;
         this.name = obj.name;
+        this.nameAlign = obj.nameAlign;
         this.attributes = obj.attributes;
         this.shapeParams = Util.copyArray(obj.shapeParams);
         this.shapeFlags = obj.shapeFlags.clone();
@@ -339,6 +354,7 @@ public class Entity implements JSONable {
                    this.lineColor.equals(e.lineColor) &&
                    this.textColor.equals(e.textColor) &&
                    this.name.equals(e.name) &&
+                   this.nameAlign.equals(e.nameAlign) &&
                    this.attributes.equals(e.attributes) &&
                    Arrays.equals(this.shapeParams, e.shapeParams) &&
                    this.shapeFlags.equals(e.shapeFlags) &&
@@ -360,6 +376,7 @@ public class Entity implements JSONable {
         h = h*31 + this.lineColor.hashCode();
         h = h*31 + this.textColor.hashCode();
         h = h*31 + this.name.hashCode();
+        h = h*31 + this.nameAlign.hashCode();
         h = h*31 + this.attributes.hashCode();
         h = h*31 + Arrays.hashCode(this.shapeParams);
         h = h*31 + this.shapeFlags.hashCode();

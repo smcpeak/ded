@@ -33,6 +33,7 @@ import ded.model.Entity;
 import ded.model.EntityShape;
 import ded.model.ImageFillStyle;
 import ded.model.ShapeFlag;
+import ded.model.TextAlign;
 
 /** Dialog box to edit an Entity. */
 public class EntityDialog extends ModalDialog
@@ -56,6 +57,7 @@ public class EntityDialog extends ModalDialog
 
     // Controls.
     private JTextField nameText;
+    private JComboBox<TextAlign> nameAlignChooser;
     private JTextArea attributeText;
     private JComboBox<EntityShape> shapeChooser;
     private JButton shapeFlagsButton;
@@ -81,7 +83,21 @@ public class EntityDialog extends ModalDialog
         // The outer vbox has the name, the column container, and the ok/cancel row:
         Box outerVb = ModalDialog.makeMarginVBox(this, ModalDialog.OUTER_MARGIN);
 
-        this.nameText = ModalDialog.makeLineEdit(outerVb, "Name", 'n', this.entity.name);
+        // Name row
+        {
+            Box nameRowHb = ModalDialog.makeHBox(outerVb);
+
+            this.nameText = ModalDialog.makeLineEdit(nameRowHb, "Name", 'n', this.entity.name);
+
+            nameRowHb.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING*2));
+
+            this.nameAlignChooser = ModalDialog.makeEnumChooser(
+                nameRowHb,
+                "Align",
+                'g',
+                TextAlign.class,
+                this.entity.nameAlign);
+        }
         outerVb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
         // HBox two contain two columns.
@@ -358,6 +374,7 @@ public class EntityDialog extends ModalDialog
         // if there is a problem, we will bail before actually
         // modifying this.entity;
 
+        TextAlign nameAlign = (TextAlign)this.nameAlignChooser.getSelectedItem();
         EntityShape shape = (EntityShape)this.shapeChooser.getSelectedItem();
 
         int x, y, w, h, p=0, q=0;
@@ -400,6 +417,7 @@ public class EntityDialog extends ModalDialog
 
         // Update the entity.
         this.entity.name = this.nameText.getText();
+        this.entity.nameAlign = nameAlign;
         this.entity.attributes = this.attributeText.getText();
         this.entity.setShape(shape);      // Sets 'shapeParams' too.
         this.entity.shapeFlags = this.shapeFlagsWorkingCopy.clone();

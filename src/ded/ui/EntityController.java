@@ -5,6 +5,7 @@ package ded.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
@@ -13,6 +14,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.font.LineMetrics;
 
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -34,6 +36,7 @@ import ded.model.Entity;
 import ded.model.EntityShape;
 import ded.model.ImageFillStyle;
 import ded.model.ShapeFlag;
+import ded.model.TextAlign;
 
 /** Controller for Entity. */
 public class EntityController extends Controller
@@ -283,6 +286,41 @@ public class EntityController extends Controller
         }
     }
 
+    /** Draw 'str' in 'r', centered vertically, and horizontally aligned per 'align'. */
+    public static void drawAlignedText(Graphics g0, Rectangle r, String str, TextAlign align)
+    {
+        Graphics g = g0.create();
+        g.setClip(r);
+
+        Point center = GeomUtil.getCenter(r);
+
+        FontMetrics fm = g.getFontMetrics();
+        LineMetrics lm = fm.getLineMetrics(str, g);
+
+        // Go to 'p', then add a/2 to get to the baseline.
+        // I ignore the descent because it looks better to center without
+        // regard to descenders.
+        int baseY = center.y + (int)(lm.getAscent()/2);
+
+        // Compute x coordinate based on horizontal alignment.
+        int baseX = 0;
+        switch (align) {
+            case TA_LEFT:
+                baseX = r.x + 4;
+                break;
+
+            case TA_CENTER:
+                baseX = center.x - fm.stringWidth(str)/2;
+                break;
+
+            case TA_RIGHT:
+                baseX = r.x + r.width - 4 - fm.stringWidth(str);
+                break;
+        }
+
+        g.drawString(str, baseX, baseY);
+    }
+
     @Override
     public void paint(Graphics g0)
     {
@@ -385,7 +423,7 @@ public class EntityController extends Controller
         {
             // Name is vertically and horizontally centered in the space.
             g.setColor(this.getTextColor());
-            SwingUtil.drawCenteredText(g, GeomUtil.getCenter(r), this.entity.name);
+            drawAlignedText(g, r, this.entity.name, this.entity.nameAlign);
         }
         else {
             // Name.
@@ -425,7 +463,7 @@ public class EntityController extends Controller
                 }
 
                 g.setColor(this.getTextColor());
-                SwingUtil.drawCenteredText(g, GeomUtil.getCenter(nameRect), this.entity.name);
+                drawAlignedText(g, nameRect, this.entity.name, this.entity.nameAlign);
             }
 
             // Attributes.
