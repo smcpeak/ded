@@ -1,9 +1,15 @@
 TODOs for Diagram Editor
 ------------------------
 
+Bugs:
+- if use right-click to set entity shape to window, then
+  try to resize, will assert fail because the center handle
+  has not been created, and also the shape flags are wrong
+
 Small:
 - do not allow user to accidentally save ded as .png extension,
   since then can't load it
+- add a shape corresponding to an edit control
 - entity grouping
 - better self-loop rendering
 - dashed lines for relations
