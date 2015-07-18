@@ -10,12 +10,13 @@ Small:
 - do not allow user to accidentally save ded as .png extension,
   since then can't load it
 - add a shape corresponding to an edit control
+- bidirectional relations with separate labels for each direction
+- allow label on inheritance edge
+- arrow keys to move; ctrl-arrow to resize; shift to not snap
 - entity grouping
 - better self-loop rendering
-- dashed lines for relations
 - specify initial size (etc.?) for new relations
 - option to automatically expand entities to contain their title and attributes
-- allow arbitrary fg/bg colors for UI mockups
 - left-aligned titles of entities
 - flag to turn off auto move/resize of window contents
 

@@ -551,118 +551,6 @@
         "h": 45,
         "w": 85
       }
-    },
-    {
-      "fillColor": "RGB(178,129,48)",
-      "lineColor": "RGB(153,255,102)",
-      "loc": {
-        "x": 165,
-        "y": 490
-      },
-      "name": "Brown fill with lime line",
-      "size": {
-        "h": 20,
-        "w": 130
-      }
-    },
-    {
-      "loc": {
-        "x": 10,
-        "y": 440
-      },
-      "name": "A",
-      "size": {
-        "h": 20,
-        "w": 20
-      }
-    },
-    {
-      "loc": {
-        "x": 10,
-        "y": 505
-      },
-      "name": "B",
-      "size": {
-        "h": 20,
-        "w": 20
-      }
-    },
-    {
-      "fillColor": "White",
-      "loc": {
-        "x": 505,
-        "y": 490
-      },
-      "name": "Red text",
-      "size": {
-        "h": 20,
-        "w": 100
-      },
-      "textColor": "Red"
-    },
-    {
-      "attributes": "and green attribs",
-      "fillColor": "White",
-      "loc": {
-        "x": 305,
-        "y": 490
-      },
-      "name": "Green text",
-      "size": {
-        "h": 40,
-        "w": 100
-      },
-      "textColor": "Green"
-    },
-    {
-      "loc": {
-        "x": 615,
-        "y": 445
-      },
-      "name": "Left align",
-      "nameAlign": "TA_LEFT",
-      "size": {
-        "h": 20,
-        "w": 100
-      }
-    },
-    {
-      "loc": {
-        "x": 615,
-        "y": 465
-      },
-      "name": "Right align",
-      "nameAlign": "TA_RIGHT",
-      "size": {
-        "h": 20,
-        "w": 100
-      }
-    },
-    {
-      "attributes": "attr",
-      "loc": {
-        "x": 430,
-        "y": 520
-      },
-      "name": "Left align",
-      "nameAlign": "TA_LEFT",
-      "size": {
-        "h": 40,
-        "w": 100
-      }
-    },
-    {
-      "attributes": "attr2",
-      "loc": {
-        "x": 540,
-        "y": 520
-      },
-      "name": "Right align",
-      "nameAlign": "TA_RIGHT",
-      "size": {
-        "h": 40,
-        "w": 100
-      }
     }
   ],
   "inheritances": [{
@@ -1146,54 +1034,10 @@
         "x": 50,
         "y": 545
       }}
-    },
-    {
-      "end": {"pt": {
-        "x": 240,
-        "y": 535
-      }},
-      "label": "dark purple",
-      "lineColor": "RGB(102,0,102)",
-      "start": {"pt": {
-        "x": 170,
-        "y": 535
-      }}
-    },
-    {
-      "dashStructure": [
-        0,
-        10,
-        2
-      ],
-      "end": {
-        "arrowStyle": "AS_NONE",
-        "entityRef": 47
-      },
-      "label": "ellipsis",
-      "lineWidth": 2,
-      "start": {"entityRef": 46}
-    },
-    {
-      "end": {"pt": {
-        "x": 240,
-        "y": 555
-      }},
-      "label": "pink label",
-      "start": {"pt": {
-        "x": 170,
-        "y": 555
-      }},
-      "textColor": "Pink"
-    },
-    {
-      "end": {"entityRef": 48},
-      "label": "deep blue label",
-      "start": {"entityRef": 49},
-      "textColor": "RGB(0,0,255)"
     }
   ],
   "type": "Diagram Editor Diagram",
-  "version": 19,
+  "version": 15,
   "windowSize": {
     "h": 575,
     "w": 725

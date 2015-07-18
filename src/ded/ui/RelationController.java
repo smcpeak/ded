@@ -369,6 +369,9 @@ public class RelationController extends Controller {
         Graphics2D g = (Graphics2D)g0.create();
 
         ArrayList<Point> points = computePoints();
+        if (points.isEmpty()) {
+            return;      // defensive; should not happen
+        }
 
         if (points.size() == 1) {
             this.paintSelfLoop(g, points.get(0));
@@ -384,52 +387,96 @@ public class RelationController extends Controller {
             lineWidth = InheritanceController.inheritLineWidth;
         }
 
+        // Dashed line?
+        if (!this.relation.dashStructure.isEmpty()) {
+            // Determine how many segments to pass to BasicStroke.
+            int numSegments = this.relation.dashStructure.size();
+            if ((numSegments & 1) == 1) {
+                // BasicStroke has (to me) unexpected behavior with an
+                // odd number of segments: it repeats the segments, but
+                // swapping what is opaque and what is transparent.
+                // Therefore, I will add one more zero-length segment
+                // to preserve the opaque and transparent roles.
+                numSegments++;
+            }
+
+            // Copy the integers to a float array for BasicStroke.
+            float[] segments = new float[numSegments];    // zero-initialized
+            for (int i=0; i < this.relation.dashStructure.size(); i++) {
+                segments[i] = (float)this.relation.dashStructure.get(i);
+            }
+
+            // Create a dashed stroke.
+            g.setStroke(new BasicStroke(
+                lineWidth,
+                BasicStroke.CAP_BUTT,
+                BasicStroke.JOIN_MITER,
+                10.0f,       // miter limit (default)
+                segments,
+                0.0f));      // dash phase
+        }
+        else {
+            // Solid line.
+            g.setStroke(new BasicStroke(
+                lineWidth,
+                BasicStroke.CAP_BUTT,
+                BasicStroke.JOIN_MITER));
+        }
+
         // Choose line color.
-        Color lineColor = this.getLineColor();
+        g.setColor(this.getLineColor());
 
-        // Activate width and color.
-        g.setStroke(new BasicStroke(
-            lineWidth,
-            BasicStroke.CAP_BUTT,
-            BasicStroke.JOIN_MITER));
-        g.setColor(lineColor);
-
-        // Draw each segment.
-        for (int i=1; i < points.size(); i++) {
-            Point a = points.get(i-1);
-            Point b = points.get(i);
-
-            // Line segment.
-            g.drawLine(a.x, a.y, b.x, b.y);
-
-            // Possibly draw arrowhead at start.
-            if (i == 1) {
-                drawArrowhead(g, b, a, this.relation.start.arrowStyle);
+        // Draw the line segments.
+        int nPoints = points.size();
+        {
+            // Construct a pair of arrays containing the points along
+            // the line, in order to pass to drawPolyline.
+            int xPoints[] = new int[nPoints];
+            int yPoints[] = new int[nPoints];
+            for (int i=0; i < nPoints; i++) {
+                xPoints[i] = points.get(i).x;
+                yPoints[i] = points.get(i).y;
             }
 
-            // Possibly draw arrowhead at end.  But if it ends on an
-            // inheritance, then don't.
-            if (i == points.size()-1 && !this.relation.end.isInheritance()) {
-                drawArrowhead(g, a, b, this.relation.end.arrowStyle);
-            }
+            // Draw them all with one call.  This is important in order
+            // to draw the corners correctly (JOIN_MITER) for thick lines.
+            g.drawPolyline(xPoints, yPoints, nPoints);
+        }
+
+        // Solid line for arrow heads.
+        g.setStroke(new BasicStroke(lineWidth));
+
+        // Arrowhead at start.
+        {
+            Point first = points.get(0);
+            Point second = points.get(1);
+            drawArrowhead(g, second, first, this.relation.start.arrowStyle);
+        }
+
+        // Arrowhead at end, if not an inheritance.
+        if (!this.relation.end.isInheritance()) {
+            Point secondToLast = points.get(nPoints-2);
+            Point last = points.get(nPoints-1);
+            drawArrowhead(g, secondToLast, last, this.relation.end.arrowStyle);
         }
 
         // Label near midpoint of first segment.
-        g.setColor(Color.BLACK);
+        g.setColor(this.getTextColor());
         this.drawLabelAtSegment(g, points.get(0), points.get(1), this.relation.label);
     }
 
     /** Get the color to use to draw this Relation's line. */
     public Color getLineColor()
     {
-        Color c = this.diagramController.diagram.namedColors.get(this.relation.lineColor);
-        if (c != null) {
-            return c;
-        }
-        else {
-            // Fall back on default if color is not recognized.
-            return Color.BLACK;
-        }
+        return this.diagramController.diagram.getNamedColor(
+            this.relation.lineColor, Color.BLACK);
+    }
+
+    /** Get the color to use to draw this Relation's label text. */
+    public Color getTextColor()
+    {
+        return this.diagramController.diagram.getNamedColor(
+            this.relation.textColor, Color.BLACK);
     }
 
     /** Return the angle of a line that goes from the center of an
@@ -807,6 +854,23 @@ public class RelationController extends Controller {
             });
         }
         menu.add(colorMenu);
+
+        JMenu dashMenu = new JMenu("Set line dash style");
+        dashMenu.setMnemonic(KeyEvent.VK_D);
+        for (final LineDashStyle lds : EnumSet.allOf(LineDashStyle.class)) {
+            dashMenu.add(new MenuAction(lds.name, lds.mnemonicKey) {
+               public void actionPerformed(ActionEvent ev) {
+                   RelationController.this.diagramController.setSelectedEntitiesLineDashStyle(lds);
+               }
+            });
+        }
+        menu.add(dashMenu);
+
+        menu.add(new MenuAction("Swap relation arrows", KeyEvent.VK_S) {
+            public void actionPerformed(ActionEvent e) {
+                RelationController.this.diagramController.swapSelectedRelationEndpoints();
+            }
+        });
     }
 
     @Override
@@ -845,6 +909,10 @@ public class RelationController extends Controller {
 
                 case KeyEvent.VK_COMMA:          // mnemonic: "<"
                     this.relation.start.cycleArrowStyle();
+                    break;
+
+                case KeyEvent.VK_S:
+                    this.relation.swapArrows();
                     break;
 
                 default:

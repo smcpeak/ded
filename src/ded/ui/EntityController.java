@@ -5,6 +5,7 @@ package ded.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
@@ -13,6 +14,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.font.LineMetrics;
 
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -26,6 +28,7 @@ import util.IdentityHashSet;
 import util.awt.G;
 import util.awt.GeomUtil;
 import util.awt.HorizOrVert;
+import util.swing.MenuAction;
 import util.swing.SwingUtil;
 
 import ded.model.Diagram;
@@ -33,6 +36,7 @@ import ded.model.Entity;
 import ded.model.EntityShape;
 import ded.model.ImageFillStyle;
 import ded.model.ShapeFlag;
+import ded.model.TextAlign;
 
 /** Controller for Entity. */
 public class EntityController extends Controller
@@ -44,9 +48,6 @@ public class EntityController extends Controller
 
     /** Line color when it is invalid. */
     public static final Color fallbackEntityLineColor = Color.BLACK;
-
-    /** Color to draw the text of an entity. */
-    public static final Color entityTextColor = Color.BLACK;
 
     /** Width of border to draw with XOR around selected entities,
       * beyond changing the background color (which may be ignored). */
@@ -131,7 +132,9 @@ public class EntityController extends Controller
         return hv.isHoriz() ? this.getRight() : this.getBottom();
     }
 
-    /** Set right or bottom edge, depending on 'hv', w/o changing other locations. */
+    /** Set right or bottom edge, depending on 'hv', w/o changing other locations.
+      * 'direct' should be true if the user is directly resizing this entity,
+      * false if the resize happens because it is contained in a window entity. */
     public void resizeSetBottomOrRight(int v, HorizOrVert hv, boolean direct)
     {
         int diff = v - this.getBottomOrRight(hv);
@@ -192,6 +195,62 @@ public class EntityController extends Controller
         resizeSetBottomOrRight(v, HorizOrVert.HV_VERT, direct);
     }
 
+    /** Get one of the edge values, selected by 'ee'. */
+    public int getEdge(EntityEdge ee)
+    {
+        switch (ee) {
+            default: assert(false);
+            case EE_LEFT: return getLeft();
+            case EE_TOP: return getTop();
+            case EE_RIGHT: return getRight();
+            case EE_BOTTOM: return getBottom();
+        }
+    }
+
+    /** Set one of the edge values to 'newValue', either by moving or resizing. */
+    public void setEdge(EntityEdge ee, boolean resize, int newValue)
+    {
+        switch (ee) {
+            default: assert(false);
+
+            case EE_LEFT:
+                if (resize) {
+                    resizeSetLeft(newValue);
+                }
+                else {
+                    this.entity.loc.x = newValue;
+                }
+                break;
+
+            case EE_TOP:
+                if (resize) {
+                    resizeSetTop(newValue);
+                }
+                else {
+                    this.entity.loc.y = newValue;
+                }
+                break;
+
+            case EE_RIGHT:
+                if (resize) {
+                    resizeSetRight(newValue, true /*direct*/);
+                }
+                else {
+                    this.entity.loc.x += (newValue - this.getRight());
+                }
+                break;
+
+            case EE_BOTTOM:
+                if (resize) {
+                    resizeSetBottom(newValue, true /*direct*/);
+                }
+                else {
+                    this.entity.loc.y += (newValue - this.getBottom());
+                }
+                break;
+        }
+    }
+
     /** Get the part of entity rectangle excluding the name/title portion.
       * This assumes the name is shown (it is meant for ES_WINDOW). */
     public Rectangle getAttributeRect()
@@ -225,6 +284,41 @@ public class EntityController extends Controller
                        r.width + selectionBoxExpansion*2,
                        r.height + selectionBoxExpansion*2);
         }
+    }
+
+    /** Draw 'str' in 'r', centered vertically, and horizontally aligned per 'align'. */
+    public static void drawAlignedText(Graphics g0, Rectangle r, String str, TextAlign align)
+    {
+        Graphics g = g0.create();
+        g.setClip(r);
+
+        Point center = GeomUtil.getCenter(r);
+
+        FontMetrics fm = g.getFontMetrics();
+        LineMetrics lm = fm.getLineMetrics(str, g);
+
+        // Go to 'p', then add a/2 to get to the baseline.
+        // I ignore the descent because it looks better to center without
+        // regard to descenders.
+        int baseY = center.y + (int)(lm.getAscent()/2);
+
+        // Compute x coordinate based on horizontal alignment.
+        int baseX = 0;
+        switch (align) {
+            case TA_LEFT:
+                baseX = r.x + 4;
+                break;
+
+            case TA_CENTER:
+                baseX = center.x - fm.stringWidth(str)/2;
+                break;
+
+            case TA_RIGHT:
+                baseX = r.x + r.width - 4 - fm.stringWidth(str);
+                break;
+        }
+
+        g.drawString(str, baseX, baseY);
     }
 
     @Override
@@ -280,6 +374,7 @@ public class EntityController extends Controller
             case ES_WINDOW:
             case ES_SCROLLBAR:
             case ES_PUSHBUTTON:
+            case ES_TEXT_EDIT:
                 if (wantSolidBackground) {
                     // Fill with the normal entity color (selected controllers
                     // get filled with selection color by super.paint).
@@ -301,6 +396,9 @@ public class EntityController extends Controller
                     inner.width -= 2;
                     inner.height -= 2;
                     this.drawBevel(g, inner);
+                }
+                if (this.entity.shape == EntityShape.ES_TEXT_EDIT) {
+                    this.drawTextEdit(g, r);
                 }
                 break;
 
@@ -324,8 +422,8 @@ public class EntityController extends Controller
             this.entity.shape != EntityShape.ES_WINDOW)
         {
             // Name is vertically and horizontally centered in the space.
-            g.setColor(entityTextColor);
-            SwingUtil.drawCenteredText(g, GeomUtil.getCenter(r), this.entity.name);
+            g.setColor(this.getTextColor());
+            drawAlignedText(g, r, this.entity.name, this.entity.nameAlign);
         }
         else {
             // Name.
@@ -364,8 +462,8 @@ public class EntityController extends Controller
                     }
                 }
 
-                g.setColor(entityTextColor);
-                SwingUtil.drawCenteredText(g, GeomUtil.getCenter(nameRect), this.entity.name);
+                g.setColor(this.getTextColor());
+                drawAlignedText(g, nameRect, this.entity.name, this.entity.nameAlign);
             }
 
             // Attributes.
@@ -376,7 +474,7 @@ public class EntityController extends Controller
             Graphics g2 = g.create();      // localize effect of clipRect
             g2.clipRect(attributeRect.x, attributeRect.y,
                         attributeRect.width, attributeRect.height);
-            g2.setColor(entityTextColor);
+            g2.setColor(this.getTextColor());
             SwingUtil.drawTextWithNewlines(g2,
                 this.entity.attributes,
                 attributeRect.x,
@@ -521,27 +619,22 @@ public class EntityController extends Controller
     /** Get the color to use to fill this Entity. */
     public Color getFillColor()
     {
-        Color c = this.diagramController.diagram.namedColors.get(this.entity.fillColor);
-        if (c != null) {
-            return c;
-        }
-        else {
-            // Fall back on default if color is not recognized.
-            return fallbackEntityFillColor;
-        }
+        return this.diagramController.diagram.getNamedColor(
+            this.entity.fillColor, fallbackEntityFillColor);
     }
 
     /** Get the color to use to draw Entity lines. */
     public Color getLineColor()
     {
-        Color c = this.diagramController.diagram.namedColors.get(this.entity.lineColor);
-        if (c != null) {
-            return c;
-        }
-        else {
-            // Fall back on default if color is not recognized.
-            return fallbackEntityLineColor;
-        }
+        return this.diagramController.diagram.getNamedColor(
+            this.entity.lineColor, fallbackEntityLineColor);
+    }
+
+    /** Get the color to use to draw text inside the Entity. */
+    public Color getTextColor()
+    {
+        return this.diagramController.diagram.getNamedColor(
+            this.entity.textColor, Color.BLACK);
     }
 
     /** Draw the part of a cuboid outside the main rectangle 'r'. */
@@ -735,6 +828,51 @@ public class EntityController extends Controller
         g.drawLine(r.x+r.width-1, r.y+r.height-2, r.x+2, r.y+r.height-2);  // inner bottom
     }
 
+    /** Draw the text edit control shape into 'r', assuming that it has
+      * already been filled and outlined like a normal entity. */
+    public void drawTextEdit(Graphics g0, Rectangle r)
+    {
+        Graphics g = g0.create();
+
+        Color mid = this.getLineColor();
+        Color darker = adjustBrightness(mid, -0.25f);
+        Color lighter = adjustBrightness(mid, +0.15f);
+
+        // Draw one pixel of middle shading in the upper corners, one pixel
+        // inside the border corner.
+        g.setColor(mid);
+        g.drawLine(r.x+1, r.y+1, r.x+1, r.y+1);
+        g.drawLine(r.x+r.width-2, r.y+1, r.x+r.width-2, r.y+1);
+
+        // Darker shadow along the top.
+        g.setColor(darker);
+        g.drawLine(r.x+1, r.y, r.x+r.width-2, r.y);
+
+        // Lighter shadow along the bottom.
+        g.setColor(lighter);
+        g.drawLine(r.x, r.y+r.height-1, r.x+r.width, r.y+r.height-1);
+
+        // And in the bottom corners.
+        g.drawLine(r.x+1, r.y+r.height-2, r.x+1, r.y+r.height-2);
+        g.drawLine(r.x+r.width-2, r.y+r.height-2, r.x+r.width-2, r.y+r.height-2);
+    }
+
+    /** Return a new Color that has the same hue and saturation as 'orig',
+      * but with a brightness that has 'brightnessOffset' (which may be
+      * negative) added to it. */
+    static Color adjustBrightness(Color orig, float brightnessOffset)
+    {
+        float[] hsb = Color.RGBtoHSB(orig.getRed(), orig.getGreen(), orig.getBlue(), null);
+        float b = hsb[2] + brightnessOffset;
+        if (b < 0.0f) {
+            b = 0.0f;
+        }
+        else if (b > 1.0f) {
+            b = 1.0f;
+        }
+        return Color.getHSBColor(hsb[0], hsb[1], b);
+    }
+
     /** Return the rectangle describing this controller's bounds. */
     public Rectangle getRect()
     {
@@ -803,6 +941,17 @@ public class EntityController extends Controller
             });
         }
         menu.add(shapeMenu);
+
+        JMenu alignMenu = new JMenu("Align");
+        alignMenu.setMnemonic(KeyEvent.VK_A);
+        for (final AlignCommand ac : EnumSet.allOf(AlignCommand.class)) {
+            alignMenu.add(new MenuAction(ac.label, ac.mnemonic) {
+                public void actionPerformed(ActionEvent e) {
+                    ths.diagramController.alignSelectedEntities(ac);
+                }
+            });
+        }
+        menu.add(alignMenu);
 
         menu.add(new AbstractAction("Set anchor name to entity name") {
             public void actionPerformed(ActionEvent e) {

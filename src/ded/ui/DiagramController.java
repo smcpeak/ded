@@ -33,11 +33,13 @@ import java.awt.event.MouseMotionListener;
 import java.awt.font.LineMetrics;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Field;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -97,11 +99,12 @@ public class DiagramController extends JPanel
         "Left click - select\n"+
         "Ctrl+Left click - multiselect\n"+
         "Left click+drag - multiselect rectangle\n"+
-        "Right click - properties\n"+
+        "Right click - action menu for selection(s)\n"+
         "\n"+
         "When entity selected, F/B to move to front/back.\n"+
         "When relation selected, H/V/D to change routing,\n"+
-        "and comma/period to cycle arrow heads at start/end.\n"+
+        "comma/period to cycle arrow heads at start/end,\n"+
+        "and S to swap start/end arrowheads.\n"+
         "When inheritance selected, O to change open/closed.\n"+
         "When dragging, hold Shift to turn off 5-pixel snap.\n"+
         "\n"+
@@ -498,6 +501,19 @@ public class DiagramController extends JPanel
         //System.out.println(e.toString());
     }
 
+    /** Return e.getPoint(), except snapped to SNAP_DIST if shift not held. */
+    public Point getSnappedPoint(MouseEvent e)
+    {
+        Point p = e.getPoint();
+
+        // Snap if Shift not held.
+        if (!SwingUtil.shiftPressed(e)) {
+            p = GeomUtil.snapPoint(p, SNAP_DIST);
+        }
+
+        return p;
+    }
+
     @Override
     public void mousePressed(MouseEvent e)
     {
@@ -535,7 +551,8 @@ public class DiagramController extends JPanel
 
             case DCM_CREATE_RELATION: {
                 // Make a Relation that starts and ends at the current location.
-                RelationEndpoint start = this.getRelationEndpoint(e.getPoint());
+                Point startPoint = this.getSnappedPoint(e);
+                RelationEndpoint start = this.getRelationEndpoint(startPoint);
                 RelationEndpoint end = new RelationEndpoint(start);
                 end.arrowStyle = ArrowStyle.AS_FILLED_TRIANGLE;
                 Relation r = new Relation(start, end);
@@ -547,13 +564,14 @@ public class DiagramController extends JPanel
                 this.selectOnly(rc);
 
                 // Drag the end point while the mouse button is held.
-                this.beginDragging(rc.getEndHandle(), e.getPoint());
+                this.beginDragging(rc.getEndHandle(), startPoint);
 
                 this.repaint();
                 break;
             }
 
             case DCM_CREATE_ENTITY: {
+                // This does respect snap, but that happens inside 'createEntityAt'.
                 EntityController.createEntityAt(this, e.getPoint());
                 this.setMode(Mode.DCM_SELECT);
                 this.setDirty();
@@ -2128,11 +2146,8 @@ public class DiagramController extends JPanel
     public void setSelectedEntitiesFillColor(String colorName)
     {
         // Iterate over selected entities, changing their color.
-        for (Controller c : this.controllers) {
-            if (c.isSelected() && c instanceof EntityController) {
-                EntityController ec = (EntityController)c;
-                ec.entity.setFillColor(colorName);
-            }
+        for (EntityController ec : this.getSelectedEntities()) {
+            ec.entity.setFillColor(colorName);
         }
 
         this.diagramChanged();
@@ -2151,17 +2166,63 @@ public class DiagramController extends JPanel
         this.diagramChanged();
     }
 
+    /** Return a sequence containing all of the selected entity controllers. */
+    public ArrayList<EntityController> getSelectedEntities()
+    {
+        ArrayList<EntityController> ret = new ArrayList<EntityController>();
+        for (Controller c : this.controllers) {
+            if (c.isSelected() && c instanceof EntityController) {
+                ret.add((EntityController)c);
+            }
+        }
+        return ret;
+    }
+
     /** Change the selected entities' shapes to the indicated shape. */
     public void setSelectedEntitiesShape(EntityShape shape)
     {
-        for (Controller c : this.controllers) {
-            if (c.isSelected() && c instanceof EntityController) {
-                EntityController ec = (EntityController)c;
-                ec.entity.setShape(shape);
-            }
+        for (EntityController ec : this.getSelectedEntities()) {
+            ec.entity.setShape(shape);
         }
 
         this.diagramChanged();
+    }
+
+    /** Align selected entities according to 'ac'. */
+    public void alignSelectedEntities(AlignCommand ac)
+    {
+        ArrayList<EntityController> ents = this.getSelectedEntities();
+        if (ents.isEmpty()) {
+            return;
+        }
+
+        // Get the most extreme value for the chosen edge.
+        int extreme = ents.get(0).getEdge(ac.ee);
+        for (EntityController ec : ents) {
+            int lt = ec.getEdge(ac.ee);
+            if (isMoreExtremeThan(lt, extreme, ac.ee.extremeIsGreater)) {
+                extreme = lt;
+            }
+        }
+
+        // Go over the list again, adjusting entities to all of the same
+        // extreme value.
+        for (EntityController ec : ents) {
+            ec.setEdge(ac.ee, ac.resize, extreme);
+        }
+
+        this.diagramChanged();
+    }
+
+    /** Return true if 'a' is more extreme than 'b', respecting 'extremeIsGreater'. */
+    private static boolean isMoreExtremeThan(int a, int b, boolean extremeIsGreater)
+    {
+        if (extremeIsGreater) {
+            return a > b;
+        }
+        else {
+            return a < b;
+        }
     }
 
     public static enum SetAnchorCommand {
@@ -2177,20 +2238,17 @@ public class DiagramController extends JPanel
     public void setSelectedEntitiesAnchorName(SetAnchorCommand command)
     {
         int count = 0;
-        for (Controller c : this.controllers) {
-            if (c.isSelected() && c instanceof EntityController) {
-                EntityController ec = (EntityController)c;
-                switch (command) {
-                    case SAC_SET_TO_ENTITY_NAME:
-                        ec.entity.anchorName = ec.entity.name;
-                        break;
+        for (EntityController ec : this.getSelectedEntities()) {
+            switch (command) {
+                case SAC_SET_TO_ENTITY_NAME:
+                    ec.entity.anchorName = ec.entity.name;
+                    break;
 
-                    case SAC_CLEAR:
-                        ec.entity.anchorName = "";
-                        break;
-                }
-                count++;
+                case SAC_CLEAR:
+                    ec.entity.anchorName = "";
+                    break;
             }
+            count++;
         }
 
         if (count == 0) {
@@ -2320,13 +2378,9 @@ public class DiagramController extends JPanel
         // current relative order.  I need 'selEntities' so I can
         // call 'removeAll' and 'addAll' with them.
         ArrayList<Entity> selEntities = new ArrayList<Entity>();
-        ArrayList<EntityController> selControllers = new ArrayList<EntityController>();
-        for (Controller c : this.controllers) {
-            if (c.isSelected() && c instanceof EntityController) {
-                EntityController ec = (EntityController)c;
-                selEntities.add(ec.entity);
-                selControllers.add(ec);
-            }
+        ArrayList<EntityController> selControllers = this.getSelectedEntities();
+        for (EntityController ec : selControllers) {
+            selEntities.add(ec.entity);
         }
 
         if (selEntities.isEmpty()) {
@@ -2393,6 +2447,36 @@ public class DiagramController extends JPanel
     public Image getResourceImage(String resourceName)
     {
         return this.dedWindow.resourceImageCache.getResourceImage(resourceName);
+    }
+
+    /** Swap the endpoint arrowheads for all selected relations. */
+    public void swapSelectedRelationEndpoints()
+    {
+        for (Controller c : this.controllers) {
+            if (c.isSelected() && c instanceof RelationController) {
+                RelationController rc = (RelationController)c;
+                rc.relation.swapArrows();
+            }
+        }
+        this.diagramChanged();
+    }
+
+    /** Set every selected entity that has a line style to style 'lds'. */
+    public void setSelectedEntitiesLineDashStyle(LineDashStyle lds)
+    {
+        for (Controller c : this.controllers) {
+            if (c.isSelected() && c instanceof RelationController) {
+                RelationController rc = (RelationController)c;
+                if (lds.dashStructureString == null) {
+                    rc.relation.dashStructure = new ArrayList<Integer>();
+                }
+                else {
+                    rc.relation.dashStructure =
+                        RelationDialog.stringToDashStructure(lds.dashStructureString);
+                }
+            }
+        }
+        this.diagramChanged();
     }
 }
 

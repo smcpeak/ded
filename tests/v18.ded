@@ -613,56 +613,6 @@
         "w": 100
       },
       "textColor": "Green"
-    },
-    {
-      "loc": {
-        "x": 615,
-        "y": 445
-      },
-      "name": "Left align",
-      "nameAlign": "TA_LEFT",
-      "size": {
-        "h": 20,
-        "w": 100
-      }
-    },
-    {
-      "loc": {
-        "x": 615,
-        "y": 465
-      },
-      "name": "Right align",
-      "nameAlign": "TA_RIGHT",
-      "size": {
-        "h": 20,
-        "w": 100
-      }
-    },
-    {
-      "attributes": "attr",
-      "loc": {
-        "x": 430,
-        "y": 520
-      },
-      "name": "Left align",
-      "nameAlign": "TA_LEFT",
-      "size": {
-        "h": 40,
-        "w": 100
-      }
-    },
-    {
-      "attributes": "attr2",
-      "loc": {
-        "x": 540,
-        "y": 520
-      },
-      "name": "Right align",
-      "nameAlign": "TA_RIGHT",
-      "size": {
-        "h": 40,
-        "w": 100
-      }
     }
   ],
   "inheritances": [{
@@ -1193,7 +1143,7 @@
     }
   ],
   "type": "Diagram Editor Diagram",
-  "version": 19,
+  "version": 18,
   "windowSize": {
     "h": 575,
     "w": 725

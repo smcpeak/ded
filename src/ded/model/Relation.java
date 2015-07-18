@@ -27,6 +27,9 @@ public class Relation {
     /** Default line color when none is specified in file. */
     public static final String defaultLineColor = "Black";
 
+    /** Default text color when none is specified in file. */
+    public static final String defaultTextColor = "Black";
+
     // ------------------ instance data -----------------------
     /** Endpoints, including their arrow style. */
     public RelationEndpoint start, end;
@@ -46,6 +49,18 @@ public class Relation {
 
     /** Color of the line. */
     public String lineColor = defaultLineColor;
+
+    /** Color of the text label. */
+    public String textColor = defaultTextColor;
+
+    /** Dash structure of the line.  When empty, the line is solid.
+      * Otherwise, this is a sequence of lengths, in pixels, of
+      * alternating segments of opaque and transparent
+      * segments, starting with an opaque segment.  All elements must
+      * be non-negative, and at least one must be positive.  Once
+      * the sequence is exhausted, it repeats, starting again with
+      * an opaque segment. */
+    public ArrayList<Integer> dashStructure = new ArrayList<Integer>();
 
     // -------------------- methods ----------------------
     public Relation(RelationEndpoint start, RelationEndpoint end)
@@ -68,6 +83,8 @@ public class Relation {
         this.label = obj.label;
         this.lineWidth = obj.lineWidth;
         this.lineColor = obj.lineColor;
+        this.textColor = obj.textColor;
+        this.dashStructure = new ArrayList<Integer>(obj.dashStructure);
     }
 
     /** True if either endpoint is referentially equal to 'e'. */
@@ -88,6 +105,17 @@ public class Relation {
     {
         this.start.globalSelfCheck(d);
         this.end.globalSelfCheck(d);
+
+        if (!this.dashStructure.isEmpty()) {
+            int numPositive = 0;
+            for (Integer i : this.dashStructure) {
+                assert(i >= 0);
+                if (i > 0) {
+                    numPositive++;
+                }
+            }
+            assert(numPositive > 0);
+        }
     }
 
     // -------------------- data object boilerplate --------------------
@@ -105,7 +133,9 @@ public class Relation {
                    this.routingAlg.equals(r.routingAlg) &&
                    this.label.equals(r.label) &&
                    Util.nullableEquals(this.lineWidth, r.lineWidth) &&
-                   this.lineColor.equals(r.lineColor);
+                   this.lineColor.equals(r.lineColor) &&
+                   this.textColor.equals(r.textColor) &&
+                   this.dashStructure.equals(r.dashStructure);
         }
         return false;
     }
@@ -121,6 +151,8 @@ public class Relation {
         h = h*31 + this.label.hashCode();
         h = h*31 + Util.nullableHashCode(this.lineWidth);
         h = h*31 + this.lineColor.hashCode();
+        h = h*31 + this.textColor.hashCode();
+        h = h*31 + Util.collectionHashCode(this.dashStructure);
         return h;
     }
 
@@ -157,6 +189,18 @@ public class Relation {
 
             if (!this.lineColor.equals(defaultLineColor)) {
                 o.put("lineColor", this.lineColor);
+            }
+
+            if (!this.dashStructure.isEmpty()) {
+                JSONArray lengths = new JSONArray();
+                for (Integer i : this.dashStructure) {
+                    lengths.put(i);
+                }
+                o.put("dashStructure", lengths);
+            }
+
+            if (!this.textColor.equals(defaultTextColor)) {
+                o.put("textColor", this.textColor);
             }
         }
         catch (JSONException e) { assert(false); }
@@ -200,6 +244,17 @@ public class Relation {
 
         if (o.has("lineColor")) {
             this.lineColor = o.getString("lineColor");
+        }
+
+        if (o.has("dashStructure")) {
+            JSONArray lengths = o.getJSONArray("dashStructure");
+            for (int i=0; i < lengths.length(); i++) {
+                this.dashStructure.add(lengths.getInt(i));
+            }
+        }
+
+        if (o.has("textColor")) {
+            this.textColor = o.getString("textColor");
         }
     }
 
@@ -245,6 +300,14 @@ public class Relation {
         if (flat.version < 8) { return; }
 
         this.setLegacyOwning(flat.readBoolean());
+    }
+
+    /** Swap the arrowheads between start and end. */
+    public void swapArrows()
+    {
+        ArrowStyle tmp = this.start.arrowStyle;
+        this.start.arrowStyle = this.end.arrowStyle;
+        this.end.arrowStyle = tmp;
     }
 }
 

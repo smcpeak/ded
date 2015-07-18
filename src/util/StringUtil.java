@@ -3,6 +3,9 @@
 
 package util;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /** General-purpose string utilities. */
 public class StringUtil {
     /** Return 's' as a quoted JSON syntax using only ASCII characters. */
@@ -53,6 +56,27 @@ public class StringUtil {
         }
         sb.append("\"");
         return sb.toString();
+    }
+
+    /** Attempt to match a substring of 'stringToParse' against 'regex'.
+      * If a match is found, return an array of all the capture groups,
+      * where element 0 is the entire matched substring, element 1 is
+      * the first capture group, etc.  Otherwise, return null. */
+    public static String[] parseByRegex(String stringToParse, String regex)
+    {
+        Pattern p = Pattern.compile(regex);
+        Matcher m = p.matcher(stringToParse);
+        if (m.find()) {
+            int n = m.groupCount()+1;
+            String[] ret = new String[n];
+            for (int i=0; i < n; i++) {
+                ret[i] = m.group(i);
+            }
+            return ret;
+        }
+        else {
+            return null;
+        }
     }
 }
 
