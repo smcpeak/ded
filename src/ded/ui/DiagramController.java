@@ -2185,6 +2185,9 @@ public class DiagramController extends JPanel
             ec.entity.setShapeAndDefaults(shape);
         }
 
+        // Changing the shape can change the set of handles.
+        this.normalizeExclusiveSelect();
+
         this.diagramChanged();
     }
 

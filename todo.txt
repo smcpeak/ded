@@ -2,9 +2,6 @@ TODOs for Diagram Editor
 ------------------------
 
 Bugs:
-- if use right-click to set entity shape to window, then
-  try to resize, will assert fail because the center handle
-  has not been created, and also the shape flags are wrong
 - font rendering on OpenJDK
 - if copy+paste several objects, their front to back relative
   ordering is not preserved (sometimes is, sometimes not)
