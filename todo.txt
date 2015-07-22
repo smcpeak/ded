@@ -3,8 +3,6 @@ TODOs for Diagram Editor
 
 Bugs:
 - font rendering on OpenJDK
-- if copy+paste several objects, their front to back relative
-  ordering is not preserved (sometimes is, sometimes not)
 
 Small:
 - add control for dropdown

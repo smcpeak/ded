@@ -1577,16 +1577,22 @@ public class DiagramController extends JPanel
     /** Copy the selected entities to the (application) clipboard. */
     public void copySelected()
     {
-        IdentityHashSet<Controller> selControllers = this.getAllSelected();
+        // Get selected controllers *in display order*.
+        ArrayList<Controller> selControllers = new ArrayList<Controller>();
+        for (Controller c : this.controllers) {
+            if (c.isSelected()) {
+                selControllers.add(c);
+            }
+        }
         if (selControllers.isEmpty()) {
             this.errorMessageBox("Nothing is selected to copy.");
             return;
         }
 
-        // Collect all the selected elements.
-        IdentityHashSet<Entity> selEntities = new IdentityHashSet<Entity>();
-        IdentityHashSet<Inheritance> selInheritances = new IdentityHashSet<Inheritance>();
-        IdentityHashSet<Relation> selRelations = new IdentityHashSet<Relation>();
+        // Collect all the selected elements in order.
+        ArrayList<Entity> selEntities = new ArrayList<Entity>();
+        ArrayList<Inheritance> selInheritances = new ArrayList<Inheritance>();
+        ArrayList<Relation> selRelations = new ArrayList<Relation>();
         for (Controller c : selControllers) {
             if (c instanceof EntityController) {
                 selEntities.add(((EntityController)c).entity);
