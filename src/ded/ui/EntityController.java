@@ -833,28 +833,49 @@ public class EntityController extends Controller
     public void drawTextEdit(Graphics g0, Rectangle r)
     {
         Graphics g = g0.create();
+        g.setClip(r.x, r.y, r.width, r.height);
 
+        // The graphic design here is meant to suggest that the inner
+        // frame of the edit box curves away from the viewer, into the
+        // plane of the screen.  When lit from the upper left, that
+        // causes the top and left inner frames to gradually darken as
+        // we move in, while the bottom and right inner frames gradually
+        // lighten.  However, all that really matters for the purpose of
+        // making UI wire frames is that this is visually distinct from
+        // the other rectangles, which is accomplished mainly by thickening
+        // the frame.
+
+        // Compute lighter and darker gradients based on the current
+        // color.  These values are tuned for the "Gray" color, in the UI,
+        // which is RGB(192,192,192), although it should more or less work
+        // for other colors as well.  (The main problem is with colors that
+        // are significantly darker or lighter, as the 'adjustBrightness'
+        // calls tend to max out and therefore lose contrast.)
         Color mid = this.getLineColor();
-        Color darker = adjustBrightness(mid, -0.25f);
-        Color lighter = adjustBrightness(mid, +0.15f);
+        Color darker2 = adjustBrightness(mid, -0.30f);
+        Color darker1 = adjustBrightness(mid, -0.20f);
+        Color lighter1 = adjustBrightness(mid, +0.10f);
+        Color lighter2 = adjustBrightness(mid, +0.15f);
 
-        // Draw one pixel of middle shading in the upper corners, one pixel
-        // inside the border corner.
-        g.setColor(mid);
-        g.drawLine(r.x+1, r.y+1, r.x+1, r.y+1);
-        g.drawLine(r.x+r.width-2, r.y+1, r.x+r.width-2, r.y+1);
+        // Left and top +1
+        g.setColor(darker1);
+        g.drawLine(r.x+1, r.y+1, r.x+r.width-2, r.y+1);
+        g.drawLine(r.x+1, r.y+1, r.x+1, r.y+r.height-2);
 
-        // Darker shadow along the top.
-        g.setColor(darker);
-        g.drawLine(r.x+1, r.y, r.x+r.width-2, r.y);
+        // Left and top +2
+        g.setColor(darker2);
+        g.drawLine(r.x+2, r.y+2, r.x+r.width-3, r.y+2);
+        g.drawLine(r.x+2, r.y+2, r.x+2, r.y+r.height-3);
 
-        // Lighter shadow along the bottom.
-        g.setColor(lighter);
-        g.drawLine(r.x, r.y+r.height-1, r.x+r.width, r.y+r.height-1);
+        // Right and bottom -1
+        g.setColor(lighter1);
+        g.drawLine(r.x+r.width-2, r.y+r.height-2, r.x+r.width-2, r.y+2);
+        g.drawLine(r.x+r.width-2, r.y+r.height-2, r.x+2, r.y+r.height-2);
 
-        // And in the bottom corners.
-        g.drawLine(r.x+1, r.y+r.height-2, r.x+1, r.y+r.height-2);
-        g.drawLine(r.x+r.width-2, r.y+r.height-2, r.x+r.width-2, r.y+r.height-2);
+        // Right and bottom -2
+        g.setColor(lighter2);
+        g.drawLine(r.x+r.width-3, r.y+r.height-3, r.x+r.width-3, r.y+3);
+        g.drawLine(r.x+r.width-3, r.y+r.height-3, r.x+3, r.y+r.height-3);
     }
 
     /** Return a new Color that has the same hue and saturation as 'orig',

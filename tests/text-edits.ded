@@ -1,0 +1,282 @@
+{
+  "drawFileName": true,
+  "entities": [
+    {
+      "lineColor": "Green",
+      "loc": {
+        "x": 15,
+        "y": 120
+      },
+      "size": {
+        "h": 30,
+        "w": 65
+      }
+    },
+    {
+      "lineColor": "Green",
+      "loc": {
+        "x": 85,
+        "y": 120
+      },
+      "size": {
+        "h": 30,
+        "w": 65
+      }
+    },
+    {
+      "loc": {
+        "x": 155,
+        "y": 55
+      },
+      "size": {
+        "h": 30,
+        "w": 65
+      }
+    },
+    {
+      "loc": {
+        "x": 85,
+        "y": 55
+      },
+      "size": {
+        "h": 30,
+        "w": 65
+      }
+    },
+    {
+      "loc": {
+        "x": 15,
+        "y": 55
+      },
+      "size": {
+        "h": 30,
+        "w": 65
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Gray",
+      "loc": {
+        "x": 20,
+        "y": 30
+      },
+      "shape": "ES_TEXT_EDIT",
+      "size": {
+        "h": 20,
+        "w": 55
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Gray",
+      "loc": {
+        "x": 20,
+        "y": 60
+      },
+      "shape": "ES_TEXT_EDIT",
+      "size": {
+        "h": 20,
+        "w": 55
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Gray",
+      "loc": {
+        "x": 90,
+        "y": 30
+      },
+      "name": "123",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_TEXT_EDIT",
+      "size": {
+        "h": 20,
+        "w": 55
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Gray",
+      "loc": {
+        "x": 90,
+        "y": 60
+      },
+      "name": "xyz",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_TEXT_EDIT",
+      "size": {
+        "h": 20,
+        "w": 55
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 160,
+        "y": 60
+      },
+      "name": "xyz",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 55
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 160,
+        "y": 30
+      },
+      "name": "123",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 55
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Green",
+      "loc": {
+        "x": 90,
+        "y": 125
+      },
+      "name": "xyz",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_TEXT_EDIT",
+      "size": {
+        "h": 20,
+        "w": 55
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Green",
+      "loc": {
+        "x": 20,
+        "y": 95
+      },
+      "shape": "ES_TEXT_EDIT",
+      "size": {
+        "h": 20,
+        "w": 55
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Green",
+      "loc": {
+        "x": 20,
+        "y": 125
+      },
+      "shape": "ES_TEXT_EDIT",
+      "size": {
+        "h": 20,
+        "w": 55
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Green",
+      "loc": {
+        "x": 90,
+        "y": 95
+      },
+      "name": "123",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_TEXT_EDIT",
+      "size": {
+        "h": 20,
+        "w": 55
+      }
+    },
+    {
+      "loc": {
+        "x": 155,
+        "y": 120
+      },
+      "size": {
+        "h": 30,
+        "w": 65
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 160,
+        "y": 95
+      },
+      "name": "123",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_TEXT_EDIT",
+      "size": {
+        "h": 20,
+        "w": 55
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 160,
+        "y": 125
+      },
+      "name": "xyz",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_TEXT_EDIT",
+      "size": {
+        "h": 20,
+        "w": 55
+      }
+    },
+    {
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 225,
+        "y": 120
+      },
+      "size": {
+        "h": 30,
+        "w": 65
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 230,
+        "y": 125
+      },
+      "name": "xyz",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_TEXT_EDIT",
+      "size": {
+        "h": 20,
+        "w": 55
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 230,
+        "y": 95
+      },
+      "name": "123",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_TEXT_EDIT",
+      "size": {
+        "h": 20,
+        "w": 55
+      }
+    }
+  ],
+  "inheritances": [],
+  "relations": [],
+  "type": "Diagram Editor Diagram",
+  "version": 19,
+  "windowSize": {
+    "h": 172,
+    "w": 314
+  }
+}
