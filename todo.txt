@@ -5,11 +5,22 @@ Bugs:
 - if use right-click to set entity shape to window, then
   try to resize, will assert fail because the center handle
   has not been created, and also the shape flags are wrong
+- font rendering on OpenJDK
+- if copy+paste several objects, their front to back relative
+  ordering is not preserved (sometimes is, sometimes not)
 
 Small:
+- automatically set right colors when change control to text edit,
+  both via edit dialog and via right click
+- add control for dropdown
+- checkboxes and radio buttons (simulations with entities look ugly)
 - do not allow user to accidentally save ded as .png extension,
   since then can't load it
-- add a shape corresponding to an edit control
+- option to route edges from the center of the edge of the bounding
+  box rather than from the center of the entity
+- fix relation creation to not have the offset problem
+- allow creating relations that are not bound to an entity but
+  whose edge overlaps an entity
 - bidirectional relations with separate labels for each direction
 - allow label on inheritance edge
 - arrow keys to move; ctrl-arrow to resize; shift to not snap
@@ -21,6 +32,7 @@ Small:
 - flag to turn off auto move/resize of window contents
 
 Medium:
+- allow editing multiple elements at the same time
 - smarter relation routing
 - undo/redo
 - help bubbles
