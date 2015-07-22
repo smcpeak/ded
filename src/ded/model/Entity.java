@@ -125,19 +125,42 @@ public class Entity implements JSONable {
     }
 
     /** Set 'shape'.  Adjust 'shapeParams' to match if needed. */
-    public void setShape(EntityShape shape)
+    public void setShape(EntityShape newShape)
     {
-        if (this.shape != shape) {
-            this.shape = shape;
+        if (this.shape != newShape) {
+            this.shape = newShape;
 
-            if (shape.numParams == 0) {
+            if (newShape.numParams == 0) {
                 this.shapeParams = null;
             }
             else {
-                this.shapeParams = new int[shape.numParams];
-                for (int i=0; i < shape.numParams; i++) {
+                this.shapeParams = new int[newShape.numParams];
+                for (int i=0; i < newShape.numParams; i++) {
                     this.shapeParams[i] = 5 + 5*i;
                 }
+            }
+        }
+    }
+
+    /** Set shape, and also set default values for other fields if they
+      * are not already set to non-default values. */
+    public void setShapeAndDefaults(EntityShape newShape)
+    {
+        if (this.shape != newShape) {
+            EntityShape oldShape = this.shape;
+            this.setShape(newShape);
+
+            this.shapeFlags = defaultFlagsForNewShape(oldShape, this.shapeFlags, newShape);
+
+            // If we're changing to a text edit control, and neither of
+            // the colors have been changed, adjust to gray lines and
+            // white fill, since that is what the rendering is tuned for.
+            if (newShape == EntityShape.ES_TEXT_EDIT &&
+                this.lineColor.equals(defaultLineColor) &&
+                this.fillColor.equals(defaultFillColor))
+            {
+                this.lineColor = "Gray";
+                this.fillColor = "White";
             }
         }
     }
@@ -159,6 +182,34 @@ public class Entity implements JSONable {
         this.shapeParams = new int[2];
         this.shapeParams[0] = p;
         this.shapeParams[1] = q;
+    }
+
+    /** Restrict 'oldFlags' to those appropriate for 'newShape', and
+      * add any default flags that are applicable to 'newShape' but not to
+      * 'oldShape'.  Return the updated flag set. */
+    public static EnumSet<ShapeFlag> defaultFlagsForNewShape(
+        EntityShape oldShape,
+        EnumSet<ShapeFlag> oldFlags,
+        EntityShape newShape)
+    {
+        // Flags for old shape.
+        EnumSet<ShapeFlag> allOldFlags = ShapeFlag.allFlagsForShape(oldShape);
+
+        // Flags for new shape.
+        EnumSet<ShapeFlag> allNewFlags = ShapeFlag.allFlagsForShape(newShape);
+
+        // Restrict flags to new.
+        EnumSet<ShapeFlag> ret = oldFlags.clone();
+        ret.retainAll(allNewFlags);
+
+        // Add any default flag in 'allNewFlags - allOldFlags'.
+        for (ShapeFlag flag : allNewFlags) {
+            if (flag.isDefault && !allOldFlags.contains(flag)) {
+                ret.add(flag);
+            }
+        }
+
+        return ret;
     }
 
     // ------------ serialization ------------

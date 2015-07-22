@@ -2182,7 +2182,7 @@ public class DiagramController extends JPanel
     public void setSelectedEntitiesShape(EntityShape shape)
     {
         for (EntityController ec : this.getSelectedEntities()) {
-            ec.entity.setShape(shape);
+            ec.entity.setShapeAndDefaults(shape);
         }
 
         this.diagramChanged();

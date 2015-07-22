@@ -345,21 +345,11 @@ public class EntityDialog extends ModalDialog
       * 'workingFlagsBaseShape'.  Then update the latter to be 'newShape'. */
     private void updateWorkingFlagsBaseShape(EntityShape newShape)
     {
-        // Flags for old shape.
-        EnumSet<ShapeFlag> allOldFlags = ShapeFlag.allFlagsForShape(this.workingFlagsBaseShape);
-
-        // Flags for new shape.
-        EnumSet<ShapeFlag> allNewFlags = ShapeFlag.allFlagsForShape(newShape);
-
-        // Restrict flags to new.
-        this.shapeFlagsWorkingCopy.retainAll(allNewFlags);
-
-        // Add any default flag in 'allNewFlags - allOldFlags'.
-        for (ShapeFlag flag : allNewFlags) {
-            if (flag.isDefault && !allOldFlags.contains(flag)) {
-                this.shapeFlagsWorkingCopy.add(flag);
-            }
-        }
+        // Update the flags for 'newShape'.
+        this.shapeFlagsWorkingCopy =
+            Entity.defaultFlagsForNewShape(this.workingFlagsBaseShape,
+                                           this.shapeFlagsWorkingCopy,
+                                           newShape);
 
         // Remember the new base shape.
         this.workingFlagsBaseShape = newShape;
@@ -419,11 +409,15 @@ public class EntityDialog extends ModalDialog
         this.entity.name = this.nameText.getText();
         this.entity.nameAlign = nameAlign;
         this.entity.attributes = this.attributeText.getText();
-        this.entity.setShape(shape);      // Sets 'shapeParams' too.
         this.entity.shapeFlags = this.shapeFlagsWorkingCopy.clone();
         this.entity.setFillColor(fillColor);
         this.entity.lineColor = lineColor;
         this.entity.textColor = textColor;
+
+        // This sets 'shape', 'shapeParams', and may update 'flags'
+        // (redundantly) and the line and fill colors.
+        this.entity.setShapeAndDefaults(shape);
+
         this.entity.loc.x = x;
         this.entity.loc.y = y;
         this.entity.size.width = w;

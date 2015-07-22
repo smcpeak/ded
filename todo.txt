@@ -10,8 +10,6 @@ Bugs:
   ordering is not preserved (sometimes is, sometimes not)
 
 Small:
-- automatically set right colors when change control to text edit,
-  both via edit dialog and via right click
 - add control for dropdown
 - checkboxes and radio buttons (simulations with entities look ugly)
 - do not allow user to accidentally save ded as .png extension,
