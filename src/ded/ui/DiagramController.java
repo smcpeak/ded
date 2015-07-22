@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
+
 import java.lang.reflect.Field;
 
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Locale;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
@@ -1106,6 +1108,15 @@ public class DiagramController extends JPanel
     /** Save to the specified file. */
     private void saveToNamedFile(String fname)
     {
+        if (fname.toLowerCase(Locale.ENGLISH).endsWith(".png")) {
+            this.errorMessageBox(
+                "The file name \""+fname+"\" is invalid because "+
+                "you cannot save a diagram directly as a \".png\" file.  "+
+                "Instead, give it a \".ded\" extension, and when that file is "+
+                "saved, you will automatically get a \".ded.png\" file as well.");
+            return;
+        }
+
         try {
             this.diagram.saveToFile(fname);
         }

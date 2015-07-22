@@ -7,13 +7,13 @@ Bugs:
 Small:
 - add control for dropdown
 - checkboxes and radio buttons (simulations with entities look ugly)
-- do not allow user to accidentally save ded as .png extension,
-  since then can't load it
 - option to route edges from the center of the edge of the bounding
   box rather than from the center of the entity
 - fix relation creation to not have the offset problem
 - allow creating relations that are not bound to an entity but
   whose edge overlaps an entity
+- rendering for relations with entities pointing to overlapping,
+  perhaps container or containee, entities
 - bidirectional relations with separate labels for each direction
 - allow label on inheritance edge
 - arrow keys to move; ctrl-arrow to resize; shift to not snap
