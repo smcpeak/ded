@@ -9,7 +9,6 @@ Small:
 - better self-loop rendering
 - specify initial size (etc.?) for new relations
 - option to automatically expand entities to contain their title and attributes
-- left-aligned titles of entities
 - flag to turn off auto move/resize of window contents
 
 Medium:
@@ -18,7 +17,7 @@ Medium:
 - help bubbles
 
 Big:
-- add entity shapes to allow mocking UIs
+- implement font renderer to fix problems on certain JVMs
 - add automated testing for the UI
 
 
