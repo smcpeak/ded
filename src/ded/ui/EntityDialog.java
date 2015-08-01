@@ -23,6 +23,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
@@ -81,11 +82,11 @@ public class EntityDialog extends ModalDialog
         this.workingFlagsBaseShape = this.entity.shape;
 
         // The outer vbox has the name, the column container, and the ok/cancel row:
-        Box outerVb = ModalDialog.makeMarginVBox(this, ModalDialog.OUTER_MARGIN);
+        Box vb = ModalDialog.makeMarginVBox(this, ModalDialog.OUTER_MARGIN);
 
         // Name row
         {
-            Box nameRowHb = ModalDialog.makeHBox(outerVb);
+            Box nameRowHb = ModalDialog.makeHBox(vb);
 
             this.nameText = ModalDialog.makeLineEdit(nameRowHb, "Name", 'n', this.entity.name);
 
@@ -98,48 +99,45 @@ public class EntityDialog extends ModalDialog
                 TextAlign.class,
                 this.entity.nameAlign);
         }
-        outerVb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
-
-        // HBox two contain two columns.
-        Box columnContainer = ModalDialog.makeHBox(outerVb);
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
         // VBox for first column, which just contains the attributes.
-        Box vb = ModalDialog.makeVBox(columnContainer);
-
-        // attributes
-        {
-            Box attrBox = ModalDialog.makeHBox(vb);
-
-            JLabel lbl = new JLabel("Attributes:");
-            lbl.setDisplayedMnemonic('a');
-            attrBox.add(lbl);
-            attrBox.add(Box.createHorizontalGlue());
-
-            this.attributeText = new JTextArea(this.entity.attributes);
-            lbl.setLabelFor(this.attributeText);
-
-            // Tab and shift-tab should move the focus, not insert characters.
-            // http://stackoverflow.com/questions/5042429/how-can-i-modify-the-behavior-of-the-tab-key-in-a-jtextarea
-            this.attributeText.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
-            this.attributeText.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
-
-            JScrollPane scroll = new JScrollPane(this.attributeText);
-
-            // This is what establishes the initial size of the dialog, as the
-            // scroll pane is the main resizable thing.
-            scroll.setPreferredSize(new Dimension(300,150));
-
-            vb.add(scroll);
-            vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
-        }
+        Box leftColumn = Box.createVerticalBox();
+        makeLeftColumn(leftColumn);
 
         // Spacing separating the columns.
-        columnContainer.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING * 2));
+        //columnContainer.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING * 2));
 
         // Now a new vbox for the second column, containing most of the
         // remaining controls.
-        vb = ModalDialog.makeVBox(columnContainer);
+        Box rightColumn = Box.createVerticalBox();
+        createRightColumn(diagram, rightColumn);
 
+        // Wrap the columns in hboxes so I can insert padding.
+        Box lhb = Box.createHorizontalBox();
+        lhb.add(leftColumn);
+        lhb.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
+        Box rhb = Box.createHorizontalBox();
+        rhb.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING*2));
+        rhb.add(rightColumn);
+
+        // Put both columns into a split pane in an hbox.
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                                          lhb, rhb);
+        split.setResizeWeight(1.0);
+        Box hb = ModalDialog.makeHBox(vb);
+        hb.add(split);
+
+        // Finish up with the controls at the bottom.
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+        this.updateControls();
+        this.finishBuildingDialog(vb);
+    }
+
+    /** Create the right column controls, which is most of them in
+      * the dialog, and put them into 'vb'. */
+    public void createRightColumn(Diagram diagram, Box vb)
+    {
         // shape
         {
             Box shapeBox = ModalDialog.makeHBox(vb);
@@ -260,13 +258,35 @@ public class EntityDialog extends ModalDialog
                 this.entity.imageFillStyle);
             this.imageFillStyleChooser.addItemListener(this);
         }
+    }
 
-        // Now go back to populating the outer box.
-        vb = outerVb;
+    /** Create the controls for the left column, which is just the
+      * edit box for the atributes, and put it into 'vb'. */
+    public void makeLeftColumn(Box vb)
+    {
+        Box attrBox = ModalDialog.makeHBox(vb);
 
+        JLabel lbl = new JLabel("Attributes:");
+        lbl.setDisplayedMnemonic('a');
+        attrBox.add(lbl);
+        attrBox.add(Box.createHorizontalGlue());
+
+        this.attributeText = new JTextArea(this.entity.attributes);
+        lbl.setLabelFor(this.attributeText);
+
+        // Tab and shift-tab should move the focus, not insert characters.
+        // http://stackoverflow.com/questions/5042429/how-can-i-modify-the-behavior-of-the-tab-key-in-a-jtextarea
+        this.attributeText.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+        this.attributeText.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
+
+        JScrollPane scroll = new JScrollPane(this.attributeText);
+
+        // This is what establishes the initial size of the dialog, as the
+        // scroll pane is the main resizable thing.
+        scroll.setPreferredSize(new Dimension(300,150));
+
+        vb.add(scroll);
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
-        this.updateControls();
-        this.finishBuildingDialog(vb);
     }
 
     /** Make a color chooser dropdown, add it to 'vb', and return it.
