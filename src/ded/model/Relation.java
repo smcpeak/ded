@@ -101,6 +101,21 @@ public class Relation {
                this.end.isSpecificInheritance(inh);
     }
 
+    /** Set 'end.arrowStyle' based on the value of the legacy 'owning' value. */
+    private void setLegacyOwning(boolean owning)
+    {
+        this.end.arrowStyle =
+            (owning? ArrowStyle.AS_DOUBLE_ANGLE : ArrowStyle.AS_FILLED_TRIANGLE);
+    }
+
+    /** Swap the arrowheads between start and end. */
+    public void swapArrows()
+    {
+        ArrowStyle tmp = this.start.arrowStyle;
+        this.start.arrowStyle = this.end.arrowStyle;
+        this.end.arrowStyle = tmp;
+    }
+
     public void globalSelfCheck(Diagram d)
     {
         this.start.globalSelfCheck(d);
@@ -258,13 +273,6 @@ public class Relation {
         }
     }
 
-    /** Set 'end.arrowStyle' based on the value of the legacy 'owning' value. */
-    private void setLegacyOwning(boolean owning)
-    {
-        this.end.arrowStyle =
-            (owning? ArrowStyle.AS_DOUBLE_ANGLE : ArrowStyle.AS_FILLED_TRIANGLE);
-    }
-
     // ------------------ legacy serialization -----------------
     /** Read a Relation from an ER FlattenInputStream. */
     public Relation(FlattenInputStream flat)
@@ -300,14 +308,6 @@ public class Relation {
         if (flat.version < 8) { return; }
 
         this.setLegacyOwning(flat.readBoolean());
-    }
-
-    /** Swap the arrowheads between start and end. */
-    public void swapArrows()
-    {
-        ArrowStyle tmp = this.start.arrowStyle;
-        this.start.arrowStyle = this.end.arrowStyle;
-        this.end.arrowStyle = tmp;
     }
 }
 
