@@ -216,6 +216,9 @@ public class DiagramController extends JPanel
     /** Accumulated log messages. */
     private StringBuilder logMessages;
 
+    /** Undo/redo history. */
+    private UndoHistory undoHistory;
+
     /** When not 0, we use a "triple buffer" render technique to
       * avoid problems on Apple HiDPI/Retina displays.  Mode -1
       * uses a "compatible" image.  Other values are treated as
@@ -260,6 +263,8 @@ public class DiagramController extends JPanel
 
         this.logMessages = new StringBuilder();
         this.log("Diagram Editor started at "+(new Date()));
+
+        this.undoHistory = new UndoHistory(this.diagram, fmt("Created empty diagram"));
 
         String tbm = System.getenv("DED_TRIPLE_BUFFER");
         if (tbm != null) {
@@ -873,6 +878,7 @@ public class DiagramController extends JPanel
 
         // Clear the diagram.
         this.setDiagram(new Diagram());
+        this.undoHistory = new UndoHistory(this.diagram, fmt("Started a new, empty diagram"));
     }
 
     /** Change the Diagram to an entirely new one. */
@@ -956,6 +962,7 @@ public class DiagramController extends JPanel
 
             // Swap in the new diagram and rebuild the UI for it.
             this.setDiagram(d);
+            this.undoHistory = new UndoHistory(this.diagram, fmt("Loaded file \"%1$s\"", name));
         }
         catch (Exception e) {
             this.exnErrorMessageBox("Error while reading \""+name+"\"", e);
@@ -1450,6 +1457,8 @@ public class DiagramController extends JPanel
     public void diagramChanged(String command)
     {
         //System.out.println("Diagram changed: "+command);
+        this.undoHistory.recordDiagramChange(this.diagram, command);
+
         this.setDirty();
         this.repaint();
     }
@@ -1942,6 +1951,11 @@ public class DiagramController extends JPanel
         for (Controller c : this.controllers) {
             c.globalSelfCheck(this.diagram);
         }
+
+        // TODO: This currently fails during drag operations because I
+        // am editing 'this.diagram' without updating the undo history.
+        // I need to figure out a better time to check this.
+        //assert(this.diagram.equals(this.undoHistory.getCurrentDiagram()));
     }
 
     /** Set the set of selected controllers to those in 'toSelect'. */
@@ -2497,6 +2511,34 @@ public class DiagramController extends JPanel
             }
         }
         this.diagramChanged(fmt("Set line dash style to \"%1$s\"", lds.name));
+    }
+
+    /** Respond to Edit|Undo. */
+    public void editUndo()
+    {
+        if (this.undoHistory.canUndo()) {
+            this.setDiagram(this.undoHistory.undo());
+        }
+        else {
+            this.errorMessageBox("Cannot undo because there is no further undo history.");
+        }
+    }
+
+    /** Respond to Edit|Redo. */
+    public void editRedo()
+    {
+        if (this.undoHistory.canRedo()) {
+            this.setDiagram(this.undoHistory.redoMostRecent());
+        }
+        else {
+            this.errorMessageBox("Cannot redo because there are no more redo states on this future.");
+        }
+    }
+
+    /** Respond to "Edit|Redo a previous future...". */
+    public void editRedoAlternate()
+    {
+        this.errorMessageBox("Unimplemented");  // TODO
     }
 }
 

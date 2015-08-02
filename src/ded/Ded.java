@@ -244,7 +244,7 @@ public class Ded extends JFrame implements WindowListener {
             }
         });
 
-        m.add(new MenuAction("Paste", KeyEvent.VK_V, KeyEvent.VK_V, ActionEvent.CTRL_MASK) {
+        m.add(new MenuAction("Paste", KeyEvent.VK_P, KeyEvent.VK_V, ActionEvent.CTRL_MASK) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.pasteClipboard();
             }
@@ -253,6 +253,26 @@ public class Ded extends JFrame implements WindowListener {
         m.add(new MenuAction("Delete", KeyEvent.VK_DELETE, KeyEvent.VK_DELETE, 0) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.deleteSelected();
+            }
+        });
+
+        m.addSeparator();
+
+        m.add(new MenuAction("Undo", KeyEvent.VK_U, KeyEvent.VK_Z, ActionEvent.CTRL_MASK) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.editUndo();
+            }
+        });
+
+        m.add(new MenuAction("Redo", KeyEvent.VK_R, KeyEvent.VK_Y, ActionEvent.CTRL_MASK) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.editRedo();
+            }
+        });
+
+        m.add(new MenuAction("Redo a previous future...", KeyEvent.VK_F) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.editRedoAlternate();
             }
         });
 

@@ -97,6 +97,16 @@ public class StringUtil {
         // For now, there is no actual translation.
         return english;
     }
+
+    /** Return a string with n*2 spaces. */
+    public static String indent(int n)
+    {
+        StringBuilder sb = new StringBuilder();
+        for (int i=0; i<n; i++) {
+            sb.append("  ");
+        }
+        return sb.toString();
+    }
 }
 
 // EOF
