@@ -382,10 +382,16 @@ public class DiagramController extends JPanel
             c.paint(g);
         }
 
+        // Description of current mode.
+        String modeDescription = this.mode.description;
+
         // Lasso rectangle.
         if (this.mode == Mode.DCM_RECT_LASSO) {
             Rectangle r = this.getLassoRect();
             g.drawRect(r.x, r.y, r.width, r.height);
+            modeDescription += " from ("+r.x+","+r.y+
+                               ") to ("+(r.x+r.width)+","+(r.y+r.height)+
+                               ") which is "+r.width+"x"+r.height;
         }
 
         // Current focused Component.
@@ -397,7 +403,7 @@ public class DiagramController extends JPanel
 
         // Mode label.
         if (this.mode != Mode.DCM_SELECT) {
-            g.drawString("Mode: " + this.mode.description, 3, this.getHeight()-4);
+            g.drawString("Mode: " + modeDescription, 3, this.getHeight()-4);
         }
         else if (this.fpsMeasurementMode) {
             this.fpsFrameCount++;
