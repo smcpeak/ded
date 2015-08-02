@@ -18,6 +18,7 @@ clean:
 
 # Unit tests that do not require a GUI.
 check:
+	java -cp bin -ea ded.model.SerializationTests
 	java -cp bin -ea ded.model.SerializationTests tests/*.ded
 	java -cp bin -ea ded.model.SerializationTests tests/*.er
 	java -cp bin -ea util.UtilTests

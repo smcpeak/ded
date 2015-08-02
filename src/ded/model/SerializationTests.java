@@ -78,7 +78,7 @@ public class SerializationTests {
 
         // Serialize it.
         String serialized = d.toJSON().toString(2);
-        System.out.println(serialized);
+        //System.out.println(serialized);
 
         // Parse it.
         JSONObject o = new JSONObject(new JSONTokener(serialized));
@@ -91,6 +91,15 @@ public class SerializationTests {
         // Serialize and check that for equality too.
         String ser2 = d2.toJSON().toString(2);
         assert(ser2.equals(serialized));
+
+        // Make a deep copy.
+        Diagram d3 = new Diagram(d, new Diagram.ElementFilter());
+        assert(d3.equals(d));
+        assert(d2.equals(d3));
+
+        // Serialize and check.
+        String ser3 = d3.toJSON().toString(2);
+        assert(ser3.equals(serialized));
     }
 
     private static void testParseFile(String fname) throws Exception
@@ -114,6 +123,15 @@ public class SerializationTests {
         // again, *that* should match 'serialized'.
         String ser2 = d2.toJSON().toString(2);
         assert(serialized.equals(ser2));
+
+        // Make a deep copy.
+        Diagram d3 = new Diagram(d, new Diagram.ElementFilter());
+        assert(d3.equals(d));
+        assert(d2.equals(d3));
+
+        // Serialize and check.
+        String ser3 = d3.toJSON().toString(2);
+        assert(ser3.equals(serialized));
     }
 }
 

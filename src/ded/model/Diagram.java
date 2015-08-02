@@ -5,6 +5,7 @@ package ded.model;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Point;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -20,6 +21,7 @@ import java.io.Writer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 
 import org.json.JSONArray;
@@ -154,6 +156,144 @@ public class Diagram implements JSONable {
         for (Inheritance i : this.inheritances) {
             i.globalSelfCheck(this);
         }
+    }
+
+    /** This is an interface and default implementation for a filter
+      * applied to diagram elements.  Each method should return true
+      * if the given element passes the filter. */
+    public static class ElementFilter {
+        public boolean testEntity(Entity e)
+        {
+            return true;
+        }
+
+        public boolean testInheritance(Inheritance i)
+        {
+            return true;
+        }
+
+        public boolean testRelation(Relation r)
+        {
+            return true;
+        }
+    }
+
+    /** Deep copy constructor.  Only elements that pass 'filter' will
+      * be copied.  Additionally, if a Relation or Inheritance is
+      * associated with an Entity that does not pass the filter, then
+      * that Relation or Inheritance will not be copied, even if it
+      * passes the filter. */
+    public Diagram(Diagram src, ElementFilter filter)
+    {
+        // Copy the easy members first.
+        this.windowSize = new Dimension(src.windowSize);
+        this.drawFileName = src.drawFileName;
+        this.namedColors = new LinkedHashMap<String,Color>(src.namedColors);
+
+        // Make empty containers for the diagram elements.
+        this.entities = new ArrayList<Entity>();
+        this.inheritances = new ArrayList<Inheritance>();
+        this.relations = new ArrayList<Relation>();
+
+        // Now copy the diagram elements.  This is complicated because (1)
+        // we allow the caller to pass a filter to control which elements
+        // are copied, and (2) we need to create a structure that is
+        // isomorphic to the original (modulo the filter) yet entirely
+        // built out of new objects.
+
+        // Collect all the elements that pass the filter, in diagram
+        // drawing order (back to front).
+        ArrayList<Entity> srcEntities = new ArrayList<Entity>();
+        for (Entity e : src.entities) {
+            if (filter.testEntity(e)) {
+                srcEntities.add(e);
+            }
+        }
+        ArrayList<Inheritance> srcInheritances = new ArrayList<Inheritance>();
+        for (Inheritance i : src.inheritances) {
+            if (filter.testInheritance(i)) {
+                srcInheritances.add(i);
+            }
+        }
+        ArrayList<Relation> srcRelations = new ArrayList<Relation>();
+        for (Relation r : src.relations) {
+            if (filter.testRelation(r)) {
+                srcRelations.add(r);
+            }
+        }
+
+        // Map from elements in the original to their counterpart in the copy.
+        // This is the isomorphism between the two.
+        IdentityHashMap<Entity,Entity> entityToCopy =
+            new IdentityHashMap<Entity,Entity>();
+        IdentityHashMap<Inheritance,Inheritance> inheritanceToCopy =
+            new IdentityHashMap<Inheritance,Inheritance>();
+
+        // Populate the new Diagram.
+        for (Entity e : srcEntities) {
+            Entity eCopy = new Entity(e);
+            entityToCopy.put(e, eCopy);
+            this.entities.add(eCopy);
+        }
+        for (Inheritance i : srcInheritances) {
+            // See if the parent entity is among those we are copying.
+            Entity parentCopy = entityToCopy.get(i.parent);
+            if (parentCopy == null) {
+                // No, so we'll skip the inheritance too.
+            }
+            else {
+                Inheritance iCopy = new Inheritance(i, parentCopy);
+                inheritanceToCopy.put(i, iCopy);
+                this.inheritances.add(iCopy);
+            }
+        }
+        for (Relation r : srcRelations) {
+            RelationEndpoint startCopy =
+                copyRelationEndpoint(r.start, entityToCopy, inheritanceToCopy);
+            RelationEndpoint endCopy =
+                copyRelationEndpoint(r.end, entityToCopy, inheritanceToCopy);
+            if (startCopy == null || endCopy == null) {
+                // Skip the relation.
+            }
+            else {
+                this.relations.add(new Relation(r, startCopy, endCopy));
+            }
+        }
+    }
+
+    /** Make a copy of 'src', taking advantage of the maps to corresponding
+      * entities and inheritances already copied. */
+    private static RelationEndpoint copyRelationEndpoint(
+        RelationEndpoint src,
+        IdentityHashMap<Entity,Entity> entityToCopy,
+        IdentityHashMap<Inheritance,Inheritance> inheritanceToCopy)
+    {
+        RelationEndpoint ret;
+
+        if (src.entity != null) {
+            Entity eCopy = entityToCopy.get(src.entity);
+            if (eCopy == null) {
+                // Counterpart is not copied, so we will bail on the
+                // endpoint, and hence the relation too.
+                return null;
+            }
+            ret = new RelationEndpoint(eCopy);
+        }
+
+        else if (src.inheritance != null) {
+            Inheritance iCopy = inheritanceToCopy.get(src.inheritance);
+            if (iCopy == null) {
+                return null;
+            }
+            ret = new RelationEndpoint(iCopy);
+        }
+
+        else {
+            ret = new RelationEndpoint(new Point(src.pt));
+        }
+
+        ret.arrowStyle = src.arrowStyle;
+        return ret;
     }
 
     // ------------------ serialization --------------------

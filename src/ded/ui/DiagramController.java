@@ -47,7 +47,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Set;
 
@@ -1585,10 +1584,49 @@ public class DiagramController extends JPanel
         }
     }
 
+    /** Filter diagram elements for those that are selected.   The data
+      * members of this class record which elements are selected. */
+    private static class SelectedElementFilter extends Diagram.ElementFilter {
+        private IdentityHashSet<Entity>      selEntities =     new IdentityHashSet<Entity>();
+        private IdentityHashSet<Inheritance> selInheritances = new IdentityHashSet<Inheritance>();
+        private IdentityHashSet<Relation>    selRelations =    new IdentityHashSet<Relation>();
+
+        /** Initialize from the set of selected controllers. */
+        public SelectedElementFilter(ArrayList<Controller> selControllers)
+        {
+            for (Controller c : selControllers) {
+                if (c instanceof EntityController) {
+                    this.selEntities.add(((EntityController)c).entity);
+                }
+                if (c instanceof InheritanceController) {
+                    this.selInheritances.add(((InheritanceController)c).inheritance);
+                }
+                if (c instanceof RelationController) {
+                    this.selRelations.add(((RelationController)c).relation);
+                }
+            }
+        }
+
+        public boolean testEntity(Entity e)
+        {
+            return this.selEntities.contains(e);
+        }
+
+        public boolean testInheritance(Inheritance i)
+        {
+            return this.selInheritances.contains(i);
+        }
+
+        public boolean testRelation(Relation r)
+        {
+            return this.selRelations.contains(r);
+        }
+    }
+
     /** Copy the selected entities to the (application) clipboard. */
     public void copySelected()
     {
-        // Get selected controllers *in display order*.
+        // Get selected controllers.
         ArrayList<Controller> selControllers = new ArrayList<Controller>();
         for (Controller c : this.controllers) {
             if (c.isSelected()) {
@@ -1600,59 +1638,11 @@ public class DiagramController extends JPanel
             return;
         }
 
-        // Collect all the selected elements in order.
-        ArrayList<Entity> selEntities = new ArrayList<Entity>();
-        ArrayList<Inheritance> selInheritances = new ArrayList<Inheritance>();
-        ArrayList<Relation> selRelations = new ArrayList<Relation>();
-        for (Controller c : selControllers) {
-            if (c instanceof EntityController) {
-                selEntities.add(((EntityController)c).entity);
-            }
-            if (c instanceof InheritanceController) {
-                selInheritances.add(((InheritanceController)c).inheritance);
-            }
-            if (c instanceof RelationController) {
-                selRelations.add(((RelationController)c).relation);
-            }
-        }
+        // Build a filter based on 'selControllers'.
+        SelectedElementFilter filter = new SelectedElementFilter(selControllers);
 
-        // Map from elements in the original to their counterpart in the copy.
-        IdentityHashMap<Entity,Entity> entityToCopy =
-            new IdentityHashMap<Entity,Entity>();
-        IdentityHashMap<Inheritance,Inheritance> inheritanceToCopy =
-            new IdentityHashMap<Inheritance,Inheritance>();
-
-        // Construct a new Diagram with just the selected elements.
-        Diagram copy = new Diagram();
-        for (Entity e : selEntities) {
-            Entity eCopy = new Entity(e);
-            entityToCopy.put(e, eCopy);
-            copy.entities.add(eCopy);
-        }
-        for (Inheritance i : selInheritances) {
-            // See if the parent entity is among those we are copying.
-            Entity parentCopy = entityToCopy.get(i.parent);
-            if (parentCopy == null) {
-                // No, so we'll skip the inheritance too.
-            }
-            else {
-                Inheritance iCopy = new Inheritance(i, parentCopy);
-                inheritanceToCopy.put(i, iCopy);
-                copy.inheritances.add(iCopy);
-            }
-        }
-        for (Relation r : selRelations) {
-            RelationEndpoint startCopy =
-                copyRelationEndpoint(r.start, entityToCopy, inheritanceToCopy);
-            RelationEndpoint endCopy =
-                copyRelationEndpoint(r.end, entityToCopy, inheritanceToCopy);
-            if (startCopy == null || endCopy == null) {
-                // Skip the relation.
-            }
-            else {
-                copy.relations.add(new Relation(r, startCopy, endCopy));
-            }
-        }
+        // Make a copy of the subset of the diagram that is selected.
+        Diagram copy = new Diagram(this.diagram, filter);
 
         // Make sure the Diagram is well-formed.
         try {
@@ -1674,41 +1664,6 @@ public class DiagramController extends JPanel
         if (clipboard != null) {
             clipboard.setContents(data, data);
         }
-    }
-
-    /** Make a copy of 'src', taking advantage of the maps to corresponding
-      * entities and inheritances already copied. */
-    private static RelationEndpoint copyRelationEndpoint(
-        RelationEndpoint src,
-        IdentityHashMap<Entity,Entity> entityToCopy,
-        IdentityHashMap<Inheritance,Inheritance> inheritanceToCopy)
-    {
-        RelationEndpoint ret;
-
-        if (src.entity != null) {
-            Entity eCopy = entityToCopy.get(src.entity);
-            if (eCopy == null) {
-                // Counterpart is not copied, so we will bail on the
-                // endpoint, and hence the relation too.
-                return null;
-            }
-            ret = new RelationEndpoint(eCopy);
-        }
-
-        else if (src.inheritance != null) {
-            Inheritance iCopy = inheritanceToCopy.get(src.inheritance);
-            if (iCopy == null) {
-                return null;
-            }
-            ret = new RelationEndpoint(iCopy);
-        }
-
-        else {
-            ret = new RelationEndpoint(new Point(src.pt));
-        }
-
-        ret.arrowStyle = src.arrowStyle;
-        return ret;
     }
 
     /** Try to read the clipboard contents as a Diagram.  Return null and
