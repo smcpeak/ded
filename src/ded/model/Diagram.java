@@ -296,6 +296,14 @@ public class Diagram implements JSONable {
         return ret;
     }
 
+    /** Make and return a deep copy. */
+    public Diagram deepCopy()
+    {
+        // I would prefer to make this another copy constructor
+        // that called the other one, but that requires Java 8.
+        return new Diagram(this, new ElementFilter());
+    }
+
     // ------------------ serialization --------------------
     @Override
     public JSONObject toJSON()

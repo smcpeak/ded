@@ -93,7 +93,7 @@ public class SerializationTests {
         assert(ser2.equals(serialized));
 
         // Make a deep copy.
-        Diagram d3 = new Diagram(d, new Diagram.ElementFilter());
+        Diagram d3 = d.deepCopy();
         assert(d3.equals(d));
         assert(d2.equals(d3));
 
@@ -125,7 +125,7 @@ public class SerializationTests {
         assert(serialized.equals(ser2));
 
         // Make a deep copy.
-        Diagram d3 = new Diagram(d, new Diagram.ElementFilter());
+        Diagram d3 = d.deepCopy();
         assert(d3.equals(d));
         assert(d2.equals(d3));
 
