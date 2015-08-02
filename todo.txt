@@ -5,6 +5,7 @@ Bugs:
 - font rendering on OpenJDK
 
 Small:
+- right-click entity to set text color
 - add control for dropdown
 - checkboxes and radio buttons (simulations with entities look ugly)
 - option to route edges from the center of the edge of the bounding
