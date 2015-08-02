@@ -78,6 +78,25 @@ public class StringUtil {
             return null;
         }
     }
+
+    /** Like String.format, except the format string, which is passed in
+      * as English, will first be translated into the user's natural
+      * language if a mapping is available. */
+    public static String fmt(String formatString, Object... args)
+    {
+        // For now, there is no facility for actually doing a translation.
+        // I just want this method so I can write code as if there was.
+        return String.format(formatString, args);
+    }
+
+    /** Directly translate the English argument string to the user's
+      * natural language.  This is different from fmt(english) because
+      * all characters in 'english' are treated literally. */
+    public static String localize(String english)
+    {
+        // For now, there is no actual translation.
+        return english;
+    }
 }
 
 // EOF

@@ -25,6 +25,8 @@ import ded.model.Diagram;
 import ded.model.Inheritance;
 import ded.model.RelationEndpoint;
 
+import static util.StringUtil.localize;
+
 /** Controller for an Inheritance. */
 public class InheritanceController extends Controller {
     // ----------------------- constants ------------------------
@@ -279,17 +281,22 @@ public class InheritanceController extends Controller {
     @Override
     public boolean keyPressed(KeyEvent ev)
     {
+        String commandDesc;
+
         if (SwingUtil.noModifiers(ev)) {
             switch (ev.getKeyCode()) {
                 case KeyEvent.VK_O:
                     this.inheritance.open = !this.inheritance.open;
+                    commandDesc = localize(this.inheritance.open?
+                        "Change inheritance style to Open" :
+                        "Change inheritance style to Closed");
                     break;
 
                 default:
                     return false;
             }
 
-            this.diagramController.diagramChanged();
+            this.diagramController.diagramChanged(commandDesc);
             return true;
         }
 

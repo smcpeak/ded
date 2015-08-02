@@ -41,6 +41,8 @@ import ded.model.Relation;
 import ded.model.RelationEndpoint;
 import ded.model.RoutingAlgorithm;
 
+import static util.StringUtil.fmt;
+
 /** Provides UI for manipulating a Relation. */
 public class RelationController extends Controller {
     // ---------------------- constants -------------------------
@@ -213,7 +215,7 @@ public class RelationController extends Controller {
             this.relation.controlPts.set(i, GeomUtil.add(cp, delta));
         }
 
-        this.diagramController.setDirty();
+        // Do not set dirty bit.  Wait until mouse is released.
     }
 
     @Override
@@ -717,14 +719,22 @@ public class RelationController extends Controller {
     @Override
     public void edit()
     {
+        String origName = this.relation.label;
+
         if (RelationDialog.exec(this.diagramController, this.diagramController.diagram,
                                 this.relation)) {
             // User pressed OK.
-            this.diagramController.diagramChanged();
+            String newName = this.relation.label;
+
+            this.diagramController.diagramChanged(
+                (origName.equals(newName)?
+                    fmt("Edit relation \"%1$s\"", origName) :
+                    fmt("Edit relation \"%1$s\" (old name: \"%2$s\")", newName, origName)));
         }
     }
 
-    /** Remove this relation and its controller. */
+    /** Remove this relation and its controller.  The caller is
+      * responsible for calling 'diagramChanged'. */
     @Override
     public void deleteSelfAndData(Diagram diagram)
     {
@@ -738,8 +748,6 @@ public class RelationController extends Controller {
 
         // Remove myself as a controller.
         this.diagramController.remove(this);
-
-        this.diagramController.setDirty();
     }
 
     /** Insert a new control point in a default location. */
@@ -765,7 +773,11 @@ public class RelationController extends Controller {
 
         this.setSelected(oldSel);
 
-        this.diagramController.diagramChanged();
+        this.diagramController.diagramChanged(
+            fmt("Insert new control point %1$d of %2$d",
+                where+1,             // Use 1-based index for this message
+                this.relation.controlPts.size()));
+
     }
 
     /** Insert a new control point at the specified location, putting
@@ -824,7 +836,10 @@ public class RelationController extends Controller {
 
         this.setSelected(oldSel);
 
-        this.diagramController.diagramChanged();
+        this.diagramController.diagramChanged(
+            fmt("Delete control point %1$d of %2$d",
+                which+1,             // Use 1-based index for this message
+                this.relation.controlPts.size()+1));
     }
 
     @Override
@@ -882,18 +897,22 @@ public class RelationController extends Controller {
     @Override
     public boolean keyPressed(KeyEvent ev)
     {
+        String commandDesc;
         if (SwingUtil.noModifiers(ev)) {
             switch (ev.getKeyCode()) {
                 case KeyEvent.VK_D:
                     this.relation.routingAlg = RoutingAlgorithm.RA_DIRECT;
+                    commandDesc = fmt("Change routing algorithm to Direct");
                     break;
 
                 case KeyEvent.VK_H:
                     this.relation.routingAlg = RoutingAlgorithm.RA_MANHATTAN_HORIZ;
+                    commandDesc = fmt("Change routing algorithm to Manhattan Initially Horizontal");
                     break;
 
                 case KeyEvent.VK_V:
                     this.relation.routingAlg = RoutingAlgorithm.RA_MANHATTAN_VERT;
+                    commandDesc = fmt("Change routing algorithm to Manhattan Initially Vertical");
                     break;
 
                 case KeyEvent.VK_O:
@@ -901,25 +920,32 @@ public class RelationController extends Controller {
                     // because it is the old way to do what "." now does.
                     // It is retained for backward compatibility.
                     this.relation.end.toggleOwning();
+                    commandDesc = fmt("Toggle end arrow style to \"%1$s\"",
+                                      this.relation.end.arrowStyle.description);
                     break;
 
                 case KeyEvent.VK_PERIOD:         // mnemonic: ">"
                     this.relation.end.cycleArrowStyle();
+                    commandDesc = fmt("Cycle end arrow style to \"%1$s\"",
+                                      this.relation.end.arrowStyle.description);
                     break;
 
                 case KeyEvent.VK_COMMA:          // mnemonic: "<"
                     this.relation.start.cycleArrowStyle();
+                    commandDesc = fmt("Cycle start arrow style to \"%1$s\"",
+                                      this.relation.start.arrowStyle.description);
                     break;
 
                 case KeyEvent.VK_S:
                     this.relation.swapArrows();
+                    commandDesc = fmt("Swap start and end arrow styles");
                     break;
 
                 default:
                     return false;
             }
 
-            this.diagramController.diagramChanged();
+            this.diagramController.diagramChanged(commandDesc);
             return true;
         }
 

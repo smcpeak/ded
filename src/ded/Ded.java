@@ -34,8 +34,11 @@ import util.awt.AWTUtil;
 import util.awt.ResourceImageCache;
 import util.swing.MenuAction;
 import util.swing.SwingUtil;
+
 import ded.model.Diagram;
 import ded.ui.DiagramController;
+
+import static util.StringUtil.fmt;
 
 /** Diagram editor. */
 public class Ded extends JFrame implements WindowListener {
@@ -385,7 +388,9 @@ public class Ded extends JFrame implements WindowListener {
     {
         this.diagramController.diagram.drawFileName =
             !this.diagramController.diagram.drawFileName;
-        this.diagramController.diagramChanged();
+        this.diagramController.diagramChanged(
+            fmt("Set \"Draw file name\" to %1$b",
+                this.diagramController.diagram.drawFileName));
         this.updateMenuState();
     }
 

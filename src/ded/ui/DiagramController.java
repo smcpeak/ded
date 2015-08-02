@@ -74,6 +74,9 @@ import ded.model.Inheritance;
 import ded.model.Relation;
 import ded.model.RelationEndpoint;
 
+import static util.StringUtil.fmt;
+import static util.StringUtil.localize;
+
 /** Widget to display and edit a diagram. */
 public class DiagramController extends JPanel
     implements MouseListener, MouseMotionListener, KeyListener, ComponentListener, FocusListener
@@ -184,6 +187,12 @@ public class DiagramController extends JPanel
     /** If CFM_DRAGGING, this is the vector from the original mouse click point
       * to the Controller's original getLoc(). */
     private Point dragOffset;
+
+    /** If CFM_DRAGGING, the localized command description of the effect
+      * of the drag if the mouse were to be released now.  This is
+      * initially null, meaning that no drag movement has occurred
+      * (for example, a simple click to select). */
+    private String dragCommandDescription;
 
     /** Most recently used file name, or "" if there is none. */
     private String fileName;
@@ -564,7 +573,6 @@ public class DiagramController extends JPanel
                 end.arrowStyle = ArrowStyle.AS_FILLED_TRIANGLE;
                 Relation r = new Relation(start, end);
                 this.diagram.relations.add(r);
-                this.setDirty();
 
                 // Build a controller and select it.
                 RelationController rc = this.buildRelationController(r);
@@ -573,7 +581,8 @@ public class DiagramController extends JPanel
                 // Drag the end point while the mouse button is held.
                 this.beginDragging(rc.getEndHandle(), startPoint);
 
-                this.repaint();
+                this.diagramChanged(
+                    fmt("Create relation at (%1$d,%2$d)", startPoint.x, startPoint.y));
                 break;
             }
 
@@ -581,14 +590,14 @@ public class DiagramController extends JPanel
                 // This does respect snap, but that happens inside 'createEntityAt'.
                 EntityController.createEntityAt(this, e.getPoint());
                 this.setMode(Mode.DCM_SELECT);
-                this.setDirty();
+                this.diagramChanged(
+                    fmt("Create entity at (%1$d,%2$d)", e.getPoint().x, e.getPoint().y));
                 break;
             }
 
             case DCM_CREATE_INHERITANCE: {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     this.createInheritanceAt(e.getPoint());
-                    this.setDirty();
                 }
                 break;
             }
@@ -624,16 +633,25 @@ public class DiagramController extends JPanel
                 Point delta = GeomUtil.subtract(destLoc, this.dragging.getLoc());
 
                 // Move all selected controls by that amount.
-                for (Controller c : this.controllers) {
-                    if (!c.isSelected()) { continue; }
-
+                HashSet<Controller> selControllers = this.getSelectionSet();
+                for (Controller c : selControllers) {
                     Point cur = c.getLoc();
                     c.dragTo(GeomUtil.add(cur, delta));
                 }
+
+                this.dragCommandDescription =
+                    fmt("Drag %1$d elements to (%2$d,%3$d)",
+                        selControllers.size(),
+                        destLoc.x,
+                        destLoc.y);
             }
             else {
                 // Dragging item is not selected; must be a resize handle.
                 this.dragging.dragTo(destLoc);
+                this.dragCommandDescription =
+                    fmt("Adjust shape by moving handle to (%1$d,%2$d)",
+                        destLoc.x,
+                        destLoc.y);
             }
 
             this.repaint();
@@ -655,6 +673,10 @@ public class DiagramController extends JPanel
         // release of others.
         if (!SwingUtilities.isLeftMouseButton(e)) {
             return;
+        }
+
+        if (this.mode == Mode.DCM_DRAGGING && this.dragCommandDescription != null) {
+            this.diagramChanged(this.dragCommandDescription);
         }
 
         if (this.mode == Mode.DCM_DRAGGING || this.mode == Mode.DCM_RECT_LASSO) {
@@ -1417,16 +1439,24 @@ public class DiagramController extends JPanel
         }
     }
 
-    /** Called when the diagram has been changed.  This does a repaint
-      * and sets the dirty bit. */
-    public void diagramChanged()
+    /** Called when the diagram has been changed by a top-level user
+      * action.  The action performed the user is described by
+      * 'command', which is used to label the new diagram
+      * in the undo/redo history.  It should grammatically be a
+      * command (imperative) spoken from the user's perspective,
+      * with the diagram editor software being commanded to act.
+      *
+      * This also does a repaint and sets the dirty bit. */
+    public void diagramChanged(String command)
     {
+        //System.out.println("Diagram changed: "+command);
         this.setDirty();
         this.repaint();
     }
 
-    /** Set 'dirty' to true. */
-    public void setDirty()
+    /** Set 'dirty' to true.  This is private because all other classes
+      * are supposed to use 'diagramChanged'. */
+    private void setDirty()
     {
         if (!this.dirty) {
             this.dirty = true;
@@ -1485,6 +1515,7 @@ public class DiagramController extends JPanel
             }
             this.dragging = null;
             this.dragOffset = new Point(0,0);
+            this.dragCommandDescription = null;
         }
 
         if (m != Mode.DCM_RECT_LASSO) {
@@ -1814,7 +1845,7 @@ public class DiagramController extends JPanel
             }
         });
 
-        this.diagramChanged();
+        this.diagramChanged(fmt("Paste %1$d elements", newControllers.size()));
     }
 
     /** Delete the selected controllers and associated entities, if any. */
@@ -1833,6 +1864,7 @@ public class DiagramController extends JPanel
             }
 
             this.deleteControllers(sel);
+            this.diagramChanged(fmt("Delete %1$d elements", n));
         }
     }
 
@@ -1891,6 +1923,7 @@ public class DiagramController extends JPanel
     {
         this.dragging = c;
         this.dragOffset = GeomUtil.subtract(pt, c.getLoc());
+        this.dragCommandDescription = null;
         c.beginDragging(pt);
         this.setMode(Mode.DCM_DRAGGING);
     }
@@ -1903,6 +1936,7 @@ public class DiagramController extends JPanel
         }
         else {
             assert(this.dragging == null);
+            assert(this.dragCommandDescription == null);
         }
 
         for (Controller c : this.controllers) {
@@ -2042,7 +2076,7 @@ public class DiagramController extends JPanel
         this.deleteControllers(ctls);
     }
 
-    /** Delete specified controllers. */
+    /** Delete specified controllers.  Do not call 'diagramChanged'. */
     public void deleteControllers(IdentityHashSet<Controller> ctls)
     {
         for (Controller c : ctls) {
@@ -2052,7 +2086,6 @@ public class DiagramController extends JPanel
             if (this.controllers.contains(c)) {
                 c.deleteSelfAndData(this.diagram);
             }
-            this.setDirty();
         }
     }
 
@@ -2092,7 +2125,8 @@ public class DiagramController extends JPanel
         return new RelationEndpoint(pt);
     }
 
-    /** Create an inheritance based on the user's click on 'point'. */
+    /** Create an inheritance based on the user's click on 'point'.
+      * Calls 'diagramChanged' if the click is valid. */
     private void createInheritanceAt(Point point)
     {
         // Must be clicking on an entity.
@@ -2108,7 +2142,6 @@ public class DiagramController extends JPanel
         // current location.
         Inheritance inh = new Inheritance(parent.entity, false /*open*/, point);
         this.diagram.inheritances.add(inh);
-        this.setDirty();
 
         // Build and select a controller.
         InheritanceController ic = buildInheritanceController(inh);
@@ -2117,7 +2150,7 @@ public class DiagramController extends JPanel
         // Drag it while the mouse button is pressed.
         this.beginDragging(ic, point);
 
-        this.repaint();
+        this.diagramChanged(fmt("Create inheritance at (%1$d,%2$d)", point.x, point.y));
     }
 
     /** Change the selected entities' fill colors to the named color. */
@@ -2128,7 +2161,7 @@ public class DiagramController extends JPanel
             ec.entity.setFillColor(colorName);
         }
 
-        this.diagramChanged();
+        this.diagramChanged(fmt("Set fill color to \"%1$s\"", colorName));
     }
 
     /** Change the selected entities' line colors to the named color. */
@@ -2141,7 +2174,7 @@ public class DiagramController extends JPanel
             }
         }
 
-        this.diagramChanged();
+        this.diagramChanged(fmt("Set line color to \"%1$s\"", colorName));
     }
 
     /** Return a sequence containing all of the selected entity controllers. */
@@ -2166,7 +2199,7 @@ public class DiagramController extends JPanel
         // Changing the shape can change the set of handles.
         this.normalizeExclusiveSelect();
 
-        this.diagramChanged();
+        this.diagramChanged(fmt("Set shape to \"%1$s\"", shape.displayName));
     }
 
     /** Align selected entities according to 'ac'. */
@@ -2192,7 +2225,7 @@ public class DiagramController extends JPanel
             ec.setEdge(ac.ee, ac.resize, extreme);
         }
 
-        this.diagramChanged();
+        this.diagramChanged(localize(ac.label));
     }
 
     /** Return true if 'a' is more extreme than 'b', respecting 'extremeIsGreater'. */
@@ -2234,12 +2267,16 @@ public class DiagramController extends JPanel
 
         if (count == 0) {
             errorMessageBox("There were no selected entities?  Should not happen.");
+            return;
         }
         else {
             SwingUtil.informationMessageBox(this, "Updated entities",
                 "Updated the anchor names of "+count+" entities.");
         }
-        this.diagramChanged();
+
+        this.diagramChanged(fmt(command == SetAnchorCommand.SAC_CLEAR?
+            "Clear anchor names" :
+            "Set anchor name to entity name"));
     }
 
     /** Show an error message dialog box with 'message'. */
@@ -2388,7 +2425,9 @@ public class DiagramController extends JPanel
         }
 
         this.selfCheck();
-        this.diagramChanged();
+        this.diagramChanged(localize(front?
+            "Move to front" :
+            "Move to back"));
     }
 
     @Override
@@ -2439,7 +2478,7 @@ public class DiagramController extends JPanel
                 rc.relation.swapArrows();
             }
         }
-        this.diagramChanged();
+        this.diagramChanged(fmt("Swap relation endpoints"));
     }
 
     /** Set every selected entity that has a line style to style 'lds'. */
@@ -2457,7 +2496,7 @@ public class DiagramController extends JPanel
                 }
             }
         }
-        this.diagramChanged();
+        this.diagramChanged(fmt("Set line dash style to \"%1$s\"", lds.name));
     }
 }
 

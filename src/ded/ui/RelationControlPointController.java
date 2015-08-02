@@ -13,13 +13,16 @@ import javax.swing.SwingUtilities;
 
 import util.swing.MenuAction;
 
+import static util.StringUtil.fmt;
+
 /** Control the position of a control point in the middle of a Relation. */
 public class RelationControlPointController extends ResizeController {
     // -------------------- instance data --------------------
     /** Relation controller we're a part of. */
     public RelationController rcontroller;
 
-    /** Which control point is this for? */
+    /** Which control point is this for?  This is a 0-based index into
+      * rcontroller.relation.controlPts[]. */
     public int which;
 
     // ----------------------- methods -----------------------
@@ -45,7 +48,8 @@ public class RelationControlPointController extends ResizeController {
     public void dragTo(Point pt)
     {
         this.rcontroller.relation.controlPts.set(this.which, pt);
-        this.diagramController.setDirty();
+
+        // Do not set dirty bit.  Wait for mouse button release.
     }
 
     @Override
@@ -91,7 +95,10 @@ public class RelationControlPointController extends ResizeController {
         if ((new RelationControlPointDialog(this.diagramController,
                                             this.rcontroller.relation,
                                             this.which)).exec()) {
-            this.diagramController.diagramChanged();
+            this.diagramController.diagramChanged(
+                fmt("Edit control point %1$d of %2$d",
+                    this.which+1,
+                    this.rcontroller.relation.controlPts.size()));
         }
     }
 

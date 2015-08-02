@@ -86,7 +86,7 @@ public class EntityResizeController extends ResizeController {
             }
         }
 
-        this.diagramController.setDirty();
+        // Do not set dirty bit.  Wait until mouse is released.
     }
 
     @Override

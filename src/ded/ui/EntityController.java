@@ -38,6 +38,8 @@ import ded.model.ImageFillStyle;
 import ded.model.ShapeFlag;
 import ded.model.TextAlign;
 
+import static util.StringUtil.fmt;
+
 /** Controller for Entity. */
 public class EntityController extends Controller
 {
@@ -265,7 +267,12 @@ public class EntityController extends Controller
     public void dragTo(Point p)
     {
         this.entity.loc = p;
-        this.diagramController.setDirty();
+
+        // This does not set the dirty bit or call diagramChanged.
+        // Instead, that happens when the mouse is released so we
+        // only create one undo/redo record for the entire drag.
+        // That does mean that the dirty bit is clear during the
+        // drag, which is slightly wrong, but I think acceptable.
     }
 
     @Override
@@ -1107,6 +1114,9 @@ public class EntityController extends Controller
     @Override
     public void edit()
     {
+        // Name the entity had *before* editing.
+        String origName = this.entity.name;
+
         if (EntityDialog.exec(this.diagramController,
                               this.diagramController.diagram,
                               this.entity)) {
@@ -1116,7 +1126,12 @@ public class EntityController extends Controller
             // is consistent with the image fill style.
             this.setSelected(this.selState);
 
-            this.diagramController.diagramChanged();
+            String newName = this.entity.name;
+
+            this.diagramController.diagramChanged(
+                (origName.equals(newName)?
+                    fmt("Edit entity \"%1$s\"", origName) :
+                    fmt("Edit entity \"%1$s\" (old name: \"%2$s\")", newName, origName)));
         }
         else {
             // There is an odd bug in Swing: if I double-click an entity,
