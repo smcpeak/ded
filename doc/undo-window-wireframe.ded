@@ -1,0 +1,1307 @@
+{
+  "drawFileName": true,
+  "entities": [
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 25,
+        "y": 50
+      },
+      "name": "Diagram Editor",
+      "shape": "ES_WINDOW",
+      "shapeFlags": [
+        "SF_HAS_MAXIMIZE",
+        "SF_HAS_MINIMIZE",
+        "SF_HAS_CLOSE",
+        "SF_HAS_WINDOW_OPS"
+      ],
+      "shapeParams": [
+        50,
+        25
+      ],
+      "size": {
+        "h": 280,
+        "w": 310
+      }
+    },
+    {
+      "loc": {
+        "x": 60,
+        "y": 100
+      },
+      "name": "A",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 200,
+        "y": 165
+      },
+      "name": "B",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 85,
+        "y": 220
+      },
+      "name": "C",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 355,
+        "y": 50
+      },
+      "name": "Undo History",
+      "shape": "ES_WINDOW",
+      "shapeFlags": [
+        "SF_HAS_MAXIMIZE",
+        "SF_HAS_MINIMIZE",
+        "SF_HAS_CLOSE",
+        "SF_HAS_WINDOW_OPS"
+      ],
+      "shapeParams": [
+        580,
+        455
+      ],
+      "size": {
+        "h": 445,
+        "w": 570
+      }
+    },
+    {
+      "fillColor": "Black",
+      "lineColor": "White",
+      "loc": {
+        "x": 450,
+        "y": 85
+      },
+      "name": "Command",
+      "size": {
+        "h": 20,
+        "w": 210
+      },
+      "textColor": "White"
+    },
+    {
+      "fillColor": "Black",
+      "lineColor": "White",
+      "loc": {
+        "x": 370,
+        "y": 85
+      },
+      "name": "Sequence",
+      "size": {
+        "h": 20,
+        "w": 80
+      },
+      "textColor": "White"
+    },
+    {
+      "fillColor": "Black",
+      "lineColor": "White",
+      "loc": {
+        "x": 660,
+        "y": 85
+      },
+      "name": "Entities",
+      "size": {
+        "h": 20,
+        "w": 75
+      },
+      "textColor": "White"
+    },
+    {
+      "fillColor": "Black",
+      "lineColor": "White",
+      "loc": {
+        "x": 735,
+        "y": 85
+      },
+      "name": "Relations",
+      "size": {
+        "h": 20,
+        "w": 75
+      },
+      "textColor": "White"
+    },
+    {
+      "fillColor": "Black",
+      "lineColor": "White",
+      "loc": {
+        "x": 810,
+        "y": 85
+      },
+      "name": "Inheritances",
+      "size": {
+        "h": 20,
+        "w": 80
+      },
+      "textColor": "White"
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 370,
+        "y": 105
+      },
+      "name": "1",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 660,
+        "y": 105
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 735,
+        "y": 105
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 810,
+        "y": 105
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 450,
+        "y": 105
+      },
+      "name": "Create empty diagram",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 210
+      }
+    },
+    {
+      "loc": {
+        "x": 890,
+        "y": 105
+      },
+      "shape": "ES_SCROLLBAR",
+      "shapeParams": [
+        0,
+        25
+      ],
+      "size": {
+        "h": 340,
+        "w": 20
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 370,
+        "y": 125
+      },
+      "name": "2",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 660,
+        "y": 125
+      },
+      "name": "1",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 735,
+        "y": 125
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 810,
+        "y": 125
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 450,
+        "y": 125
+      },
+      "name": "Create entity at (50,50)",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 210
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 370,
+        "y": 145
+      },
+      "name": "3",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 660,
+        "y": 145
+      },
+      "name": "2",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 735,
+        "y": 145
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 810,
+        "y": 145
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 450,
+        "y": 145
+      },
+      "name": "Create entity at (150,100)",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 210
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 370,
+        "y": 165
+      },
+      "name": "4",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 660,
+        "y": 165
+      },
+      "name": "2",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 735,
+        "y": 165
+      },
+      "name": "1",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 810,
+        "y": 165
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 450,
+        "y": 165
+      },
+      "name": "Create relation at (50,50)",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 210
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 370,
+        "y": 185
+      },
+      "name": "5",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 660,
+        "y": 185
+      },
+      "name": "2",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 735,
+        "y": 185
+      },
+      "name": "1",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 810,
+        "y": 185
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 450,
+        "y": 185
+      },
+      "name": "Adjust shape by moving handle to (150,100)",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 210
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 370,
+        "y": 225
+      },
+      "name": "5.1.1",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 660,
+        "y": 225
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 735,
+        "y": 225
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 810,
+        "y": 225
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 450,
+        "y": 225
+      },
+      "name": "        Delete 3 elements",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 210
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 370,
+        "y": 245
+      },
+      "name": "6",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 660,
+        "y": 245
+      },
+      "name": "3",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 735,
+        "y": 245
+      },
+      "name": "1",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 810,
+        "y": 245
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 450,
+        "y": 245
+      },
+      "name": "Create entity at (70,200)",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 210
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 370,
+        "y": 285
+      },
+      "name": "6.1.1",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 660,
+        "y": 285
+      },
+      "name": "1",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 735,
+        "y": 285
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 810,
+        "y": 285
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 450,
+        "y": 285
+      },
+      "name": "        Delete 2 elements",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 210
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 370,
+        "y": 305
+      },
+      "name": "6.1.2",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 660,
+        "y": 305
+      },
+      "name": "2",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 735,
+        "y": 305
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 810,
+        "y": 305
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 450,
+        "y": 305
+      },
+      "name": "        Create entity at (70,70)",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 210
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 370,
+        "y": 345
+      },
+      "name": "6.2.1",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 660,
+        "y": 345
+      },
+      "name": "1",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 735,
+        "y": 345
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 810,
+        "y": 345
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 450,
+        "y": 345
+      },
+      "name": "        Delete 2 elements",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 210
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 370,
+        "y": 365
+      },
+      "name": "6.2.2",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 660,
+        "y": 365
+      },
+      "name": "2",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 735,
+        "y": 365
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 810,
+        "y": 365
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 450,
+        "y": 365
+      },
+      "name": "        Create entity at (80,80)",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 210
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 370,
+        "y": 385
+      },
+      "name": "6.2.3",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 660,
+        "y": 385
+      },
+      "name": "2",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 735,
+        "y": 385
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 810,
+        "y": 385
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 450,
+        "y": 385
+      },
+      "name": "        Adjust shape by moving handle to (300,100)",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 210
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 370,
+        "y": 405
+      },
+      "name": "7",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 660,
+        "y": 405
+      },
+      "name": "3",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 735,
+        "y": 405
+      },
+      "name": "1",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 810,
+        "y": 405
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 450,
+        "y": 405
+      },
+      "name": "Create relation at (70,200)",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 210
+      }
+    },
+    {
+      "fillColor": "Sky Blue",
+      "loc": {
+        "x": 370,
+        "y": 425
+      },
+      "name": "8",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "Sky Blue",
+      "loc": {
+        "x": 660,
+        "y": 425
+      },
+      "name": "3",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "Sky Blue",
+      "loc": {
+        "x": 735,
+        "y": 425
+      },
+      "name": "1",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "Sky Blue",
+      "loc": {
+        "x": 810,
+        "y": 425
+      },
+      "name": "0",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "Sky Blue",
+      "loc": {
+        "x": 450,
+        "y": 425
+      },
+      "name": "Adjust shape by moving handle to (150,100)",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 210
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 370,
+        "y": 325
+      },
+      "name": "6.2",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 660,
+        "y": 325
+      },
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 735,
+        "y": 325
+      },
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 810,
+        "y": 325
+      },
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 450,
+        "y": 325
+      },
+      "name": "    Alternate history 6.2",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 210
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 370,
+        "y": 265
+      },
+      "name": "6.1",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 660,
+        "y": 265
+      },
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 735,
+        "y": 265
+      },
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 810,
+        "y": 265
+      },
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 450,
+        "y": 265
+      },
+      "name": "    Alternate history 6.1",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 210
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 370,
+        "y": 205
+      },
+      "name": "5.1",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 660,
+        "y": 205
+      },
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 735,
+        "y": 205
+      },
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 810,
+        "y": 205
+      },
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "fillColor": "White",
+      "loc": {
+        "x": 450,
+        "y": 205
+      },
+      "name": "    Alternate history 5.1",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 210
+      }
+    },
+    {
+      "loc": {
+        "x": 855,
+        "y": 455
+      },
+      "name": "Close",
+      "shape": "ES_PUSHBUTTON",
+      "size": {
+        "h": 25,
+        "w": 55
+      }
+    },
+    {
+      "loc": {
+        "x": 370,
+        "y": 455
+      },
+      "name": "Help",
+      "shape": "ES_PUSHBUTTON",
+      "size": {
+        "h": 25,
+        "w": 55
+      }
+    }
+  ],
+  "inheritances": [],
+  "relations": [
+    {
+      "end": {"entityRef": 2},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 1}
+    },
+    {
+      "end": {"entityRef": 3},
+      "routingAlg": "RA_MANHATTAN_VERT",
+      "start": {"entityRef": 2}
+    }
+  ],
+  "type": "Diagram Editor Diagram",
+  "version": 19,
+  "windowSize": {
+    "h": 547,
+    "w": 960
+  }
+}

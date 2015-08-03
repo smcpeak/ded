@@ -217,6 +217,19 @@ public class UndoHistory {
             sb.append("- ");
         }
         sb.append(entry.commandDescription);
+        if (entry.parent != null &&
+            !entry.diagram.windowSize.equals(entry.parent.diagram.windowSize))
+        {
+            // Changes in diagram size are not recorded as separate
+            // actions due to technical limitations in the editor's
+            // ability to track a complete resize action (as opposed
+            // to all the intermediate states).  In effect, the size
+            // changes are lumped in with the next non-size change.
+            // So, add a note to the label to acknowledge that.
+            int w = entry.diagram.windowSize.width;
+            int h = entry.diagram.windowSize.height;
+            sb.append(" and resize to ("+w+","+h+")");
+        }
         sb.append(": (e="+entry.diagram.entities.size()+
                   ", i="+entry.diagram.inheritances.size()+
                   ", r="+entry.diagram.relations.size()+")\n");

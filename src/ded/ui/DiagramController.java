@@ -21,6 +21,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
@@ -51,7 +52,9 @@ import java.util.Locale;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
+import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -220,6 +223,9 @@ public class DiagramController extends JPanel
     /** Undo/redo history. */
     private UndoHistory undoHistory;
 
+    /** Window for directly displaying the undo history. */
+    private UndoHistoryWindow undoHistoryWindow;
+
     /** When not 0, we use a "triple buffer" render technique to
       * avoid problems on Apple HiDPI/Retina displays.  Mode -1
       * uses a "compatible" image.  Other values are treated as
@@ -266,6 +272,7 @@ public class DiagramController extends JPanel
         this.log("Diagram Editor started at "+(new Date()));
 
         this.undoHistory = new UndoHistory(this.diagram, fmt("Created empty diagram"));
+        this.undoHistoryWindow = new UndoHistoryWindow(this);
 
         String tbm = System.getenv("DED_TRIPLE_BUFFER");
         if (tbm != null) {
@@ -880,12 +887,28 @@ public class DiagramController extends JPanel
         // Clear the diagram.
         this.setDiagram(new Diagram());
         this.undoHistory = new UndoHistory(this.diagram, fmt("Started a new, empty diagram"));
+        this.undoHistoryWindow.updateHistory();
     }
 
     /** Change the Diagram to an entirely new one. */
     private void setDiagram(Diagram newDiagram)
     {
         this.diagram = newDiagram;
+
+        // Sizing is achieved by specifying a preferred size for
+        // the content pane, then packing other controls and the
+        // window border stuff around it.
+        this.setPreferredSize(this.diagram.windowSize);
+
+        // When playing around with undo/redo involving resize,
+        // sometimes 'setPreferredSize' is not enough.  I don't
+        // understand why; it seems dependent on the specific size
+        // values?  Perhaps an odd interaction with the window
+        // manager's snap behavior?  Calling 'setSize' as well seems
+        // to fix the problem.
+        this.setSize(this.diagram.windowSize);
+
+        this.dedWindow.pack();
 
         this.rebuildControllers();
         this.dedWindow.updateMenuState();
@@ -955,15 +978,10 @@ public class DiagramController extends JPanel
                 this.setFileName(name);
             }
 
-            // Sizing is achieved by specifying a preferred size for
-            // the content pane, then packing other controls and the
-            // window border stuff around it.
-            this.setPreferredSize(d.windowSize);
-            this.dedWindow.pack();
-
             // Swap in the new diagram and rebuild the UI for it.
             this.setDiagram(d);
             this.undoHistory = new UndoHistory(this.diagram, fmt("Loaded file \"%1$s\"", name));
+            this.undoHistoryWindow.updateHistory();
         }
         catch (Exception e) {
             this.exnErrorMessageBox("Error while reading \""+name+"\"", e);
@@ -1459,6 +1477,8 @@ public class DiagramController extends JPanel
     {
         //System.out.println("Diagram changed: "+command);
         this.undoHistory.recordDiagramChange(this.diagram, command);
+        this.undoHistoryWindow.updateHistory();
+        this.populateRedoAlternateMenu();
 
         this.setDirty();
         this.repaint();
@@ -2505,6 +2525,7 @@ public class DiagramController extends JPanel
     {
         if (this.undoHistory.canUndo()) {
             this.setDiagram(this.undoHistory.undo());
+            this.undoHistoryWindow.updateHistory();
         }
         else {
             this.errorMessageBox("Cannot undo because there is no further undo history.");
@@ -2516,16 +2537,86 @@ public class DiagramController extends JPanel
     {
         if (this.undoHistory.canRedo()) {
             this.setDiagram(this.undoHistory.redoMostRecent());
+            this.undoHistoryWindow.updateHistory();
         }
         else {
             this.errorMessageBox("Cannot redo because there are no more redo states on this future.");
         }
     }
 
-    /** Respond to "Edit|Redo a previous future...". */
-    public void editRedoAlternate()
+    /** Respond to "Edit|Redo Alternate" choice. */
+    public void editRedoAlternate(int whichRedo)
     {
-        this.errorMessageBox("Unimplemented");  // TODO
+        this.setDiagram(this.undoHistory.redo(whichRedo));
+        this.undoHistoryWindow.updateHistory();
+    }
+
+    /** Show the Undo History window. */
+    public void showUndoHistory()
+    {
+        // Move the undo history to the right of the editor window.
+        int x = this.dedWindow.getLocation().x;
+        int y = this.dedWindow.getLocation().y;
+        int w = this.dedWindow.getWidth();
+        this.undoHistoryWindow.setLocation(x+w, y);
+        this.undoHistoryWindow.setVisible(true);
+    }
+
+    /** Dispose of any windows we own, since the enclosing window is
+      * being disposed. */
+    public void disposeOwnedWindows()
+    {
+        this.undoHistoryWindow.dispose();
+    }
+
+    /** Return the undo history object.  It is intended that callers
+      * only *read* the data in the history. */
+    public UndoHistory getUndoHistory()
+    {
+        return this.undoHistory;
+    }
+
+    @SuppressWarnings("serial")
+    private /*non-static*/ class RedoAlternateAction extends AbstractAction {
+        // ---- data ----
+        /** Integer in [0,n-1] where n is this.undoHistory.numRedos(). */
+        public int whichRedo;
+
+        // ---- methods ----
+        public RedoAlternateAction(String label, int w)
+        {
+            super(label);
+            this.whichRedo = w;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            DiagramController.this.editRedoAlternate(this.whichRedo);
+        }
+    }
+
+    /** Rebuild the "Redo Alternate" sub-menu. */
+    public void populateRedoAlternateMenu()
+    {
+        JMenu redoSubmenu = this.dedWindow.redoSubmenu;
+        redoSubmenu.removeAll();
+
+        ArrayList<String> futures = this.undoHistory.describeRedos();
+        if (futures.size() < 2) {
+            // This is the common case.
+            redoSubmenu.setEnabled(false);
+        }
+        else {
+            // To get here, the user must undo some actions, then do
+            // some more actions, then undo those as well.
+            redoSubmenu.setEnabled(true);
+
+            for (int i=0; i < futures.size()-1; i++) {
+                String label = ""+(i+1)+": "+futures.get(i);
+                redoSubmenu.add(new RedoAlternateAction(label, i));
+            }
+        }
     }
 }
 

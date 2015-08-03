@@ -28,8 +28,7 @@ Medium:
 - allow editing multiple elements at the same time
 - smarter relation routing
 - undo/redo; mostly done; loose ends:
-  - "redo a previous future"
-  - show undo history dump in a window
+  - trim the size of the history
 - help bubbles
 
 Big:

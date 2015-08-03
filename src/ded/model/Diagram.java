@@ -87,7 +87,7 @@ public class Diagram implements JSONable {
     // ----------- public methods -----------
     public Diagram()
     {
-        this.windowSize = new Dimension(800, 800);
+        this.windowSize = new Dimension(700, 500);
         this.drawFileName = true;
         this.entities = new ArrayList<Entity>();
         this.inheritances = new ArrayList<Inheritance>();

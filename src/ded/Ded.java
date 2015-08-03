@@ -65,6 +65,10 @@ public class Ded extends JFrame implements WindowListener {
     /** The menu item associated with Diagram.drawFileName. */
     private JCheckBoxMenuItem drawFileNameCheckbox;
 
+    /** The sub-menu for redo alternate.  This is public so that
+      * DiagramController can populate it as needed. */
+    public JMenu redoSubmenu;
+
     // ---------- public methods -------------
     public Ded()
     {
@@ -270,9 +274,16 @@ public class Ded extends JFrame implements WindowListener {
             }
         });
 
-        m.add(new MenuAction("Redo a previous future...", KeyEvent.VK_F) {
+        // Create an empty sub-menu for the "Redo Alternate" command.
+        // DiagramController will populate it.
+        this.redoSubmenu = new JMenu("Redo Alternate");
+        this.redoSubmenu.setMnemonic(KeyEvent.VK_A);
+        this.redoSubmenu.setEnabled(false);
+        m.add(this.redoSubmenu);
+
+        m.add(new MenuAction("Show the undo history window...", KeyEvent.VK_W) {
             public void actionPerformed(ActionEvent e) {
-                Ded.this.diagramController.editRedoAlternate();
+                Ded.this.diagramController.showUndoHistory();
             }
         });
 
@@ -419,6 +430,7 @@ public class Ded extends JFrame implements WindowListener {
     public void updateMenuState()
     {
         this.drawFileNameCheckbox.setState(this.diagramController.diagram.drawFileName);
+        this.diagramController.populateRedoAlternateMenu();
     }
 
     private void showAboutBox()
@@ -466,6 +478,7 @@ public class Ded extends JFrame implements WindowListener {
     public void dispose()
     {
         super.dispose();
+        this.diagramController.disposeOwnedWindows();
 
         // Unfortunately, there is a 1-2 second delay between when I
         // hit 'q' or the X button and when the process exits unless
