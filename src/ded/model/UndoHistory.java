@@ -1,13 +1,11 @@
-// InheritanceController.java
+// UndoHistory.java
 // See toplevel license.txt for copyright and license terms.
 
-package ded.ui;
+package ded.model;
 
 import java.util.ArrayList;
 
 import util.StringUtil;
-
-import ded.model.Diagram;
 
 /** Maintain a history of diagram changes to support undo and redo. */
 public class UndoHistory {

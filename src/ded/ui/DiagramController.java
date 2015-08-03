@@ -73,6 +73,7 @@ import ded.model.EntityShape;
 import ded.model.Inheritance;
 import ded.model.Relation;
 import ded.model.RelationEndpoint;
+import ded.model.UndoHistory;
 
 import static util.StringUtil.fmt;
 import static util.StringUtil.localize;
