@@ -28,7 +28,6 @@ Medium:
 - allow editing multiple elements at the same time
 - smarter relation routing
 - undo/redo; mostly done; loose ends:
-  - get rid of confirmation dialog on multiple delete
   - "redo a previous future"
   - check current diagram equals current undo record
   - show undo history dump in a window

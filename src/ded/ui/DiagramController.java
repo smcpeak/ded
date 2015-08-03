@@ -1863,15 +1863,6 @@ public class DiagramController extends JPanel
         if (this.mode == Mode.DCM_SELECT) {
             IdentityHashSet<Controller> sel = this.getAllSelected();
             int n = sel.size();
-            if (n > 1) {
-                int choice = JOptionPane.showConfirmDialog(this,
-                    "Delete "+n+" elements?", "Confirm Deletion",
-                    JOptionPane.OK_CANCEL_OPTION);
-                if (choice != JOptionPane.OK_OPTION) {
-                    return;
-                }
-            }
-
             this.deleteControllers(sel);
             this.diagramChanged(fmt("Delete %1$d elements", n));
         }
