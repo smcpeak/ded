@@ -1942,11 +1942,6 @@ public class DiagramController extends JPanel
         for (Controller c : this.controllers) {
             c.globalSelfCheck(this.diagram);
         }
-
-        // TODO: This currently fails during drag operations because I
-        // am editing 'this.diagram' without updating the undo history.
-        // I need to figure out a better time to check this.
-        //assert(this.diagram.equals(this.undoHistory.getCurrentDiagram()));
     }
 
     /** Set the set of selected controllers to those in 'toSelect'. */
