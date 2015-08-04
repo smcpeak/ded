@@ -5,7 +5,6 @@ Bugs:
 - font rendering on OpenJDK
 
 Small:
-- right-click entity to set text color
 - add control for dropdown
 - checkboxes and radio buttons (simulations with entities look ugly)
 - option to route edges from the center of the edge of the bounding
@@ -23,11 +22,13 @@ Small:
 - specify initial size (etc.?) for new relations
 - option to automatically expand entities to contain their title and attributes
 - flag to turn off auto move/resize of window contents
+- set relation label text color, and diagram background color
 
 Medium:
 - allow editing multiple elements at the same time
 - smarter relation routing
 - help bubbles
+- file versioning that allows independent extensions
 
 Big:
 - implement font renderer to fix problems on certain JVMs

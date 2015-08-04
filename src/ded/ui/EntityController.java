@@ -948,6 +948,17 @@ public class EntityController extends Controller
         }
         menu.add(fillColorMenu);
 
+        JMenu textColorMenu = new JMenu("Set text color");
+        textColorMenu.setMnemonic(KeyEvent.VK_T);
+        for (final String color : this.diagramController.diagram.namedColors.keySet()) {
+            textColorMenu.add(new AbstractAction(color) {
+                public void actionPerformed(ActionEvent e) {
+                    ths.diagramController.setSelectedElementsTextColor(color);
+                }
+            });
+        }
+        menu.add(textColorMenu);
+
         JMenu lineColorMenu = new JMenu("Set line color");
         lineColorMenu.setMnemonic(KeyEvent.VK_L);
         for (final String color : this.diagramController.diagram.namedColors.keySet()) {
@@ -999,6 +1010,12 @@ public class EntityController extends Controller
     public void setLineColor(String color)
     {
         this.entity.lineColor = color;
+    }
+
+    @Override
+    public void setTextColor(String color)
+    {
+        this.entity.textColor = color;
     }
 
     /** Create a new entity at location 'p' in 'dc'.  This corresponds to

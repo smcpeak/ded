@@ -255,6 +255,10 @@ public abstract class Controller {
     /** Update this element's line color, if it has one. */
     public void setLineColor(String color)
     {}
+
+    /** Update this element's text color if it has one. */
+    public void setTextColor(String color)
+    {}
 }
 
 // EOF
