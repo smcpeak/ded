@@ -242,6 +242,12 @@ public class Ded extends JFrame implements WindowListener {
             }
         });
 
+        m.add(new MenuAction("Cut", KeyEvent.VK_T, KeyEvent.VK_X, ActionEvent.CTRL_MASK) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.cutSelected();
+            }
+        });
+
         m.add(new MenuAction("Copy", KeyEvent.VK_C, KeyEvent.VK_C, ActionEvent.CTRL_MASK) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.copySelected();

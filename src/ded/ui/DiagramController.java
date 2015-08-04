@@ -1701,6 +1701,14 @@ public class DiagramController extends JPanel
     /** Copy the selected entities to the (application) clipboard. */
     public void copySelected()
     {
+        this.innerCopySelected(false /*isCutCommand*/);
+    }
+
+    /** Copy the selected elements to the clipboard.  Return true
+      * If this was successful.  'isCopyCommand' indicates that we
+      * are performing a Cut rather than a Copy. */
+    public boolean innerCopySelected(boolean isCutCommand)
+    {
         // Get selected controllers.
         ArrayList<Controller> selControllers = new ArrayList<Controller>();
         for (Controller c : this.controllers) {
@@ -1709,8 +1717,10 @@ public class DiagramController extends JPanel
             }
         }
         if (selControllers.isEmpty()) {
-            this.errorMessageBox("Nothing is selected to copy.");
-            return;
+            this.errorMessageBox(fmt(isCutCommand?
+                "Nothing is selected to cut." :
+                "Nothing is selected to copy."));
+            return false;
         }
 
         // Build a filter based on 'selControllers'.
@@ -1726,7 +1736,7 @@ public class DiagramController extends JPanel
         }
         catch (Throwable t) {
             this.errorMessageBox("Internal error: failed to create a well-formed copy: "+t);
-            return;
+            return false;
         }
 
         // Copy it as a string to the system clipboard.
@@ -1739,6 +1749,8 @@ public class DiagramController extends JPanel
         if (clipboard != null) {
             clipboard.setContents(data, data);
         }
+
+        return true;
     }
 
     /** Try to read the clipboard contents as a Diagram.  Return null and
@@ -1886,14 +1898,31 @@ public class DiagramController extends JPanel
         this.diagramChanged(fmt("Paste %1$d elements", newControllers.size()));
     }
 
+    /** Implement Edit|Cut. */
+    public void cutSelected()
+    {
+        if (this.innerCopySelected(true /*isCutCommand*/)) {
+            this.innerDeleteSelected(true /*isCutCommand*/);
+        }
+    }
+
     /** Delete the selected controllers and associated entities, if any. */
     public void deleteSelected()
+    {
+        this.innerDeleteSelected(false /*isCutCommand*/);
+    }
+
+    /** Delete the selected elements.  'isCutCommand' is true if this
+      * is being done as part of a Cut rather than Delete. */
+    public void innerDeleteSelected(boolean isCutCommand)
     {
         if (this.mode == Mode.DCM_SELECT) {
             IdentityHashSet<Controller> sel = this.getAllSelected();
             int n = sel.size();
             this.deleteControllers(sel);
-            this.diagramChanged(fmt("Delete %1$d elements", n));
+            this.diagramChanged(isCutCommand?
+                fmt("Cut %1$d elements", n) :
+                fmt("Delete %1$d elements", n));
         }
     }
 
