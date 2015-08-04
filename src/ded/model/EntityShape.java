@@ -28,7 +28,11 @@ public enum EntityShape {
     ES_DROPDOWN
         ("Dropdown", 0),
     ES_COMBO_BOX
-        ("Combo box", 0);
+        ("Combo box", 0),
+    ES_CHECK_BOX
+        ("Check box", 0),
+    ES_RADIO_BUTTON
+        ("Radio button", 0);
 
     /** Name of this shape as shown in the UI. */
     public final String displayName;

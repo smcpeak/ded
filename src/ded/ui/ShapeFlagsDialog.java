@@ -4,6 +4,8 @@
 package ded.ui;
 
 import java.awt.Component;
+import java.awt.Dimension;
+
 import java.util.ArrayList;
 import java.util.EnumSet;
 
@@ -41,6 +43,10 @@ public class ShapeFlagsDialog extends ModalDialog {
         this.shapeFlags = shapeFlags;
 
         Box vb = ModalDialog.makeMarginVBox(this, ModalDialog.OUTER_MARGIN);
+
+        // Ensure the dialog does not get so thin that its title
+        // is abbreviated to nothing.
+        vb.add(Box.createRigidArea(new Dimension(300, 0)));
 
         // Flags checkboxes.
         EnumSet<ShapeFlag> allFlags = ShapeFlag.allFlagsForShape(shape);

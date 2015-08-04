@@ -5,7 +5,7 @@ Bugs:
 - font rendering on OpenJDK
 
 Small:
-- checkboxes and radio buttons (simulations with entities look ugly)
+- right click to set text alignment
 - option to route edges from the center of the edge of the bounding
   box rather than from the center of the entity
 - fix relation creation to not have the offset problem

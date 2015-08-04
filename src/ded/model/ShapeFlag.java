@@ -13,11 +13,17 @@ public enum ShapeFlag {
     SF_HAS_MAXIMIZE
       ("Has maximize button",                    true,  EntityShape.ES_WINDOW),
     SF_HAS_MINIMIZE
-      ("Has a minimize button.",                 true,  EntityShape.ES_WINDOW),
+      ("Has a minimize button",                  true,  EntityShape.ES_WINDOW),
     SF_HAS_CLOSE
-      ("Has a close button.",                    true,  EntityShape.ES_WINDOW),
+      ("Has a close button",                     true,  EntityShape.ES_WINDOW),
     SF_HAS_WINDOW_OPS
-      ("Has a window operations menu.",          true,  EntityShape.ES_WINDOW);
+      ("Has a window operations menu",           true,  EntityShape.ES_WINDOW),
+
+    // Check box and radio button.
+    SF_CHECKED
+      ("Checked",                                false, EntityShape.ES_CHECK_BOX, EntityShape.ES_RADIO_BUTTON),
+    SF_TRI_STATE
+      ("Tri-state",                              false, EntityShape.ES_CHECK_BOX, EntityShape.ES_RADIO_BUTTON);
 
     /** Name of this shape as shown in the UI. */
     public final String displayName;

@@ -59,6 +59,12 @@ public class G {
         drawImage(g, image, pt, toDimension(dim));
     }
 
+    /** Draw 'image' in 'g' filling 'r'. */
+    public static void drawImage(Graphics g, Image image, Rectangle r)
+    {
+        drawImage(g, image, topLeft(r), r.getSize());
+    }
+
     /** Convert a Point to a Dimension. */
     public static Dimension toDimension(Point pt)
     {

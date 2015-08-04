@@ -370,6 +370,11 @@ public class EntityController extends Controller
             g.drawLine(r.x, q, r.x+r.width, q);                    // horizontal line
         }
 
+        // True to use the name rendering code below the 'switch'
+        // statement.  Set to false when a switch case does its own
+        // name rendering.
+        boolean wantNameRender = true;
+
         // Entity outline with proper shape.
         switch (this.entity.shape) {
             case ES_NO_SHAPE:
@@ -435,10 +440,19 @@ public class EntityController extends Controller
             case ES_CYLINDER:
                 this.drawCylinder(g, r, wantSolidBackground);
                 break;
+
+            case ES_CHECK_BOX:
+            case ES_RADIO_BUTTON:
+                this.drawCheckOrRadio(g, r);
+                wantNameRender = false;
+                break;
         }
 
-        if (this.entity.attributes.isEmpty() &&
-            this.entity.shape != EntityShape.ES_WINDOW)
+        if (!wantNameRender) {
+            // Skip the name render code.
+        }
+        else if (this.entity.attributes.isEmpty() &&
+                 this.entity.shape != EntityShape.ES_WINDOW)
         {
             // Name is vertically and horizontally centered in the space.
             g.setColor(this.getTextColor());
@@ -932,9 +946,35 @@ public class EntityController extends Controller
         // it is tall.)
         Rectangle square = G.moveTopLeftBy(r2, new Point(r2.width - r2.height, 0));
 
-        G.drawImage(g, button,
-                    G.topLeft(square),
-                    square.getSize());
+        G.drawImage(g, button, square);
+    }
+
+    /** Draw either a check box or radio button into 'r'. */
+    private void drawCheckOrRadio(Graphics g, Rectangle r)
+    {
+        // Get image button image for chosen state.
+        Image buttonImage;
+        {
+            EnumSet<ShapeFlag> flags = this.entity.shapeFlags;
+            String stateSuffix =
+                flags.contains(ShapeFlag.SF_CHECKED)?   "checked" :
+                flags.contains(ShapeFlag.SF_TRI_STATE)? "tri-state" :
+                                                        "unchecked";
+            buttonImage = this.diagramController.getResourceImage(
+                this.entity.shape == EntityShape.ES_CHECK_BOX?
+                    ("check-box-"+stateSuffix+".png") :
+                    ("radio-button-"+stateSuffix+".png"));
+        }
+
+        // Calculate size of square in left side.
+        int side = r.height;
+        Rectangle square = G.setSize(r, HorizOrVert.HV_HORIZ, side);
+        Rectangle labelArea = G.moveTopLeftBy(r, new Point(side, 0));
+
+        G.drawImage(g, buttonImage, square);
+
+        g.setColor(this.getTextColor());
+        drawAlignedText(g, labelArea, this.entity.name, this.entity.nameAlign);
     }
 
     /** Return the rectangle describing this controller's bounds. */
