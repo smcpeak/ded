@@ -24,7 +24,11 @@ public enum EntityShape {
     ES_PUSHBUTTON
         ("Push button", 0),
     ES_TEXT_EDIT
-        ("Text edit", 0);
+        ("Text edit", 0),
+    ES_DROPDOWN
+        ("Dropdown", 0),
+    ES_COMBO_BOX
+        ("Combo box", 0);
 
     /** Name of this shape as shown in the UI. */
     public final String displayName;

@@ -382,6 +382,8 @@ public class EntityController extends Controller
             case ES_SCROLLBAR:
             case ES_PUSHBUTTON:
             case ES_TEXT_EDIT:
+            case ES_DROPDOWN:
+            case ES_COMBO_BOX:
                 if (wantSolidBackground) {
                     // Fill with the normal entity color (selected controllers
                     // get filled with selection color by super.paint).
@@ -396,16 +398,26 @@ public class EntityController extends Controller
                 if (this.entity.shape == EntityShape.ES_SCROLLBAR) {
                     this.drawScrollbar(g, r);
                 }
-                if (this.entity.shape == EntityShape.ES_PUSHBUTTON) {
+                if (this.entity.shape == EntityShape.ES_PUSHBUTTON ||
+                    this.entity.shape == EntityShape.ES_DROPDOWN)
+                {
                     Rectangle inner = (Rectangle)r.clone();
                     inner.x++;
                     inner.y++;
                     inner.width -= 2;
                     inner.height -= 2;
                     this.drawBevel(g, inner);
+
+                    if (this.entity.shape == EntityShape.ES_DROPDOWN) {
+                        this.drawDropdownButton(g, inner);
+                    }
                 }
                 if (this.entity.shape == EntityShape.ES_TEXT_EDIT) {
                     this.drawTextEdit(g, r);
+                }
+                if (this.entity.shape == EntityShape.ES_COMBO_BOX) {
+                    this.drawTextEdit(g, r);
+                    this.drawDropdownButton(g, r);
                 }
                 break;
 
@@ -899,6 +911,30 @@ public class EntityController extends Controller
             b = 1.0f;
         }
         return Color.getHSBColor(hsb[0], hsb[1], b);
+    }
+
+    /** Draw a dropdown/combo-box button on the right side of 'r'. */
+    private void drawDropdownButton(Graphics g, Rectangle r)
+    {
+        Image button = this.diagramController.getResourceImage("scroll-down-button.png");
+
+        // Shrink the rectangle by 2 on all sides.  This puts it
+        // inside the bevel of a button and inside the "curved"
+        // insets of a text edit.
+        Rectangle r2 = (Rectangle)r.clone();
+        r2.x += 2;
+        r2.y += 2;
+        r2.width -= 4;
+        r2.height -= 4;
+
+        // Compute the largest square that fits into the right side of
+        // the rectangle 'r'.  (This assumes the rectangle is wider than
+        // it is tall.)
+        Rectangle square = G.moveTopLeftBy(r2, new Point(r2.width - r2.height, 0));
+
+        G.drawImage(g, button,
+                    G.topLeft(square),
+                    square.getSize());
     }
 
     /** Return the rectangle describing this controller's bounds. */

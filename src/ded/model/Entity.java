@@ -152,10 +152,10 @@ public class Entity implements JSONable {
 
             this.shapeFlags = defaultFlagsForNewShape(oldShape, this.shapeFlags, newShape);
 
-            // If we're changing to a text edit control, and neither of
+            // If we're changing to a text edit or combo box control, and neither of
             // the colors have been changed, adjust to gray lines and
             // white fill, since that is what the rendering is tuned for.
-            if (newShape == EntityShape.ES_TEXT_EDIT &&
+            if ((newShape == EntityShape.ES_TEXT_EDIT || newShape == EntityShape.ES_COMBO_BOX) &&
                 this.lineColor.equals(defaultLineColor) &&
                 this.fillColor.equals(defaultFillColor))
             {
