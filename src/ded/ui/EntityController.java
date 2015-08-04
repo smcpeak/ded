@@ -1057,7 +1057,18 @@ public class EntityController extends Controller
         }
         menu.add(shapeMenu);
 
-        JMenu alignMenu = new JMenu("Align");
+        JMenu textAlignMenu = new JMenu("Set name text alignment");
+        textAlignMenu.setMnemonic(KeyEvent.VK_X);
+        for (final TextAlign align : EnumSet.allOf(TextAlign.class)) {
+            textAlignMenu.add(new AbstractAction(align.toString()) {
+                public void actionPerformed(ActionEvent e) {
+                    ths.diagramController.setSelectedElementsNameTextAlign(align);
+                }
+            });
+        }
+        menu.add(textAlignMenu);
+
+        JMenu alignMenu = new JMenu("Align edges");
         alignMenu.setMnemonic(KeyEvent.VK_A);
         for (final AlignCommand ac : EnumSet.allOf(AlignCommand.class)) {
             alignMenu.add(new MenuAction(ac.label, ac.mnemonic) {
@@ -1092,6 +1103,12 @@ public class EntityController extends Controller
     public void setTextColor(String color)
     {
         this.entity.textColor = color;
+    }
+
+    @Override
+    public void setNameTextAlign(TextAlign align)
+    {
+        this.entity.nameAlign = align;
     }
 
     /** Create a new entity at location 'p' in 'dc'.  This corresponds to

@@ -11,6 +11,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,6 +19,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
 import ded.model.Diagram;
+import ded.model.TextAlign;
 
 import util.swing.MenuAction;
 import util.swing.SwingUtil;
@@ -165,7 +167,11 @@ public abstract class Controller {
 
         JPopupMenu menu = new JPopupMenu();
 
-        menu.add(new MenuAction("Edit...", KeyEvent.VK_ENTER) {
+        // I tried making Enter an Accel key so it would show up in
+        // the right click menu as a key binding hint, but that causes
+        // a press of Enter while the menu is open to activate the Edit
+        // entry even if another menu item is selected.
+        menu.add(new MenuAction("Edit...", 0) {
             public void actionPerformed(ActionEvent e) {
                 ths.edit();
             }
@@ -258,6 +264,12 @@ public abstract class Controller {
 
     /** Update this element's text color if it has one. */
     public void setTextColor(String color)
+    {}
+
+    /** Update this element's name text align if it has one.
+      * This does *not* change the alignment of the attribute
+      * text of an Entity. */
+    public void setNameTextAlign(TextAlign align)
     {}
 }
 

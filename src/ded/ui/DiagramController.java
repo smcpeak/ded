@@ -76,6 +76,7 @@ import ded.model.EntityShape;
 import ded.model.Inheritance;
 import ded.model.Relation;
 import ded.model.RelationEndpoint;
+import ded.model.TextAlign;
 import ded.model.UndoHistory;
 import ded.model.UndoHistoryLimit;
 
@@ -2263,6 +2264,15 @@ public class DiagramController extends JPanel
         this.normalizeExclusiveSelect();
 
         this.diagramChanged(fmt("Set shape to \"%1$s\"", shape.displayName));
+    }
+
+    /** Change the selected elements' text alignment. */
+    public void setSelectedElementsNameTextAlign(TextAlign newAlign)
+    {
+        for (Controller c : this.getSelectionSet()) {
+            c.setNameTextAlign(newAlign);
+        }
+        this.diagramChanged(fmt("Set text align to \"%1$s\"", newAlign));
     }
 
     /** Align selected entities according to 'ac'. */
