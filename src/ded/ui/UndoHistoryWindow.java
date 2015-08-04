@@ -58,7 +58,8 @@ public class UndoHistoryWindow extends JFrame {
 
         buttons.add(Box.createRigidArea(new Dimension(ModalDialog.CONTROL_PADDING, 0)));
 
-        this.historySizeLimitButton = new JButton("History size limit: TODO");
+        this.historySizeLimitButton = new JButton("<placeholder>");
+        this.setHistorySizeLimitButtonLabel();
         this.historySizeLimitButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -118,18 +119,42 @@ public class UndoHistoryWindow extends JFrame {
             "\"Redo alternate\" menu command to replay the other history; "+
             "that makes the just-undone history into an alternate.\n\n"+
 
-            "This model is a little unconventional. It can be useful to "+
-            "keep the Undo History window open while experimenting with "+
-            "Undo, Redo, and Redo Alternate to see their effects.");
+            "There is a configurable limit on the number of states on the path "+
+            "from the current state "+
+            "to the oldest ancestor state.  When you make a change that would "+
+            "add a new leaf exceeding the limit, the oldest ancestor (and all "+
+            "of its alternate histories) is discarded.\n\n"+
+
+            "NOTE: Currently, the limit is not persisted, so if you start a "+
+            "new 'ded' process, the limit will return to its default.");
     }
 
     /** Show the dialog that lets the user change the history size limit. */
     public void changeHistorySizeLimit()
     {
-        SwingUtil.informationMessageBox(this, "Change history size limit",
-            "This feature is not yet implemented.  Currently, the history "+
-            "grows without bound until the 'ded' process terminates.");
+        int curLimit = this.diagramController.getUndoHistoryLimit();
+        Long newLimit = SwingUtil.showIntegerInputDialog(
+            this /*parent*/,
+            "Enter new history limit (0 means no limit)",
+            Long.valueOf(curLimit),
+            0 /*minValue*/,
+            Integer.MAX_VALUE /*maxValue*/);
+        if (newLimit != null) {
+            this.diagramController.setUndoHistoryLimit((int)(newLimit.longValue()));
+            this.setHistorySizeLimitButtonLabel();
+        }
+    }
 
+    /** Set the label on the history size limit button to indicate the
+      * current limit value. */
+    private void setHistorySizeLimitButtonLabel()
+    {
+        int limit = this.diagramController.getUndoHistoryLimit();
+        String label = "History size limit: "+limit;
+        if (limit == 0) {
+            label += " (none)";
+        }
+        this.historySizeLimitButton.setText(label);
     }
 }
 

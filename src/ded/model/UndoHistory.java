@@ -55,12 +55,16 @@ public class UndoHistory {
       * diagram should always be equals() to the Diagram in the editor. */
     private HistoryEntry current;
 
+    /** Interface to get the history size limit. */
+    private UndoHistoryLimit undoHistoryLimit;
+
     // ---- methods ----
     /** Initialize a new undo history.  This will make its own deep
       * copy of 'initDiagram'. */
-    public UndoHistory(Diagram initDiagram, String initCommandDesc)
+    public UndoHistory(Diagram initDiagram, String initCommandDesc, UndoHistoryLimit uhl)
     {
         this.current = new HistoryEntry(initDiagram.deepCopy(), null, initCommandDesc);
+        this.undoHistoryLimit = uhl;
 
         if (debug) {
             System.out.println("constructor: "+initCommandDesc);
@@ -76,6 +80,22 @@ public class UndoHistory {
             new HistoryEntry(newDiagram.deepCopy(), this.current, commandDesc);
         this.current.futures.add(newEntry);
         this.current = newEntry;
+
+        // Apply the history limit, which restricts the number of states
+        // on the path from current to oldest ancestor.
+        int limit = this.undoHistoryLimit.getUndoHistoryLimit();
+        if (limit > 0) {
+            HistoryEntry ancestor = newEntry;
+            limit--;     // Count the current state against the limit.
+            while (limit > 0 && ancestor != null) {
+                ancestor = ancestor.parent;
+                limit--;
+            }
+            if (ancestor != null) {
+                // We hit the limit.  Discard any history before 'ancestor'.
+                ancestor.parent = null;
+            }
+        }
 
         if (debug) {
             System.out.println("recordDiagramChange: "+commandDesc);

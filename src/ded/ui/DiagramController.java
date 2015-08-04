@@ -77,13 +77,15 @@ import ded.model.Inheritance;
 import ded.model.Relation;
 import ded.model.RelationEndpoint;
 import ded.model.UndoHistory;
+import ded.model.UndoHistoryLimit;
 
 import static util.StringUtil.fmt;
 import static util.StringUtil.localize;
 
 /** Widget to display and edit a diagram. */
 public class DiagramController extends JPanel
-    implements MouseListener, MouseMotionListener, KeyListener, ComponentListener, FocusListener
+    implements MouseListener, MouseMotionListener, KeyListener,
+               ComponentListener, FocusListener, UndoHistoryLimit
 {
     // ------------- constants ---------------
     private static final long serialVersionUID = 1266678840598864303L;
@@ -223,6 +225,9 @@ public class DiagramController extends JPanel
     /** Undo/redo history. */
     private UndoHistory undoHistory;
 
+    /** Maximum length of the undo history. */
+    private int undoHistoryLimit = 100;
+
     /** Window for directly displaying the undo history. */
     private UndoHistoryWindow undoHistoryWindow;
 
@@ -271,7 +276,8 @@ public class DiagramController extends JPanel
         this.logMessages = new StringBuilder();
         this.log("Diagram Editor started at "+(new Date()));
 
-        this.undoHistory = new UndoHistory(this.diagram, fmt("Created empty diagram"));
+        this.undoHistory = new UndoHistory(this.diagram,
+            fmt("Created empty diagram"), this);
         this.undoHistoryWindow = new UndoHistoryWindow(this);
 
         String tbm = System.getenv("DED_TRIPLE_BUFFER");
@@ -886,7 +892,8 @@ public class DiagramController extends JPanel
 
         // Clear the diagram.
         this.setDiagram(new Diagram());
-        this.undoHistory = new UndoHistory(this.diagram, fmt("Started a new, empty diagram"));
+        this.undoHistory = new UndoHistory(this.diagram,
+            fmt("Started a new, empty diagram"), this);
         this.undoHistoryWindow.updateHistory();
     }
 
@@ -980,7 +987,8 @@ public class DiagramController extends JPanel
 
             // Swap in the new diagram and rebuild the UI for it.
             this.setDiagram(d);
-            this.undoHistory = new UndoHistory(this.diagram, fmt("Loaded file \"%1$s\"", name));
+            this.undoHistory = new UndoHistory(this.diagram,
+                fmt("Loaded file \"%1$s\"", name), this);
             this.undoHistoryWindow.updateHistory();
         }
         catch (Exception e) {
@@ -2617,6 +2625,18 @@ public class DiagramController extends JPanel
                 redoSubmenu.add(new RedoAlternateAction(label, i));
             }
         }
+    }
+
+    @Override
+    public int getUndoHistoryLimit()
+    {
+        return this.undoHistoryLimit;
+    }
+
+    @Override
+    public void setUndoHistoryLimit(int newLimit)
+    {
+        this.undoHistoryLimit = newLimit;
     }
 }
 

@@ -227,6 +227,50 @@ public class SwingUtil {
         root.getLayeredPane().setName("layeredPane");
         root.getGlassPane().setName("glassPane");
     }
+
+    /** Prompt the user for an integer.
+      *
+      * @param parent         Parent component.
+      * @param prompt         Prompt string saying what input we want.
+      * @param initialValue   If non-null, the current value.
+      * @param minValue       Minimum allowable value.
+      * @param maxValue       Maximum allowable value.
+      * @return               The new value, or null if user canceled.
+      */
+    public static Long showIntegerInputDialog(
+        Component parent,
+        String prompt,
+        Long initialValue,
+        long minValue,
+        long maxValue)
+    {
+        while (true) {
+            String result = JOptionPane.showInputDialog(parent, prompt, initialValue);
+            if (result == null) {
+                return null;
+            }
+
+            try {
+                long ret = Long.parseLong(result);
+                if (minValue <= ret && ret <= maxValue) {
+                    return Long.valueOf(ret);
+                }
+                else {
+                    JOptionPane.showMessageDialog(parent,
+                        "The value must be at least " + minValue +
+                        " and at most " + maxValue +
+                        "; the chosen value of " + ret +
+                        " is outside this range.");
+                }
+            }
+            catch (NumberFormatException e) {
+                // The exception object does not carry any useful information
+                // besides its type.
+                JOptionPane.showMessageDialog(parent,
+                    "Malformed integer: \"" + result + "\".");
+            }
+        }
+    }
 }
 
 // EOF
