@@ -65,6 +65,7 @@ import org.json.JSONException;
 import util.IdentityHashSet;
 import util.ImageFileUtil;
 import util.Util;
+import util.awt.BitmapFont;
 import util.awt.GeomUtil;
 import util.swing.SwingUtil;
 
@@ -239,6 +240,9 @@ public class DiagramController extends JPanel
       * is TYPE_INT_RGB, 2 is TYPE_INT_ARGB, etc. */
     private int tripleBufferMode = 0;
 
+    /** EXPERIMENTAL: Alternate font rendering. */
+    public BitmapFont diagramBitmapFont;
+
     /** When true, we render frames as fast as possible and measure
       * the resulting frames per second. */
     private boolean fpsMeasurementMode = false;
@@ -292,6 +296,8 @@ public class DiagramController extends JPanel
             }
         }
         this.log("DED_TRIPLE_BUFFER: "+this.tripleBufferMode);
+
+        this.diagramBitmapFont = this.dedWindow.diagramBitmapFont;
 
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
@@ -394,13 +400,30 @@ public class DiagramController extends JPanel
         // Filename label.
         if (this.diagram.drawFileName && !this.fileName.isEmpty()) {
             String name = new File(this.fileName).getName();
+
+            int ascent, underlineOffset, x, y;
+
             FontMetrics fm = g.getFontMetrics();
             LineMetrics lm = fm.getLineMetrics(name, g);
-            int x = fileNameLabelMargin;
-            int y = fileNameLabelMargin + (int)lm.getAscent();
+            ascent = (int)lm.getAscent();
+            underlineOffset = (int)lm.getUnderlineOffset();
+
+            x = fileNameLabelMargin;
+            y = fileNameLabelMargin + ascent;
             g.drawString(name, x, y);
-            y += (int)lm.getUnderlineOffset() + 1 /*...*/;
+            y += underlineOffset + 1 /*...*/;
             g.drawLine(x, y, x + fm.stringWidth(name), y);
+
+            // TEMPORARY: do again using BitmapFont
+            ascent = this.diagramBitmapFont.getAscent();
+            underlineOffset = this.diagramBitmapFont.getUnderlineOffset();
+
+            x = fileNameLabelMargin;
+            y = fileNameLabelMargin + ascent;
+            this.diagramBitmapFont.drawString(g, name, x, y);
+            y += underlineOffset + 1 /*...*/;
+            g.drawLine(x, y, x + this.diagramBitmapFont.stringWidth(name), y);
+
         }
 
         // Controllers.

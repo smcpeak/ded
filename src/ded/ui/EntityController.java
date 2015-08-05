@@ -25,6 +25,7 @@ import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
 import util.IdentityHashSet;
+import util.awt.BitmapFont;
 import util.awt.G;
 import util.awt.GeomUtil;
 import util.awt.HorizOrVert;
@@ -294,7 +295,13 @@ public class EntityController extends Controller
     }
 
     /** Draw 'str' in 'r', centered vertically, and horizontally aligned per 'align'. */
-    public static void drawAlignedText(Graphics g0, Rectangle r, String str, TextAlign align)
+    public void drawAlignedText(Graphics g0, Rectangle r, String str, TextAlign align)
+    {
+        drawAlignedText1(g0, r, str, align);
+        drawAlignedText2(g0, r, str, align);
+    }
+
+    public void drawAlignedText1(Graphics g0, Rectangle r, String str, TextAlign align)
     {
         Graphics g = g0.create();
         g.setClip(r);
@@ -326,6 +333,38 @@ public class EntityController extends Controller
         }
 
         g.drawString(str, baseX, baseY);
+    }
+
+    public void drawAlignedText2(Graphics g0, Rectangle r, String str, TextAlign align)
+    {
+        Graphics g = g0.create();
+        g.setClip(r);
+
+        Point center = GeomUtil.getCenter(r);
+
+        // Go to 'p', then add a/2 to get to the baseline.
+        // I ignore the descent because it looks better to center without
+        // regard to descenders.
+        BitmapFont bitmapFont = this.diagramController.diagramBitmapFont;
+        int baseY = center.y + bitmapFont.getAscent()/2;
+
+        // Compute x coordinate based on horizontal alignment.
+        int baseX = 0;
+        switch (align) {
+            case TA_LEFT:
+                baseX = r.x + 4;
+                break;
+
+            case TA_CENTER:
+                baseX = center.x - bitmapFont.stringWidth(str)/2;
+                break;
+
+            case TA_RIGHT:
+                baseX = r.x + r.width - 4 - bitmapFont.stringWidth(str);
+                break;
+        }
+
+        bitmapFont.drawString(g, str, baseX, baseY);
     }
 
     @Override
@@ -508,10 +547,21 @@ public class EntityController extends Controller
             g2.clipRect(attributeRect.x, attributeRect.y,
                         attributeRect.width, attributeRect.height);
             g2.setColor(this.getTextColor());
+            int maxAscent;
+
+            maxAscent = g2.getFontMetrics().getMaxAscent();
             SwingUtil.drawTextWithNewlines(g2,
                 this.entity.attributes,
                 attributeRect.x,
-                attributeRect.y + g2.getFontMetrics().getMaxAscent());
+                attributeRect.y + maxAscent);
+
+            // TEMPORARY: draw both ways
+            maxAscent = this.diagramController.diagramBitmapFont.getMaxAscent();
+            this.diagramController.diagramBitmapFont.drawTextWithNewlines(g2,
+                this.entity.attributes,
+                attributeRect.x,
+                attributeRect.y + maxAscent);
+
         }
 
         // Try to make sure selected objects are noticeable, even when

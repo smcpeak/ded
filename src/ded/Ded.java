@@ -11,14 +11,18 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+
 import java.net.URL;
+
 import java.util.ArrayList;
+import java.util.zip.GZIPInputStream;
 
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
@@ -31,6 +35,8 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
 import util.awt.AWTUtil;
+import util.awt.BDFParser;
+import util.awt.BitmapFont;
 import util.awt.ResourceImageCache;
 import util.swing.MenuAction;
 import util.swing.SwingUtil;
@@ -55,6 +61,9 @@ public class Ded extends JFrame implements WindowListener {
     // ---------- instance data --------------
     /** The font I want to use in the diagram area. */
     public Font diagramFont;
+
+    /** Another approach to fonts. */
+    public BitmapFont diagramBitmapFont;
 
     /** Image cache. */
     public ResourceImageCache resourceImageCache = new ResourceImageCache();
@@ -150,6 +159,37 @@ public class Ded extends JFrame implements WindowListener {
         }
         catch (Exception e) {
             System.out.println("while trying to load font: "+e);
+        }
+        finally {
+            if (in != null) {
+                try {
+                    in.close();
+                }
+                catch (IOException e) {/*don't care*/}
+            }
+        }
+
+        // More font stuff.
+        in = null;
+        try {
+            String fname = "resources/helvR12sm.bdf.gz";
+
+            // First try loading it from the JAR file.
+            URL url = Ded.class.getResource("/"+fname);
+            if (url != null) {
+                in = url.openStream();
+            }
+            else {
+                // Then try loading from file system.
+                // (Maybe getResource already tries this?)
+                in = new FileInputStream(fname);
+            }
+            in = new GZIPInputStream(in);
+            this.diagramBitmapFont = new BitmapFont(new BDFParser(in));
+        }
+        catch (Exception e) {
+            System.err.println("cannot load bitmap font resource: "+e);
+            System.exit(2);
         }
         finally {
             if (in != null) {

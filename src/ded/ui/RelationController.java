@@ -18,6 +18,7 @@ import java.awt.font.LineMetrics;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -29,6 +30,7 @@ import javax.swing.JPopupMenu;
 
 import util.IntRange;
 import util.Util;
+import util.awt.BitmapFont;
 import util.awt.GeomUtil;
 import util.awt.HorizOrVert;
 import util.swing.MenuAction;
@@ -465,6 +467,11 @@ public class RelationController extends Controller {
         // Label near midpoint of first segment.
         g.setColor(this.getTextColor());
         this.drawLabelAtSegment(g, points.get(0), points.get(1), this.relation.label);
+
+        // TEMPORARY: draw again with new code
+        this.drawLabelAtSegment(g, this.diagramController.diagramBitmapFont,
+            points.get(0), points.get(1), this.relation.label);
+
     }
 
     /** Get the color to use to draw this Relation's line. */
@@ -579,10 +586,15 @@ public class RelationController extends Controller {
 
         // Compute dimensions of an inscribed ellipse.
         double a = (double)labelWidth / 2;                           // horizontal radius
-        double b = (double)(lm.getAscent() + lm.getDescent()) / 2;   // vertical radius
+        int labelHeight = (int)(lm.getAscent() + lm.getDescent() + 0.5);
+        double b = (double)(labelHeight) / 2;   // vertical radius
         if (a <= 0 || b <= 0) {
             return;                    // Degenerate, bail.
         }
+
+        // TEMPORARY
+        //System.out.println("AWT Font: width="+labelWidth+" height="+labelHeight+
+        //                   " label: "+label);
 
         // Midpoint of PQ.
         Point m = GeomUtil.midPoint(p, q);
@@ -635,6 +647,84 @@ public class RelationController extends Controller {
 
         // Draw the label.
         SwingUtil.drawCenteredText(g, printSpot, label);
+    }
+
+    private void drawLabelAtSegment(
+        Graphics g,
+        BitmapFont bitmapFont,
+        Point origP,
+        Point origQ,
+        String label)
+    {
+        Point p = new Point(origP);
+        Point q = new Point(origQ);
+
+        // Get the bounding rectangle dimensions.
+        int labelWidth = bitmapFont.stringWidth(label);
+
+        // Compute dimensions of an inscribed ellipse.
+        double a = (double)labelWidth / 2;                           // horizontal radius
+        int labelHeight = bitmapFont.getAscent() + bitmapFont.getDescent();
+        double b = (double)(labelHeight) / 2;   // vertical radius
+        if (a <= 0 || b <= 0) {
+            return;                    // Degenerate, bail.
+        }
+
+        // TEMPORARY
+        //System.out.println("BitmapFont: width="+labelWidth+" height="+labelHeight+
+        //                   " label: "+label);
+
+        // Midpoint of PQ.
+        Point m = GeomUtil.midPoint(p, q);
+
+        // Vertical segment?
+        if (p.x == q.x) {
+            // Must handle this specially because the 'ellipseTangent'
+            // algorithm divides by the 'x' difference.
+            if (p.y < q.y) {
+                // Put label to the right of the segment.
+                m.x += relationLabelOffset + (int)a;
+            }
+            else {
+                // Put label to the left of the segment.
+                m.x -= relationLabelOffset + (int)a;
+            }
+            bitmapFont.drawCenteredText(g, m, label);
+            return;
+        }
+
+        // I'm having a hard time working out the following code in the
+        // inverted coord system, so just flip the y coords of the inputs
+        // so I can work in the usual cartesian coord system.
+        p.y = -p.y;
+        q.y = -q.y;
+        m.y = -m.y;
+
+        // Compute an angle that points from the ellipse center to the
+        // point on its edge tangent to PQ.
+        double theta = ellipseTangentAngle(a, b, GeomUtil.subtract(q, p));
+
+        // Compute the vector from the ellipse center to the tangent point.
+        Point2D.Double edge = computeEllipsePointFromAngle(a, b, theta);
+
+        // Vector PQ.
+        Point2D.Double v = new Point2D.Double(q.x-p.x, q.y-p.y);
+
+        // Rotate 90, normalize length to 'relationLabelOffset'.
+        v = GeomUtil.rot2DVector90(v);
+        v = GeomUtil.scale2DVectorTo(v, relationLabelOffset);
+
+        // Compute desired center of ellipse: midpt + v - edge
+        Point2D.Double center = GeomUtil.toPoint2D_Double(m);
+        center = GeomUtil.add(center, v);
+        center = GeomUtil.subtract(center, edge);
+
+        // Return to usual AWT coordinate system.
+        Point printSpot = GeomUtil.toPoint(center);
+        printSpot.y = -printSpot.y;
+
+        // Draw the label.
+        bitmapFont.drawCenteredText(g, printSpot, label);
     }
 
     @Override
