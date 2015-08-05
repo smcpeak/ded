@@ -1,9 +1,6 @@
 TODOs for Diagram Editor
 ------------------------
 
-Bugs:
-- font rendering on OpenJDK
-
 Small:
 - option to route edges from the center of the edge of the bounding
   box rather than from the center of the entity
@@ -29,7 +26,6 @@ Medium:
 - file versioning that allows independent extensions
 
 Big:
-- implement font renderer to fix problems on certain JVMs
 - add automated testing for the UI
 
 
