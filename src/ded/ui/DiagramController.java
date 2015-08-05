@@ -1393,6 +1393,12 @@ public class DiagramController extends JPanel
             // I also have reports of it happening on certain Mac OS/X
             // systems, but I haven't been able to determine what the
             // important factor there is.
+            //
+            // Some known font render bugs with OpenJDK 7:
+            //   - font metrics are 0
+            //     possibly: https://bugs.openjdk.java.net/browse/JDK-8017773
+            //   - text is drawn one pixel too low (positive y direction)
+            //   - the space character is one pixel too wide
             String warningMessage =
                 "There is a problem with the font rendering.  The glyph "+
                 "for the letter 'A' should look like:\n"+
@@ -1402,6 +1408,8 @@ public class DiagramController extends JPanel
                 "\n"+
                 "This probably means there is a bug in the TrueType "+
                 "font library.  You might try a different Java version.  "+
+                "In particular, OpenJDK has lots of font rendering bugs, "+
+                "so that version should be avoided.  "+
                 "(I'm working on how to solve this permanently.)";
             System.err.println(warningMessage);
             this.log(warningMessage);
