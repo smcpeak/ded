@@ -15,9 +15,29 @@ import java.util.HashMap;
   *
   * This class is an alternative (with different API) to java.awt.Font,
   * which has proved very non-portable, both among different OSes
-  * and among different JVMs. */
+  * and among different JVMs (so frustrating!).
+  *
+  * The drawing performed by this class is significantly slower than
+  * when using AWT Font.  For tests/test.ded, drawing with AWT Font
+  * gets ~500 FPS, while using this class gets ~400 FPS.  However,
+  * since drawing text is only part of the work for each frame, that
+  * means the text drawing is more than 20% slower.  I have not done
+  * careful measurements but I'd estimate just drawing text is 2-3x slower
+  * with this class.  But, as my editor is still getting good frame
+  * rates, for now I'm not spending more time trying to optimize it. */
 public class BitmapFont {
+    // ---- types ---
+    /** Class to carry multiple values out of the render routine. */
+    private static class RenderMetrics {
+        /** Bounding rectangle for the rendered text. */
+        public Rectangle bound;
+
+        /** Sum of all the character offsets to next character. */
+        public Point offsetSum;
+    }
+
     // ---- data ----
+    /** The parsed font metrics and glyphs. */
     private BDFParser bdfParser;
 
     /** Map from code point to BDF glyph. */
@@ -43,7 +63,18 @@ public class BitmapFont {
       * first character at 'x'. */
     public void drawString(Graphics g, String str, int x, int y)
     {
-        Color color = g.getColor();
+        drawOrMeasureString(g, str, x, y);
+    }
+
+    /** Core render routine that can both draw the text as well as
+      * measure what it would do.  If 'g' is null, we just measure. */
+    public RenderMetrics drawOrMeasureString(Graphics g, String str, int x0, int y0)
+    {
+        Color color = g==null? null : g.getColor();
+
+        Rectangle bound = null;
+        int x = x0;
+        int y = y0;
 
         for (int i=0; i < str.length(); i++) {
             int codePoint = str.codePointAt(i);
@@ -63,12 +94,26 @@ public class BitmapFont {
                 }
             }
 
-            // Get the image for that character in the chosen color.
-            BufferedImage glyphImage = getGlyphImage(color, codePoint, bitmap);
+            // Compute the bound for this character.
+            Rectangle r = new Rectangle(x + bitmap.bbxoff0x,
+                                        y - bitmap.bbyoff0y - bitmap.bbh,
+                                        bitmap.bbw, bitmap.bbh);
 
-            // Draw it to 'g'.
-            g.drawImage(glyphImage, x + bitmap.bbxoff0x,
-                                    y - bitmap.bbyoff0y - bitmap.bbh, null /*obs*/);
+            // Combine it with the bound so far.
+            if (bound == null) {
+                bound = r;
+            }
+            else {
+                bound.add(r);
+            }
+
+            if (g != null) {
+                // Get the image for that character in the chosen color.
+                BufferedImage glyphImage = getGlyphImage(color, codePoint, bitmap);
+
+                // Draw it to 'g'.
+                g.drawImage(glyphImage, r.x, r.y, null /*obs*/);
+            }
 
             // Move past this character.  There is no kerning.
             x += bitmap.dwx0;
@@ -83,6 +128,11 @@ public class BitmapFont {
                 x--;
             }
         }
+
+        RenderMetrics rm = new RenderMetrics();
+        rm.bound = bound;
+        rm.offsetSum = new Point(x-x0, y-y0);
+        return rm;
     }
 
     /** Given a color and code point, look up or create an image
@@ -144,41 +194,8 @@ public class BitmapFont {
       * the inter-character distance). */
     public int stringWidth(String str)
     {
-        int width = 0;
-
-        // TODO: Factor this loop to share with 'drawString'.
-        for (int i=0; i < str.length(); i++) {
-            int codePoint = str.codePointAt(i);
-            if (codePoint > 0xFFFF) {
-                i++;    // Skip the second half of the surrogate pair.
-            }
-
-            // Find the BDF definition of this character.
-            BDFParser.Glyph bitmap = this.codeToBitmapGlyph.get(codePoint);
-            if (bitmap == null) {
-                // Assume that code point 0 is suitable as a replacement character.
-                codePoint = 0;
-                bitmap = this.codeToBitmapGlyph.get(codePoint);
-                if (bitmap == null) {
-                    // Just skip it then.
-                    continue;
-                }
-            }
-
-            // Move past this character.  There is no kerning.
-            width += bitmap.dwx0;
-
-            // For reasons I do not understand, the Oracle JVM renders
-            // the space character with 3 pixels of space instead of the
-            // 4 it shows in the BDF file.  For the moment, I'm going to
-            // try to replicate that behavior in code rather than change
-            // the font definition.
-            if (codePoint == 32) {
-                width--;
-            }
-        }
-
-        return width;
+        RenderMetrics rm = drawOrMeasureString(null, str, 0,0);
+        return rm.offsetSum.x;
     }
 
     /** Return a bounding rectangle for the pixels rendered for 'str',
@@ -186,58 +203,8 @@ public class BitmapFont {
       * to 'drawString'.  Returns (0,0,0,0) if 'str' is empty. */
     public Rectangle stringBound(String str)
     {
-        Rectangle bound = null;
-
-        int x = 0;
-        int y = 0;
-
-        // TODO: Factor this loop to share with 'drawString'.
-        for (int i=0; i < str.length(); i++) {
-            int codePoint = str.codePointAt(i);
-            if (codePoint > 0xFFFF) {
-                i++;    // Skip the second half of the surrogate pair.
-            }
-
-            // Find the BDF definition of this character.
-            BDFParser.Glyph bitmap = this.codeToBitmapGlyph.get(codePoint);
-            if (bitmap == null) {
-                // Assume that code point 0 is suitable as a replacement character.
-                codePoint = 0;
-                bitmap = this.codeToBitmapGlyph.get(codePoint);
-                if (bitmap == null) {
-                    // Just skip it then.
-                    continue;
-                }
-            }
-
-            // Compute the bound for this character.
-            Rectangle r = new Rectangle(x + bitmap.bbxoff0x,
-                                        y - bitmap.bbyoff0y - bitmap.bbh,
-                                        bitmap.bbw, bitmap.bbh);
-
-            // Combine it with the bound so far.
-            if (bound == null) {
-                bound = r;
-            }
-            else {
-                bound.add(r);
-            }
-
-            // Move past this character.  There is no kerning.
-            x += bitmap.dwx0;
-            y += bitmap.dwy0;
-
-            // For reasons I do not understand, the Oracle JVM renders
-            // the space character with 3 pixels of space instead of the
-            // 4 it shows in the BDF file.  For the moment, I'm going to
-            // try to replicate that behavior in code rather than change
-            // the font definition.
-            if (codePoint == 32) {
-                x--;
-            }
-        }
-
-        return bound!=null? bound : new Rectangle(0,0,0,0);
+        RenderMetrics rm = drawOrMeasureString(null, str, 0,0);
+        return rm.bound;
     }
 
     /** Return the usual height of a line of text.  This is meant to
