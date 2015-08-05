@@ -494,8 +494,12 @@ public class Ded extends JFrame implements WindowListener {
         // If/when I add support for editing multiple documents in
         // one process, I'll have to make the logic here smarter.
         //
-        // This causes Abbot to stack overflow...
-        //System.exit(0);
+        // This causes Abbot to stack overflow, so I disabled it.
+        //
+        // But I'm not using Abbot anymore, and on OpenJDK, without
+        // this exit call, the process does not exit, so I've put
+        // this back in.
+        System.exit(0);
     }
 
     /** Close the window; but prompt if dirty. */
