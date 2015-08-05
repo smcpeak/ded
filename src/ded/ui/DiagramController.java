@@ -7,7 +7,6 @@ import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
@@ -31,7 +30,6 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.font.LineMetrics;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 
@@ -240,9 +238,6 @@ public class DiagramController extends JPanel
       * is TYPE_INT_RGB, 2 is TYPE_INT_ARGB, etc. */
     private int tripleBufferMode = 0;
 
-    /** EXPERIMENTAL: Alternate font rendering. */
-    public BitmapFont diagramBitmapFont;
-
     /** When true, we render frames as fast as possible and measure
       * the resulting frames per second. */
     private boolean fpsMeasurementMode = false;
@@ -297,8 +292,6 @@ public class DiagramController extends JPanel
         }
         this.log("DED_TRIPLE_BUFFER: "+this.tripleBufferMode);
 
-        this.diagramBitmapFont = this.dedWindow.diagramBitmapFont;
-
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
         this.addKeyListener(this);
@@ -314,6 +307,12 @@ public class DiagramController extends JPanel
     public Diagram getDiagram()
     {
         return this.diagram;
+    }
+
+    /** Font to use for all text in the diagram area. */
+    public BitmapFont getDiagramFont()
+    {
+        return this.dedWindow.diagramBitmapFont;
     }
 
     @Override
@@ -390,40 +389,16 @@ public class DiagramController extends JPanel
     {
         super.paint(g);
 
-        // I do not know the proper way to get a font set automatically
-        // in a Graphics object.  Calling JComponent.setFont has gotten
-        // me nowhere.  Setting it myself when I first get control
-        // seems to work; but note that I have to do this *after*
-        // calling super.paint().
-        g.setFont(this.dedWindow.diagramFont);
-
         // Filename label.
         if (this.diagram.drawFileName && !this.fileName.isEmpty()) {
             String name = new File(this.fileName).getName();
 
-            int ascent, underlineOffset, x, y;
-
-            FontMetrics fm = g.getFontMetrics();
-            LineMetrics lm = fm.getLineMetrics(name, g);
-            ascent = (int)lm.getAscent();
-            underlineOffset = (int)lm.getUnderlineOffset();
-
-            x = fileNameLabelMargin;
-            y = fileNameLabelMargin + ascent;
-            g.drawString(name, x, y);
-            y += underlineOffset + 1 /*...*/;
-            g.drawLine(x, y, x + fm.stringWidth(name), y);
-
-            // TEMPORARY: do again using BitmapFont
-            ascent = this.diagramBitmapFont.getAscent();
-            underlineOffset = this.diagramBitmapFont.getUnderlineOffset();
-
-            x = fileNameLabelMargin;
-            y = fileNameLabelMargin + ascent;
-            this.diagramBitmapFont.drawString(g, name, x, y);
-            y += underlineOffset + 1 /*...*/;
-            g.drawLine(x, y, x + this.diagramBitmapFont.stringWidth(name), y);
-
+            BitmapFont font = this.getDiagramFont();
+            int x = fileNameLabelMargin;
+            int y = fileNameLabelMargin + font.getAscent();
+            font.drawString(g, name, x, y);
+            y += font.getUnderlineOffset() + 1 /*...*/;
+            g.drawLine(x, y, x + font.stringWidth(name), y);
         }
 
         // Controllers.
@@ -1332,111 +1307,6 @@ public class DiagramController extends JPanel
         finally {
             // Restore selection state.
             setSelectionSet(originalSelection);
-        }
-    }
-
-    /** Check to see if the font is rendering properly.  I have had a
-      * lot of trouble getting this to work on a wide range of
-      * machines and JVMs.  If the font rendering does not work, just
-      * alert the user to the problem but keep going. */
-    public void checkFontRendering()
-    {
-        // Render the glyph for 'A' in a box just large enough to
-        // contain it when rendered properly.
-        int width = 9;
-        int height = 11;
-        BufferedImage bi =
-            new BufferedImage(width, height,
-                              BufferedImage.TYPE_INT_ARGB);
-        Graphics g = bi.createGraphics();
-        ColorModel colorModel = bi.getColorModel();
-
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, width, height);
-
-        g.setColor(Color.BLACK);
-        g.setFont(this.dedWindow.diagramFont);
-        g.drawString("A", 0, 10);
-
-        // Print that glyph as a string.
-        StringBuilder sb = new StringBuilder();
-        for (int y=0; y < height; y++) {
-            int bits = 0;
-            for (int x=0; x < width; x++) {
-                int pixel = bi.getRGB(x,y);
-                int red = colorModel.getRed(pixel);
-                int green = colorModel.getGreen(pixel);
-                int blue = colorModel.getBlue(pixel);
-                int alpha = colorModel.getAlpha(pixel);
-                boolean isWhite = (red==255 && green==255 && blue==255 && alpha==255);
-                boolean isBlack = (red==0 && green==0 && blue==0 && alpha==255);
-                sb.append(isWhite? "_" :
-                          isBlack? "X" :
-                                   ("("+red+","+green+","+blue+","+alpha+")"));
-
-                bits <<= 1;
-                if (!isWhite) {
-                    bits |= 1;
-                }
-            }
-            sb.append(String.format("  (0x%03X)\n", bits));
-        }
-
-        // Also include some of the font metrics.
-        FontMetrics fm = g.getFontMetrics();
-        sb.append("fm: ascent="+fm.getAscent()+
-                  " leading="+fm.getLeading()+
-                  " charWidth('A')="+fm.charWidth('A')+
-                  " descent="+fm.getDescent()+
-                  " height="+fm.getHeight()+
-                  "\n");
-
-        String actualGlyph = sb.toString();
-
-        g.dispose();
-
-        // The expected glyph and metrics.
-        String expectedGlyph =
-            "_________  (0x000)\n"+
-            "____X____  (0x010)\n"+
-            "___X_X___  (0x028)\n"+
-            "___X_X___  (0x028)\n"+
-            "__X___X__  (0x044)\n"+
-            "__X___X__  (0x044)\n"+
-            "__XXXXX__  (0x07C)\n"+
-            "_X_____X_  (0x082)\n"+
-            "_X_____X_  (0x082)\n"+
-            "_X_____X_  (0x082)\n"+
-            "_________  (0x000)\n"+
-            "fm: ascent=10 leading=1 charWidth('A')=9 descent=3 height=14\n";
-
-        if (!expectedGlyph.equals(actualGlyph)) {
-            // Currently, this is known to happen when using OpenJDK 6
-            // and 7, with 6 being close to right and 7 being very bad.
-            // I also have reports of it happening on certain Mac OS/X
-            // systems, but I haven't been able to determine what the
-            // important factor there is.
-            //
-            // Some known font render bugs with OpenJDK 7:
-            //   - font metrics are 0
-            //     possibly: https://bugs.openjdk.java.net/browse/JDK-8017773
-            //   - text is drawn one pixel too low (positive y direction)
-            //   - the space character is one pixel too wide
-            String warningMessage =
-                "There is a problem with the font rendering.  The glyph "+
-                "for the letter 'A' should look like:\n"+
-                expectedGlyph+
-                "but it renders as:\n"+
-                actualGlyph+
-                "\n"+
-                "This probably means there is a bug in the TrueType "+
-                "font library.  You might try a different Java version.  "+
-                "In particular, OpenJDK has lots of font rendering bugs, "+
-                "so that version should be avoided.  "+
-                "(I'm working on how to solve this permanently.)";
-            System.err.println(warningMessage);
-            this.log(warningMessage);
-            SwingUtil.errorMessageBox(null /*component*/, warningMessage);
         }
     }
 

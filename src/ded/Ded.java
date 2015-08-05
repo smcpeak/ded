@@ -3,7 +3,6 @@
 
 package ded;
 
-import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -12,7 +11,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -59,10 +57,8 @@ public class Ded extends JFrame implements WindowListener {
     public static ImageIcon windowIcon16, windowIcon32;
 
     // ---------- instance data --------------
-    /** The font I want to use in the diagram area. */
-    public Font diagramFont;
-
-    /** Another approach to fonts. */
+    /** The font I want to use in the diagram area.  There should be no
+      * use of the AWT fonts for drawing. */
     public BitmapFont diagramBitmapFont;
 
     /** Image cache. */
@@ -130,47 +126,9 @@ public class Ded extends JFrame implements WindowListener {
             this.setIconImages(icons);
         }
 
-        // Fallback.
-        this.diagramFont = this.getFont();
-
-        // Try to use a portable font.
+        // Use a bitmap font packaged with 'ded' itself.  (After many
+        // attempts, I was unable to find a portable alternative.)
         InputStream in = null;
-        try {
-            // I tried lots of different fonts.  MS Arial is the best,
-            // but it is not free.  Liberation Sans is decent, but is
-            // GPL.  Everything else I tried (a dozen or two) was awful.
-            // In the end, I copied an ancient X11 bitmap font, fixed
-            // one glyph myself, and converted it to TTF to pacify Swing.
-            // Portable = awesome!
-            String fname = "resources/helvR12sm.ttf";
-
-            // First try loading it from the JAR file.
-            URL url = Ded.class.getResource("/"+fname);
-            if (url != null) {
-                in = url.openStream();
-            }
-            else {
-                // Then try loading from file system.
-                // (Maybe getResource already tries this?)
-                in = new FileInputStream(fname);
-            }
-            this.diagramFont = Font.createFont(Font.TRUETYPE_FONT, new BufferedInputStream(in));
-            this.diagramFont = this.diagramFont.deriveFont((float)12);
-        }
-        catch (Exception e) {
-            System.out.println("while trying to load font: "+e);
-        }
-        finally {
-            if (in != null) {
-                try {
-                    in.close();
-                }
-                catch (IOException e) {/*don't care*/}
-            }
-        }
-
-        // More font stuff.
-        in = null;
         try {
             String fname = "resources/helvR12sm.bdf.gz";
 
@@ -565,7 +523,6 @@ public class Ded extends JFrame implements WindowListener {
     @Override
     public void windowOpened(WindowEvent e)
     {
-        this.diagramController.checkFontRendering();
         this.diagramController.logDisplayScaling();
     }
 

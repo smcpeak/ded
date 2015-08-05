@@ -5,7 +5,6 @@ package ded.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
@@ -14,7 +13,6 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.font.LineMetrics;
 
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -30,7 +28,6 @@ import util.awt.G;
 import util.awt.GeomUtil;
 import util.awt.HorizOrVert;
 import util.swing.MenuAction;
-import util.swing.SwingUtil;
 
 import ded.model.Diagram;
 import ded.model.Entity;
@@ -297,46 +294,6 @@ public class EntityController extends Controller
     /** Draw 'str' in 'r', centered vertically, and horizontally aligned per 'align'. */
     public void drawAlignedText(Graphics g0, Rectangle r, String str, TextAlign align)
     {
-        drawAlignedText1(g0, r, str, align);
-        drawAlignedText2(g0, r, str, align);
-    }
-
-    public void drawAlignedText1(Graphics g0, Rectangle r, String str, TextAlign align)
-    {
-        Graphics g = g0.create();
-        g.setClip(r);
-
-        Point center = GeomUtil.getCenter(r);
-
-        FontMetrics fm = g.getFontMetrics();
-        LineMetrics lm = fm.getLineMetrics(str, g);
-
-        // Go to 'p', then add a/2 to get to the baseline.
-        // I ignore the descent because it looks better to center without
-        // regard to descenders.
-        int baseY = center.y + (int)(lm.getAscent()/2);
-
-        // Compute x coordinate based on horizontal alignment.
-        int baseX = 0;
-        switch (align) {
-            case TA_LEFT:
-                baseX = r.x + 4;
-                break;
-
-            case TA_CENTER:
-                baseX = center.x - fm.stringWidth(str)/2;
-                break;
-
-            case TA_RIGHT:
-                baseX = r.x + r.width - 4 - fm.stringWidth(str);
-                break;
-        }
-
-        g.drawString(str, baseX, baseY);
-    }
-
-    public void drawAlignedText2(Graphics g0, Rectangle r, String str, TextAlign align)
-    {
         Graphics g = g0.create();
         g.setClip(r);
 
@@ -345,7 +302,7 @@ public class EntityController extends Controller
         // Go to 'p', then add a/2 to get to the baseline.
         // I ignore the descent because it looks better to center without
         // regard to descenders.
-        BitmapFont bitmapFont = this.diagramController.diagramBitmapFont;
+        BitmapFont bitmapFont = this.diagramController.getDiagramFont();
         int baseY = center.y + bitmapFont.getAscent()/2;
 
         // Compute x coordinate based on horizontal alignment.
@@ -547,21 +504,12 @@ public class EntityController extends Controller
             g2.clipRect(attributeRect.x, attributeRect.y,
                         attributeRect.width, attributeRect.height);
             g2.setColor(this.getTextColor());
-            int maxAscent;
-
-            maxAscent = g2.getFontMetrics().getMaxAscent();
-            SwingUtil.drawTextWithNewlines(g2,
+            BitmapFont font = this.diagramController.getDiagramFont();
+            int maxAscent = font.getMaxAscent();
+            font.drawTextWithNewlines(g2,
                 this.entity.attributes,
                 attributeRect.x,
                 attributeRect.y + maxAscent);
-
-            // TEMPORARY: draw both ways
-            maxAscent = this.diagramController.diagramBitmapFont.getMaxAscent();
-            this.diagramController.diagramBitmapFont.drawTextWithNewlines(g2,
-                this.entity.attributes,
-                attributeRect.x,
-                attributeRect.y + maxAscent);
-
         }
 
         // Try to make sure selected objects are noticeable, even when
