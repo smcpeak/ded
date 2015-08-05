@@ -235,7 +235,10 @@ public class DiagramController extends JPanel
       * avoid problems on Apple HiDPI/Retina displays.  Mode -1
       * uses a "compatible" image.  Other values are treated as
       * "imageType" arguments to BufferedImage; for example, 1
-      * is TYPE_INT_RGB, 2 is TYPE_INT_ARGB, etc. */
+      * is TYPE_INT_RGB, 2 is TYPE_INT_ARGB, etc.
+      *
+      * This might be unnecessary now that I've reimplemented the
+      * text renderer.  I need some new experiments on a Mac. */
     private int tripleBufferMode = 0;
 
     /** When true, we render frames as fast as possible and measure

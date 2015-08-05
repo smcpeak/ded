@@ -1,9 +1,6 @@
 TODOs for Diagram Editor
 ------------------------
 
-Bugs:
-- font rendering on OpenJDK
-
 Small:
 - option to route edges from the center of the edge of the bounding
   box rather than from the center of the entity

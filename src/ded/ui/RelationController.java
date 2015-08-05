@@ -465,7 +465,6 @@ public class RelationController extends Controller {
         // Label near midpoint of first segment.
         g.setColor(this.getTextColor());
         this.drawLabelAtSegment(g, points.get(0), points.get(1), this.relation.label);
-
     }
 
     /** Get the color to use to draw this Relation's line. */
