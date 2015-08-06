@@ -2363,6 +2363,14 @@ public class DiagramController extends JPanel
         this.logMessages.append(message);
     }
 
+    /** Show the custom colors dialog. */
+    public void editCustomColors()
+    {
+        if (DiagramColorsDialog.exec(this, this.diagram)) {
+            this.diagramChanged("Edit diagram colors");
+        }
+    }
+
     /** If 'front' is true, make selected entities top-most so they
       * are displayed on top of all others, preserving the relative
       * order of the selected entities.  If 'front' is false, move

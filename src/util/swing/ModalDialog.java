@@ -12,6 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
+
 import java.util.EnumSet;
 import java.util.Vector;
 
@@ -75,6 +76,16 @@ public class ModalDialog extends JDialog {
         System.out.println(label+" max size: "+c.getMaximumSize());
         System.out.println(label+" min size: "+c.getMinimumSize());
         System.out.println(label+" cur size: "+c.getSize());
+    }
+
+    /** Create a new JButton with the specified label, mnemonic
+      * (KeyEvent.VK_XXX code, or 0 for none), and action listener. */
+    public static JButton makeButton(String label, int mnemonic, ActionListener listener)
+    {
+        JButton button = new JButton(label);
+        button.setMnemonic(mnemonic);
+        button.addActionListener(listener);
+        return button;
     }
 
     /** Create a Cancel button and set its action to close the dialog. */

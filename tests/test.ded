@@ -663,6 +663,18 @@
         "h": 40,
         "w": 100
       }
+    },
+    {
+      "fillColor": "Brown",
+      "loc": {
+        "x": 505,
+        "y": 345
+      },
+      "name": "Brown!",
+      "size": {
+        "h": 20,
+        "w": 65
+      }
     }
   ],
   "inheritances": [{
@@ -673,6 +685,56 @@
       "y": 240
     }
   }],
+  "namedColors": [
+    {
+      "color": "RGB(0,0,0)",
+      "name": "Black"
+    },
+    {
+      "color": "RGB(192,192,192)",
+      "name": "Gray"
+    },
+    {
+      "color": "RGB(255,255,255)",
+      "name": "White"
+    },
+    {
+      "color": "RGB(224,224,224)",
+      "name": "Light Gray"
+    },
+    {
+      "color": "RGB(236,125,70)",
+      "name": "Orange"
+    },
+    {
+      "color": "RGB(234,236,52)",
+      "name": "Yellow"
+    },
+    {
+      "color": "RGB(76,222,76)",
+      "name": "Green"
+    },
+    {
+      "color": "RGB(135,193,255)",
+      "name": "Sky Blue"
+    },
+    {
+      "color": "RGB(161,140,237)",
+      "name": "Purple"
+    },
+    {
+      "color": "RGB(227,120,236)",
+      "name": "Pink"
+    },
+    {
+      "color": "RGB(248,50,50)",
+      "name": "Red"
+    },
+    {
+      "color": "RGB(153,51,0)",
+      "name": "Brown"
+    }
+  ],
   "relations": [
     {
       "end": {"entityRef": 1},
@@ -1193,7 +1255,7 @@
     }
   ],
   "type": "Diagram Editor Diagram",
-  "version": 19,
+  "version": 22,
   "windowSize": {
     "h": 575,
     "w": 725

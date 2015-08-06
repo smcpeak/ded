@@ -336,7 +336,7 @@ public class EntityDialog extends ModalDialog
                 Color newColor =
                     JColorChooser.showDialog(vb, "Choose color", current);
                 if (newColor != null) {
-                    ret.setSelectedItem("RGB("+newColor.getRed()+","+newColor.getGreen()+","+newColor.getBlue()+")");
+                    ret.setSelectedItem(Diagram.colorToRGBSpec(newColor));
                 }
             }
         });

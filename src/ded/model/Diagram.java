@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -55,7 +56,7 @@ public class Diagram implements JSONable {
       * should include a bump--even though the old code might be
       * able to read the file without choking, the semantics would
       * not be preserved. */
-    public static final int currentFileVersion = 21;
+    public static final int currentFileVersion = 22;
 
     // ---------- public data ------------
     /** Size of window to display diagram.  Some elements might not fit
@@ -130,21 +131,44 @@ public class Diagram implements JSONable {
         }
         else {
             // Check for the RGB syntax.
-            String[] elts = StringUtil.parseByRegex(namedColor, "^RGB\\(([0-9]+),([0-9]+),([0-9]+)\\)$");
-            if (elts != null) {
-                try {
-                    int r = Integer.valueOf(elts[1]);
-                    int g = Integer.valueOf(elts[2]);
-                    int b = Integer.valueOf(elts[3]);
-                    return new Color(r, g, b);
-                }
-                catch (Exception e) {
-                    return fallback;
-                }
+            c = rgbSpecToColor(namedColor);
+            if (c != null) {
+                return c;
             }
-
-            return fallback;
+            else {
+                return fallback;
+            }
         }
+    }
+
+    /** Given a color, express it as an RGB specification string that
+      * 'rgbSpecToColor' (and hence 'getNamedColor') knows how to parse. */
+    public static String colorToRGBSpec(Color c)
+    {
+        return "RGB("+c.getRed()+","+c.getGreen()+","+c.getBlue()+")";
+    }
+
+    /** Parse a string of the form "RGB(r,g,b)" into a Color.  Return
+      * null if the input is malformed. */
+    public static Color rgbSpecToColor(String spec)
+    {
+        String[] elts = StringUtil.parseByRegex(spec,
+            "^RGB\\(([0-9]+),([0-9]+),([0-9]+)\\)$");
+        if (elts != null) {
+            try {
+                int r = Integer.valueOf(elts[1]);
+                int g = Integer.valueOf(elts[2]);
+                int b = Integer.valueOf(elts[3]);
+                if (r > 255 || g > 255 || b > 255) {
+                    return null;
+                }
+                return new Color(r, g, b);
+            }
+            catch (Exception e) {
+                return null;
+            }
+        }
+        return null;
     }
 
     public void selfCheck()
@@ -316,6 +340,10 @@ public class Diagram implements JSONable {
             o.put("windowSize", AWTJSONUtil.dimensionToJSON(this.windowSize));
             o.put("drawFileName", this.drawFileName);
 
+            if (!this.namedColors.equals(makeDefaultColors())) {
+                o.put("namedColors", colorTableToJSON(this.namedColors));
+            }
+
             // Map from an entity to its position in the serialized
             // 'entities' array, so it can be referenced by inheritances
             // and relations.
@@ -356,6 +384,22 @@ public class Diagram implements JSONable {
         return o;
     }
 
+    /** Convert a color table to its JSON representation. */
+    public static JSONArray colorTableToJSON(LinkedHashMap<String, Color> colorTable)
+        throws JSONException
+    {
+        // Save the entries as an array rather than one JSON
+        // object in order to preserve the order.
+        JSONArray colorArray = new JSONArray();
+        for (Map.Entry<String,Color> entry : colorTable.entrySet()) {
+            JSONObject colorObj = new JSONObject();
+            colorObj.put("name", entry.getKey());
+            colorObj.put("color", colorToRGBSpec(entry.getValue()));
+            colorArray.put(colorObj);
+        }
+        return colorArray;
+    }
+
     /** Deserialize from 'o'. */
     public Diagram(JSONObject o) throws JSONException
     {
@@ -380,7 +424,14 @@ public class Diagram implements JSONable {
         }
 
         this.windowSize = AWTJSONUtil.dimensionFromJSON(o.getJSONObject("windowSize"));
-        this.namedColors = makeDefaultColors();
+
+        JSONArray colorArray = o.optJSONArray("namedColors");
+        if (colorArray == null) {
+            this.namedColors = makeDefaultColors();
+        }
+        else {
+            this.namedColors = parseColorTableFromJSON(colorArray);
+        }
 
         if (ver >= 3) {
             this.drawFileName = o.getBoolean("drawFileName");
@@ -427,6 +478,29 @@ public class Diagram implements JSONable {
                 this.relations.add(rel);
             }
         }
+    }
+
+    /** Parse a color table out of its JSON representation. */
+    public static LinkedHashMap<String, Color> parseColorTableFromJSON(JSONArray colorArray)
+        throws JSONException
+    {
+        LinkedHashMap<String, Color> ret = new LinkedHashMap<String, Color>();
+        for (int i=0; i < colorArray.length(); i++) {
+            JSONObject colorObj = colorArray.getJSONObject(i);
+            String name = colorObj.getString("name");
+            String rgbSpec = colorObj.getString("color");
+            Color color = rgbSpecToColor(rgbSpec);
+            if (color == null) {
+                throw new JSONException(
+                    "Color \""+name+"\" has invalid RGB spec \""+rgbSpec+"\".");
+            }
+            if (ret.containsKey(name)) {
+                throw new JSONException(
+                    "Color \""+name+"\" is defined more than once.");
+            }
+            ret.put(name, color);
+        }
+        return ret;
     }
 
     /** Write this diagram to the specified file. */

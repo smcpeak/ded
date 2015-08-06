@@ -1,0 +1,662 @@
+{
+  "drawFileName": true,
+  "entities": [
+    {
+      "loc": {
+        "x": 30,
+        "y": 40
+      },
+      "name": "Diagram Colors",
+      "shape": "ES_WINDOW",
+      "shapeFlags": [
+        "SF_HAS_MAXIMIZE",
+        "SF_HAS_MINIMIZE",
+        "SF_HAS_CLOSE",
+        "SF_HAS_WINDOW_OPS"
+      ],
+      "shapeParams": [
+        500,
+        370
+      ],
+      "size": {
+        "h": 360,
+        "w": 490
+      }
+    },
+    {
+      "fillColor": "Black",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 45,
+        "y": 75
+      },
+      "name": "Color Name",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      },
+      "textColor": "White"
+    },
+    {
+      "fillColor": "Black",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 275,
+        "y": 75
+      },
+      "name": "Color Sample",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      },
+      "textColor": "White"
+    },
+    {
+      "fillColor": "Black",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 145,
+        "y": 75
+      },
+      "name": "RGB Spec",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 130
+      },
+      "textColor": "White"
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 45,
+        "y": 95
+      },
+      "name": "Magenta",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "RGB(204,51,255)",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 275,
+        "y": 95
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 145,
+        "y": 95
+      },
+      "name": "RGB(204,51,255)",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 130
+      }
+    },
+    {
+      "fillColor": "RGB(51,204,255)",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 275,
+        "y": 115
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 45,
+        "y": 115
+      },
+      "name": "Aqua",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 145,
+        "y": 115
+      },
+      "name": "RGB(51,204,255)",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 130
+      }
+    },
+    {
+      "fillColor": "RGB(153,51,0)",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 275,
+        "y": 135
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 45,
+        "y": 135
+      },
+      "name": "Brown",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 145,
+        "y": 135
+      },
+      "name": "RGB(153,51,0)",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 130
+      }
+    },
+    {
+      "loc": {
+        "x": 105,
+        "y": 360
+      },
+      "name": "Edit as JSON...",
+      "shape": "ES_PUSHBUTTON",
+      "size": {
+        "h": 25,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 275,
+        "y": 155
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 45,
+        "y": 155
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 145,
+        "y": 155
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 130
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 275,
+        "y": 175
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 45,
+        "y": 175
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 145,
+        "y": 175
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 130
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 275,
+        "y": 195
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 45,
+        "y": 195
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 145,
+        "y": 195
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 130
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 275,
+        "y": 215
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 45,
+        "y": 215
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 145,
+        "y": 215
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 130
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 275,
+        "y": 235
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 45,
+        "y": 235
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 145,
+        "y": 235
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 130
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 275,
+        "y": 255
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 45,
+        "y": 255
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 145,
+        "y": 255
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 130
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 275,
+        "y": 275
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 45,
+        "y": 275
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 145,
+        "y": 275
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 130
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 275,
+        "y": 295
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 45,
+        "y": 295
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 100
+      }
+    },
+    {
+      "fillColor": "White",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 145,
+        "y": 295
+      },
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 20,
+        "w": 130
+      }
+    },
+    {
+      "loc": {
+        "x": 375,
+        "y": 95
+      },
+      "shape": "ES_SCROLLBAR",
+      "shapeParams": [
+        0,
+        25
+      ],
+      "size": {
+        "h": 220,
+        "w": 20
+      }
+    },
+    {
+      "loc": {
+        "x": 445,
+        "y": 360
+      },
+      "name": "OK",
+      "shape": "ES_PUSHBUTTON",
+      "size": {
+        "h": 25,
+        "w": 60
+      }
+    },
+    {
+      "loc": {
+        "x": 380,
+        "y": 360
+      },
+      "name": "Cancel",
+      "shape": "ES_PUSHBUTTON",
+      "size": {
+        "h": 25,
+        "w": 60
+      }
+    },
+    {
+      "loc": {
+        "x": 45,
+        "y": 360
+      },
+      "name": "Help",
+      "shape": "ES_PUSHBUTTON",
+      "size": {
+        "h": 25,
+        "w": 55
+      }
+    },
+    {
+      "loc": {
+        "x": 45,
+        "y": 320
+      },
+      "name": "Add...",
+      "shape": "ES_PUSHBUTTON",
+      "size": {
+        "h": 25,
+        "w": 75
+      }
+    },
+    {
+      "loc": {
+        "x": 125,
+        "y": 320
+      },
+      "name": "Delete",
+      "shape": "ES_PUSHBUTTON",
+      "size": {
+        "h": 25,
+        "w": 75
+      }
+    },
+    {
+      "loc": {
+        "x": 400,
+        "y": 170
+      },
+      "name": "Move up 1",
+      "shape": "ES_PUSHBUTTON",
+      "size": {
+        "h": 25,
+        "w": 105
+      }
+    },
+    {
+      "loc": {
+        "x": 400,
+        "y": 200
+      },
+      "name": "Move down 1",
+      "shape": "ES_PUSHBUTTON",
+      "size": {
+        "h": 25,
+        "w": 105
+      }
+    },
+    {
+      "loc": {
+        "x": 400,
+        "y": 140
+      },
+      "name": "Move up 10",
+      "shape": "ES_PUSHBUTTON",
+      "size": {
+        "h": 25,
+        "w": 105
+      }
+    },
+    {
+      "loc": {
+        "x": 400,
+        "y": 230
+      },
+      "name": "Move down 10",
+      "shape": "ES_PUSHBUTTON",
+      "size": {
+        "h": 25,
+        "w": 105
+      }
+    },
+    {
+      "loc": {
+        "x": 210,
+        "y": 360
+      },
+      "name": "Reset to default",
+      "shape": "ES_PUSHBUTTON",
+      "size": {
+        "h": 25,
+        "w": 105
+      }
+    }
+  ],
+  "inheritances": [],
+  "relations": [],
+  "type": "Diagram Editor Diagram",
+  "version": 21,
+  "windowSize": {
+    "h": 434,
+    "w": 552
+  }
+}
