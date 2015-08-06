@@ -343,7 +343,7 @@ public class EntityDialog extends ModalDialog
 
         hbox.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
         hbox.add(ModalDialog.makeHelpButton(ret, label,
-            "The color can be one of a set of named colors, or a string "+
+            "The color can be one of a customizable set of named colors, or a string "+
             "of the form \"RGB(r,g,b)\" where r,g,b are integers in [0-255].  "+
             "The Choose button can be used to pick an RGB color visually.  "+
             "If the chosen color string is not recognized, a fallback color "+

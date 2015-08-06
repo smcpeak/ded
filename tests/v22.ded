@@ -1,5 +1,4 @@
 {
-  "backgroundColor": "Very Light Blue",
   "drawFileName": true,
   "entities": [
     {
@@ -734,10 +733,6 @@
     {
       "color": "RGB(153,51,0)",
       "name": "Brown"
-    },
-    {
-      "color": "RGB(204,255,255)",
-      "name": "Very Light Blue"
     }
   ],
   "relations": [
@@ -1260,7 +1255,7 @@
     }
   ],
   "type": "Diagram Editor Diagram",
-  "version": 23,
+  "version": 22,
   "windowSize": {
     "h": 575,
     "w": 725

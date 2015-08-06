@@ -44,6 +44,9 @@ public class Diagram implements JSONable {
       * should never be changed. */
     public static final String jsonType = "Diagram Editor Diagram";
 
+    /** Default value of 'backgroundColor'. */
+    public static final String defaultBackgroundColor = "White";
+
     /** Value to write as the "version" attribute in toplevel JSON
       * object, and maximum value we can read there.  This should
       * be bumped every time something is added or changed in the
@@ -56,7 +59,7 @@ public class Diagram implements JSONable {
       * should include a bump--even though the old code might be
       * able to read the file without choking, the semantics would
       * not be preserved. */
-    public static final int currentFileVersion = 22;
+    public static final int currentFileVersion = 23;
 
     // ---------- public data ------------
     /** Size of window to display diagram.  Some elements might not fit
@@ -71,6 +74,10 @@ public class Diagram implements JSONable {
       * upper-left corner of the editing area, and also include it
       * when exporting to other file formats.  Normally true. */
     public boolean drawFileName;
+
+    /** Background color for the diagram, as something 'getNamedColors'
+      * understands. */
+    public String backgroundColor = defaultBackgroundColor;
 
     /** Entities, in display order.  The last entity will appear on top
       * of all others. */
@@ -171,6 +178,12 @@ public class Diagram implements JSONable {
         return null;
     }
 
+    /** Return the background color as a Color object. */
+    public Color getBackgroundColor()
+    {
+        return this.getNamedColor(this.backgroundColor, Color.WHITE);
+    }
+
     public void selfCheck()
     {
         for (Relation r : this.relations) {
@@ -212,6 +225,7 @@ public class Diagram implements JSONable {
         // Copy the easy members first.
         this.windowSize = new Dimension(src.windowSize);
         this.drawFileName = src.drawFileName;
+        this.backgroundColor = src.backgroundColor;
         this.namedColors = new LinkedHashMap<String,Color>(src.namedColors);
 
         // Make empty containers for the diagram elements.
@@ -340,6 +354,10 @@ public class Diagram implements JSONable {
             o.put("windowSize", AWTJSONUtil.dimensionToJSON(this.windowSize));
             o.put("drawFileName", this.drawFileName);
 
+            if (!this.backgroundColor.equals(defaultBackgroundColor)) {
+                o.put("backgroundColor", this.backgroundColor);
+            }
+
             if (!this.namedColors.equals(makeDefaultColors())) {
                 o.put("namedColors", colorTableToJSON(this.namedColors));
             }
@@ -439,6 +457,8 @@ public class Diagram implements JSONable {
         else {
             this.drawFileName = true;
         }
+
+        this.backgroundColor = o.optString("backgroundColor", defaultBackgroundColor);
 
         // Make the lists now; this is particularly useful for handling
         // older file formats.
@@ -739,6 +759,7 @@ public class Diagram implements JSONable {
             Diagram d = (Diagram)obj;
             return this.windowSize.equals(d.windowSize) &&
                    this.drawFileName == d.drawFileName &&
+                   this.backgroundColor.equals(d.backgroundColor) &&
                    this.entities.equals(d.entities) &&
                    this.inheritances.equals(d.inheritances) &&
                    this.relations.equals(d.relations) &&
@@ -753,6 +774,7 @@ public class Diagram implements JSONable {
         int h = 1;
         h = h*31 + this.windowSize.hashCode();
         h = h*31 + (this.drawFileName? 1 : 0);
+        h = h*31 + this.backgroundColor.hashCode();
         h = h*31 + Util.collectionHashCode(this.entities);
         h = h*31 + Util.collectionHashCode(this.inheritances);
         h = h*31 + Util.collectionHashCode(this.relations);

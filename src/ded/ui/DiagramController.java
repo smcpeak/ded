@@ -919,6 +919,8 @@ public class DiagramController extends JPanel
 
         this.dedWindow.pack();
 
+        this.setBackground(this.diagram.getBackgroundColor());
+
         this.rebuildControllers();
         this.dedWindow.updateMenuState();
         this.repaint();
@@ -2368,6 +2370,15 @@ public class DiagramController extends JPanel
     {
         if (DiagramColorsDialog.exec(this, this.diagram)) {
             this.diagramChanged("Edit diagram colors");
+        }
+    }
+
+    /** Show the diagram properties dialog. */
+    public void editDiagramProperties()
+    {
+        if (DiagramPropertiesDialog.exec(this, this.diagram)) {
+            this.setBackground(this.diagram.getBackgroundColor());
+            this.diagramChanged("Edit diagram properties");
         }
     }
 

@@ -345,6 +345,12 @@ public class Ded extends JFrame implements WindowListener {
         });
         m.add(this.drawFileNameCheckbox);
 
+        m.add(new MenuAction("Diagram properties...", KeyEvent.VK_P) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.editDiagramProperties();
+            }
+        });
+
         m.add(new MenuAction("Edit custom colors...", KeyEvent.VK_C) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.editCustomColors();

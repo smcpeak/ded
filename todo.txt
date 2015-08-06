@@ -17,7 +17,6 @@ Small:
 - specify initial size (etc.?) for new relations
 - option to automatically expand entities to contain their title and attributes
 - flag to turn off auto move/resize of window contents
-- set diagram background color
 
 Medium:
 - allow editing multiple elements at the same time
