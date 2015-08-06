@@ -1,0 +1,152 @@
+One of the things I use ded for a lot is UI wireframing.  In the past
+I would use Balsamiq Mockups; see https://balsamiq.com/.  This is a
+brief comparison based on how I use them.
+
+
+Major advantages of ded
+-----------------------
+
+* Since it is implemented in Java using Swing, Ded runs on any
+platform.  Where I work, we have developers and UI designers using
+Linux, Windows, and Mac, so interoperability among all of these is a
+must.  That doesn't just mean it runs on all platforms--the diagrams
+and the PNG output files are pixel for pixel, byte for byte, identical
+on all platforms.  With Balsamiq, the non-Windows users have to use a
+VM, which is clunky and annoying.
+
+* The JSON-based file format works very well with Source Code
+Management (SCM) systems like git.  It is almost always possible for a
+human to understand the change to a diagram based on the diff of the
+JSON, and sometimes possible for the SCM to automatically merge
+changes.
+
+* Every save automatically exports to PNG.  With Balsamiq, exporting
+is a separate step, and sometimes people would forget and introduce
+inconsistency between the BMML and PNG.
+
+* The PNG file contains the JSON source as a comment.  Consequently,
+when diagrams get stored on the wiki, or emailed, or added to a slide
+deck, or otherwise transported in a medium where carrying a source
+file is inconvenient, a Ded diagram image can still be edited: just
+open the PNG.
+
+* It is open source (BSD license).  Anyone can freely modify it.
+
+* Ded does copy and paste using JSON strings.  Not only can they go
+between Ded windows, they can go between Ded and a text editor,
+allowing things like search and replace (either globally, or within
+any selection) to be done that way.
+
+* It is free for all uses.  Balsamiq is fairly inexpensive, but just
+the friction of going through corporate purchasing is enough to
+discourage some developers from using it beyond the 30-day trial
+period.  With Ded, there is no excuse not to create and maintain
+diagrams.
+
+* The undo/redo model is very friendly toward experimentation since
+all prior versions (up to the configurable history limit) are
+available for inspection and retrieval, even if you undo, make
+different changes, then want to return to the original (before the
+undo).
+
+* The HTML image map feature is very nice.  It can help create
+documents that are much easier to navigate due to clickable images
+that take the reader to the relevant prose.  It also, to some degree,
+encourages the notion (that I strongly believe in) that wireframes
+should live inside a prose document, not try to stand on their own.
+(Solitary wireframes are either highly ambiguous, or else are far too
+cluttered with requisite commentary to resolve ambiguities.)
+
+* Ded strives for very close to 100%, pixel for pixel backward
+compatibility.  On occasion, I'll let a one-pixel difference go
+through if the old behavior can honestly be judged to be a bug, but
+otherwise, diagrams should be exactly the same on any version that can
+read them (as determined by the version field in the JSON).  I only
+went through one major upgrade while heavily using Balsamiq, but my
+wireframes had to be re-adjusted afterward, so at least in that case
+it did not provide the same level of backward compatibility.
+
+
+Minor advantages of ded
+-----------------------
+
+* Widgets that do not look hand drawn.  This is of course partly a
+matter of taste.  I like the hand drawn look of Balsamiq when
+presenting wireframes to users, since the roughness encourages
+feedback beyond just micro-optimizations.  However, when those same
+"hand drawn" images go from a UI designer to the UI implementer, the
+roughness encourages implementors to take liberties the designer
+didn't intend.  In contrast, the visual style of Ded encourages
+intepretation by the implementor that the design should be followed
+fairly closely.  At that point, it's not a half-baked "sketch", it is
+a completed UI design.
+
+* Ded is moderately more keyboard friendly.  For example, by using
+Tab to move among elements, Enter to open their properties dialog,
+keyboard commands to edit within the dialog, and Enter to close it,
+many bulk changes can be quickly made without touching the mouse.
+
+* I find it significantly easier to create properly aligned elements
+using the Ded 5-pixel snap than when using Balsamiq.
+
+* Related to not trying to look hand drawn, Ded diagrams can be more
+space efficient.  This usually does not matter for wireframes, but
+when one wants to include a significant amount of commentary or help
+bubble text in a wireframe, Balsamiq's comment boxes tend to waste so
+much space that it can be hard to get it all in one diagram.
+
+* Ded focuses on diagrams to be viewed on the computer screen, and
+hence sizes are all in pixels.  What you see while editing is exactly
+what your consumers will see too, including the size of the diagram.
+
+* Relatedly, it does no anti-aliasing.  For diagrams presented on a
+computer screen, anti-aliasing usually makes things look blurry.
+
+
+Advantages of Balsamiq
+----------------------
+
+* Much larger widget library.  Ded only has a handful of core widgets,
+and the rest must be cobbled together from several elements, or use
+the escape hatch of creating a PNG in a drawing program and using that
+as an element's appearance.
+
+* The Ded widgets currently don't have a built-in way to look
+"disabled".  You just have to set the text color to gray.
+
+* The hand-drawn appearance is great for presentations to users.
+
+* Balsamiq has some nice features for working with several related
+wireframes, for example, using tabs to navigate among them.
+
+* Additionally, Balsamiq wireframes can have a small amount of UI-like
+functionality, including clicking on links to go to a different
+wireframe, as if the user had clicked (say) a link or button.  These
+can make for more realistic demonstrations based on the wireframes.
+
+* Related to Ded's focus on pixels, Balsamiq wireframes can be any
+size, and Balsamiq has the usual features to pan and zoom.  Ded
+currently lacks any of that, so there is a practical size limit to a
+diagram of the screen size (which must be the smallest screen size
+among all users who want to edit).  At first, this might sound
+terrible, but it's also hard for readers to consume large diagrams, so
+it can be a useful reminder to the author to break things up.  The
+copy+paste functionality in Ded makes splitting a diagram apart fairly
+easy, so I haven't found this to be a major hindrance (otherwise I
+would have addressed it).
+
+
+Conclusion
+----------
+
+If you've never used wireframing software before, and don't mind
+running Windows, I recommend giving Balsamiq a try.  It's quite
+nice, and eases you into the notion of UI wireframing.
+
+If you already know a bit about wireframing, try Ded.  I have fully
+switched to Ded for all wireframing tasks, as it now has a sufficient
+critical mass of features to do everything I need, and of course I can
+just add new features when I want them.
+
+
+EOF
