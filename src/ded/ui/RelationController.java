@@ -871,15 +871,26 @@ public class RelationController extends Controller {
         });
 
         JMenu colorMenu = new JMenu("Set line color");
-        colorMenu.setMnemonic(KeyEvent.VK_C);
+        colorMenu.setMnemonic(KeyEvent.VK_L);
         for (final String color : this.diagramController.diagram.namedColors.keySet()) {
             colorMenu.add(new AbstractAction(color) {
                 public void actionPerformed(ActionEvent e) {
-                    RelationController.this.diagramController.setSelectedEntitiesLineColor(color);
+                    RelationController.this.diagramController.setSelectedElementsLineColor(color);
                 }
             });
         }
         menu.add(colorMenu);
+
+        JMenu textColorMenu = new JMenu("Set text color");
+        textColorMenu.setMnemonic(KeyEvent.VK_T);
+        for (final String color : this.diagramController.diagram.namedColors.keySet()) {
+            textColorMenu.add(new AbstractAction(color) {
+                public void actionPerformed(ActionEvent e) {
+                    RelationController.this.diagramController.setSelectedElementsTextColor(color);
+                }
+            });
+        }
+        menu.add(textColorMenu);
 
         JMenu dashMenu = new JMenu("Set line dash style");
         dashMenu.setMnemonic(KeyEvent.VK_D);
@@ -903,6 +914,12 @@ public class RelationController extends Controller {
     public void setLineColor(String color)
     {
         this.relation.lineColor = color;
+    }
+
+    @Override
+    public void setTextColor(String color)
+    {
+        this.relation.textColor = color;
     }
 
     @Override

@@ -1012,7 +1012,7 @@ public class EntityController extends Controller
         final EntityController ths = this;
 
         JMenu fillColorMenu = new JMenu("Set fill color");
-        fillColorMenu.setMnemonic(KeyEvent.VK_C);
+        fillColorMenu.setMnemonic(KeyEvent.VK_F);
         for (final String color : this.diagramController.diagram.namedColors.keySet()) {
             fillColorMenu.add(new AbstractAction(color) {
                 public void actionPerformed(ActionEvent e) {
@@ -1038,7 +1038,7 @@ public class EntityController extends Controller
         for (final String color : this.diagramController.diagram.namedColors.keySet()) {
             lineColorMenu.add(new AbstractAction(color) {
                 public void actionPerformed(ActionEvent e) {
-                    EntityController.this.diagramController.setSelectedEntitiesLineColor(color);
+                    EntityController.this.diagramController.setSelectedElementsLineColor(color);
                 }
             });
         }
@@ -1115,8 +1115,8 @@ public class EntityController extends Controller
     {
         Entity ent = new Entity();
         ent.loc = GeomUtil.snapPoint(new Point(p.x - ent.size.width/2,
-                                                p.y - ent.size.height/2),
-                                      DiagramController.SNAP_DIST);
+                                               p.y - ent.size.height/2),
+                                     DiagramController.SNAP_DIST);
         dc.getDiagram().entities.add(ent);
 
         EntityController ec = new EntityController(dc, ent);

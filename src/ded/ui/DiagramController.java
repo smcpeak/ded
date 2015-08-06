@@ -2136,8 +2136,8 @@ public class DiagramController extends JPanel
         this.diagramChanged(fmt("Set text color to \"%1$s\"", colorName));
     }
 
-    /** Change the selected entities' line colors to the named color. */
-    public void setSelectedEntitiesLineColor(String colorName)
+    /** Change the selected elements' line colors to the named color. */
+    public void setSelectedElementsLineColor(String colorName)
     {
         for (Controller c : this.getSelectionSet()) {
             c.setLineColor(colorName);
