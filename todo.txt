@@ -2,6 +2,15 @@ TODOs for Diagram Editor
 ------------------------
 
 Small:
+- help window not modal
+- toolbar: create elements, other keyboard shortcuts
+- labels that (optionally) work more like Powerpoint
+  - word wrap
+  - edit in place
+- adjust relation creation to be more intuitive
+  - esp. compared to entity creation
+- do not pop up box for "cannot edit"?
+- undo history: click to "go there"
 - option to route edges from the center of the edge of the bounding
   box rather than from the center of the entity
 - fix relation creation to not have the offset problem
@@ -19,6 +28,7 @@ Small:
 - flag to turn off auto move/resize of window contents
 
 Medium:
+- zooming, panning
 - allow editing multiple elements at the same time
 - smarter relation routing
 - help bubbles
