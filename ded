@@ -31,12 +31,17 @@ if [ -f "$jarfile" ]; then
   exec java -ea -jar "$jarfile" "$@"
 fi
 
+# Pasting from clipboard fails on some JVMs with
+# "Comparator violates its general contract!"
+# https://bugs.openjdk.java.net/browse/JDK-8078607
+workaround="-Djava.util.Arrays.useLegacyMergeSort=true"
+
 classpath="$instdir/bin"
 if [ -d "$classpath" ]; then
   if $is_windows; then
     classpath=`cygpath -w "$classpath"`
   fi
-  exec java -classpath "$classpath" -ea ded.Ded "$@"
+  exec java -classpath "$classpath" -ea ded.Ded $workaround "$@"
 else
   echo "Missing: $classpath or $jarfile"
   echo "Maybe the sources are not compiled?  Try running 'make'."
