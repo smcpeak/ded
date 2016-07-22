@@ -114,8 +114,8 @@ try:
                                         h = int(entity["size"]["h"])
 
                                         # HTML image maps use (x1,y1,x2,y2) rectangles.
-                                        x2 = x+w
-                                        y2 = y+h
+                                        x2 = x + w
+                                        y2 = y + h
 
                                         # Write the <area> element for this entity.
                                         htmlOutput.append("  <!--AUTO--><area shape=\"rect\" coords=\""+
@@ -154,7 +154,7 @@ try:
         die('Image map for "%s" is not terminated' % (dedFname,))
 
     # Make a backup of the original file before rewriting it.
-    shutil.copyfile(htmlFname, htmlFname+".bak")
+    shutil.copyfile(htmlFname, htmlFname + ".bak")
 
     # Overwrite the original file.
     with open(htmlFname, "wt") as htmlOutputFile:
