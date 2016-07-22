@@ -144,7 +144,7 @@ try:
                                             % (name, key)
                                         )
 
-                                except:
+                                except Exception:
                                     dieContext('entity "%s"' % (name,))
 
                         except KeyError as e:
