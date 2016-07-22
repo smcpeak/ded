@@ -29,6 +29,18 @@ import re                    # re.search, etc.
 import shutil                # shutil.copyfile
 import sys                   # sys.argv
 
+# format strings and regexes
+START_RE = re.compile("""<!-- BEGIN IMAGE MAP FOR "(.*)" -->""")
+END_RE = re.compile("""<!-- END IMAGE MAP FOR "(.*)" -->""")
+PROLOGUE = (
+    """  <!-- This image map is automatically inserted by the\n"""
+    """       'insert-ded-image-map' script.  Do not edit it manually. -->\n"""
+)
+AREAFMT = (
+    """  <!--AUTO-->"""
+    """<area shape="rect" coords="%s,%s,%s,%s" href="#%s" alt="%s" />\n"""
+)
+
 
 class Error(Exception):
     """A condition to be treated as an error."""
@@ -73,7 +85,7 @@ try:
 
                 if dedFname:
                     # We are skipping to the end of the current image map.
-                    m = re.compile("<!-- END IMAGE MAP FOR \"(.*)\" -->").search(line)
+                    m = END_RE.search(line)
                     if m:
                         if m.group(1) == dedFname:
                             # Done with this map.
@@ -89,13 +101,12 @@ try:
                 else:
                     htmlOutput.append(line)
 
-                    m = re.compile("<!-- BEGIN IMAGE MAP FOR \"(.*)\" -->").search(line)
+                    m = START_RE.search(line)
                     if m:
                         dedFname = m.group(1)
 
                         # Prologue.
-                        htmlOutput.append("  <!-- This image map is automatically inserted by the\n")
-                        htmlOutput.append("       'insert-ded-image-map' script.  Do not edit it manually. -->\n")
+                        htmlOutput.append(PROLOGUE)
 
                         try:
                             # Parse the DED file.
@@ -118,10 +129,9 @@ try:
                                         y2 = y + h
 
                                         # Write the <area> element for this entity.
-                                        htmlOutput.append("  <!--AUTO--><area shape=\"rect\" coords=\""+
-                                                          str(x)+","+str(y)+","+str(x2)+","+str(y2)+
-                                                          "\" href=\"#"+name+
-                                                          "\" alt=\""+name+"\" />\n")
+                                        htmlOutput.append(
+                                            AREAFMT % (x, y, x2, y2, name, name)
+                                        )
 
                                 except KeyError as e:
                                     key = e.args[0]
