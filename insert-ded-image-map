@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-# insert HTML image map(s) based on DED source files
-
+"""
+insert HTML image map(s) based on DED source files
+"""
 # DED entities have an "anchor name" field that specifies what
 # value to use in the href of each area.
 
@@ -32,13 +33,15 @@ class Error(Exception):
   """A condition to be treated as an error."""
   pass
 
-# Throw a fatal error with message.
 def die(message):
+  """Throw a fatal error with message."""
   raise Error(message)
 
-# Throw a fatal error with the given context and the
-# current exception as the conflcit.
 def dieContext(context):
+  """
+  Throw a fatal error with the given context and the
+  current exception as the conflcit.
+  """
   msg = sys.exc_info()[1]
   raise Error(context+": "+str(msg))
 
