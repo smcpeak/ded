@@ -80,9 +80,11 @@ try:
                             dedFname = None
                             htmlOutput.append(line)
                         else:
-                            die("Image map for \""+dedFname+"\" is either not terminated "+
-                                "or ends with an incorrect terminator:\n"+
-                                "  "+line)
+                            die(
+                                'Image map for "%s" is either not '
+                                'terminated or ends with an incorrect '
+                                'terminator:\n%s' % (dedFname, line)
+                            )
 
                 else:
                     htmlOutput.append(line)
@@ -127,13 +129,20 @@ try:
                                         # Ignore entities without an anchor name.
                                         0
                                     else:
-                                        die("entity \""+name+"\": key not found: \""+key+"\"")
+                                        die(
+                                            'entity "%s": key not found: "%s"'
+                                            % (name, key)
+                                        )
 
                                 except:
-                                    dieContext("entity \""+name+"\"")
+                                    dieContext('entity "%s"' % (name,))
 
                         except KeyError as e:
-                            die(dedFname+": key not found: \""+e.args[0]+"\" in "+json.dumps(entity))
+                            key = e.args[0]
+                            die(
+                                '%s: key not found: "%s" in %s'
+                                % (dedFname, key, json.dumps(entity))
+                            )
 
                         except:
                             dieContext(dedFname)
@@ -142,7 +151,7 @@ try:
                 dieContext(htmlFname+":"+str(htmlInputLineNumber))
 
     if dedFname:
-        die("Image map for \""+dedFname+"\" is not terminated")
+        die('Image map for "%s" is not terminated' % (dedFname,))
 
     # Make a backup of the original file before rewriting it.
     shutil.copyfile(htmlFname, htmlFname+".bak")
@@ -155,14 +164,14 @@ try:
     sys.exit(0)
 
 except Error as e:
-    print("Error: "+e.args[0], file=sys.stderr)
+    print("Error: " + e.args[0], file=sys.stderr)
     sys.exit(2)
 
 except SystemExit as e:
     raise      # let this one go
 
-except:
-    print("Error: "+str(sys.exc_info()[1]), file=sys.stderr)
+except Exception:
+    print("Error: " + str(sys.exc_info()[1]), file=sys.stderr)
     sys.exit(2)
 
 # EOF
