@@ -60,128 +60,140 @@ def dieContext(context):
     msg = sys.exc_info()[1]
     raise Error(context+": "+str(msg))
 
-try:
-    if len(sys.argv) != 2:
-        print("usage: "+sys.argv[0]+" file-to-edit.html", file=sys.stderr)
+
+def parse_ded_file(dedFname, htmlOutput):
+    """parse the DED file"""
+    try:
+        with open(dedFname, "rt") as dedFile:
+            dedDiagram = json.load(dedFile)
+
+        # Emit <map> element per entity with an anchor name.
+        dedEntities = dedDiagram["entities"]
+        for entity in dedEntities:
+            handle_entity(entity, htmlOutput)
+
+    except KeyError as e:
+        key = e.args[0]
+        die(
+            '%s: key not found: "%s" in %s'
+            % (dedFname, key, json.dumps(entity))
+        )
+
+    except Exception:
+        dieContext(dedFname)
+
+
+def handle_entity(entity, htmlOutput):
+    try:
+        name = entity["anchorName"]
+        if len(name) > 0:
+            x = int(entity["loc"]["x"])
+            y = int(entity["loc"]["y"])
+            w = int(entity["size"]["w"])
+            h = int(entity["size"]["h"])
+
+            # HTML image maps use (x1,y1,x2,y2) rectangles.
+            x2 = x + w
+            y2 = y + h
+
+            # Write the <area> element for this entity.
+            htmlOutput.append(
+                AREAFMT % (x, y, x2, y2, name, name)
+            )
+
+    except KeyError as e:
+        key = e.args[0]
+        if key == "anchorName":
+            # Ignore entities without an anchor name.
+            pass
+        else:
+            die(
+                'entity "%s": key not found: "%s"'
+                % (name, key)
+            )
+
+    except Exception:
+        dieContext('entity "%s"' % (name,))
+
+
+def main():
+    """main entry point"""
+    try:
+        if len(sys.argv) != 2:
+            print("usage: "+sys.argv[0]+" file-to-edit.html", file=sys.stderr)
+            sys.exit(2)
+
+        # Name of file to read and then rewrite.
+        htmlFname = sys.argv[1]
+
+        # Lines of HTML to write.
+        htmlOutput = []
+
+        # Name of DED filename in current image map.  It is None
+        # when we are not in an image map.
+        dedFname = None
+
+        # Read the HTML file, looking for places where an image
+        # map should be inserted.
+        htmlInputLineNumber = 0
+        with open(htmlFname, "rt") as htmlInputFile:
+            for line in htmlInputFile:
+                try:
+                    htmlInputLineNumber += 1
+
+                    if dedFname:
+                        # We are skipping to the end of the current image map.
+                        m = END_RE.search(line)
+                        if m:
+                            if m.group(1) == dedFname:
+                                # Done with this map.
+                                dedFname = None
+                                htmlOutput.append(line)
+                            else:
+                                die(
+                                    'Image map for "%s" is either not '
+                                    'terminated or ends with an incorrect '
+                                    'terminator:\n%s' % (dedFname, line)
+                                )
+
+                    else:
+                        htmlOutput.append(line)
+
+                        m = START_RE.search(line)
+                        if m:
+                            dedFname = m.group(1)
+
+                            # Prologue.
+                            htmlOutput.append(PROLOGUE)
+                            parse_ded_file(dedFname, htmlOutput)
+
+                except Exception:
+                    dieContext(htmlFname+":"+str(htmlInputLineNumber))
+
+        if dedFname:
+            die('Image map for "%s" is not terminated' % (dedFname,))
+
+        # Make a backup of the original file before rewriting it.
+        shutil.copyfile(htmlFname, htmlFname + ".bak")
+
+        # Overwrite the original file.
+        with open(htmlFname, "wt") as htmlOutputFile:
+            for line in htmlOutput:
+                htmlOutputFile.write(line)
+
+        sys.exit(0)
+
+    except Error as e:
+        print("Error: " + e.args[0], file=sys.stderr)
         sys.exit(2)
 
-    # Name of file to read and then rewrite.
-    htmlFname = sys.argv[1]
+    except SystemExit as e:
+        raise      # let this one go
 
-    # Lines of HTML to write.
-    htmlOutput = []
+    except Exception:
+        print("Error: " + str(sys.exc_info()[1]), file=sys.stderr)
+        sys.exit(2)
 
-    # Name of DED filename in current image map.  It is None
-    # when we are not in an image map.
-    dedFname = None
-
-    # Read the HTML file, looking for places where an image
-    # map should be inserted.
-    htmlInputLineNumber = 0
-    with open(htmlFname, "rt") as htmlInputFile:
-        for line in htmlInputFile:
-            try:
-                htmlInputLineNumber += 1
-
-                if dedFname:
-                    # We are skipping to the end of the current image map.
-                    m = END_RE.search(line)
-                    if m:
-                        if m.group(1) == dedFname:
-                            # Done with this map.
-                            dedFname = None
-                            htmlOutput.append(line)
-                        else:
-                            die(
-                                'Image map for "%s" is either not '
-                                'terminated or ends with an incorrect '
-                                'terminator:\n%s' % (dedFname, line)
-                            )
-
-                else:
-                    htmlOutput.append(line)
-
-                    m = START_RE.search(line)
-                    if m:
-                        dedFname = m.group(1)
-
-                        # Prologue.
-                        htmlOutput.append(PROLOGUE)
-
-                        try:
-                            # Parse the DED file.
-                            with open(dedFname, "rt") as dedFile:
-                                dedDiagram = json.load(dedFile)
-
-                            # Emit <map> elements for each entity with an anchor name.
-                            dedEntities = dedDiagram["entities"]
-                            for entity in dedEntities:
-                                try:
-                                    name = entity["anchorName"]
-                                    if len(name) > 0:
-                                        x = int(entity["loc"]["x"])
-                                        y = int(entity["loc"]["y"])
-                                        w = int(entity["size"]["w"])
-                                        h = int(entity["size"]["h"])
-
-                                        # HTML image maps use (x1,y1,x2,y2) rectangles.
-                                        x2 = x + w
-                                        y2 = y + h
-
-                                        # Write the <area> element for this entity.
-                                        htmlOutput.append(
-                                            AREAFMT % (x, y, x2, y2, name, name)
-                                        )
-
-                                except KeyError as e:
-                                    key = e.args[0]
-                                    if key == "anchorName":
-                                        # Ignore entities without an anchor name.
-                                        pass
-                                    else:
-                                        die(
-                                            'entity "%s": key not found: "%s"'
-                                            % (name, key)
-                                        )
-
-                                except Exception:
-                                    dieContext('entity "%s"' % (name,))
-
-                        except KeyError as e:
-                            key = e.args[0]
-                            die(
-                                '%s: key not found: "%s" in %s'
-                                % (dedFname, key, json.dumps(entity))
-                            )
-
-                        except Exception:
-                            dieContext(dedFname)
-
-            except Exception:
-                dieContext(htmlFname+":"+str(htmlInputLineNumber))
-
-    if dedFname:
-        die('Image map for "%s" is not terminated' % (dedFname,))
-
-    # Make a backup of the original file before rewriting it.
-    shutil.copyfile(htmlFname, htmlFname + ".bak")
-
-    # Overwrite the original file.
-    with open(htmlFname, "wt") as htmlOutputFile:
-        for line in htmlOutput:
-            htmlOutputFile.write(line)
-
-    sys.exit(0)
-
-except Error as e:
-    print("Error: " + e.args[0], file=sys.stderr)
-    sys.exit(2)
-
-except SystemExit as e:
-    raise      # let this one go
-
-except Exception:
-    print("Error: " + str(sys.exc_info()[1]), file=sys.stderr)
-    sys.exit(2)
-
+if __name__ == '__main__':
+    main()
 # EOF
