@@ -144,10 +144,10 @@ try:
                                 % (dedFname, key, json.dumps(entity))
                             )
 
-                        except:
+                        except Exception:
                             dieContext(dedFname)
 
-            except:
+            except Exception:
                 dieContext(htmlFname+":"+str(htmlInputLineNumber))
 
     if dedFname:
