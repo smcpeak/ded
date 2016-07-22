@@ -92,8 +92,8 @@ try:
                         dedFname = m.group(1)
 
                         # Prologue.
-                        htmlOutput.append("  <!-- This image map is automatically inserted by the\n");
-                        htmlOutput.append("       'insert-ded-image-map' script.  Do not edit it manually. -->\n");
+                        htmlOutput.append("  <!-- This image map is automatically inserted by the\n")
+                        htmlOutput.append("       'insert-ded-image-map' script.  Do not edit it manually. -->\n")
 
                         try:
                             # Parse the DED file.
@@ -119,7 +119,7 @@ try:
                                         htmlOutput.append("  <!--AUTO--><area shape=\"rect\" coords=\""+
                                                           str(x)+","+str(y)+","+str(x2)+","+str(y2)+
                                                           "\" href=\"#"+name+
-                                                          "\" alt=\""+name+"\" />\n");
+                                                          "\" alt=\""+name+"\" />\n")
 
                                 except KeyError as e:
                                     key = e.args[0]
@@ -142,10 +142,10 @@ try:
                 dieContext(htmlFname+":"+str(htmlInputLineNumber))
 
     if dedFname:
-        die("Image map for \""+dedFname+"\" is not terminated");
+        die("Image map for \""+dedFname+"\" is not terminated")
 
     # Make a backup of the original file before rewriting it.
-    shutil.copyfile(htmlFname, htmlFname+".bak");
+    shutil.copyfile(htmlFname, htmlFname+".bak")
 
     # Overwrite the original file.
     with open(htmlFname, "wt") as htmlOutputFile:
