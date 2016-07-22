@@ -29,13 +29,16 @@ import re                    # re.search, etc.
 import shutil                # shutil.copyfile
 import sys                   # sys.argv
 
+
 class Error(Exception):
     """A condition to be treated as an error."""
     pass
 
+
 def die(message):
     """Throw a fatal error with message."""
     raise Error(message)
+
 
 def dieContext(context):
     """
