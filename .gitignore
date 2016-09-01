@@ -5,3 +5,4 @@ dist
 data-coverity
 tests/image-map/output.html
 *.bak
+__pycache__
