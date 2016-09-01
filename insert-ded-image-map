@@ -30,10 +30,6 @@ import re                    # re.search, etc.
 import shutil                # shutil.copyfile
 import sys                   # sys.argv
 
-# format strings and regexes
-START_RE = re.compile("""<!-- BEGIN IMAGE MAP FOR "(.*)" -->""")
-END_RE = re.compile("""<!-- END IMAGE MAP FOR "(.*)" -->""")
-
 
 class Error(Exception):
     """A condition to be treated as an error."""
@@ -141,6 +137,10 @@ def main():
         # when we are not in an image map.
         dedFname = None
 
+        # Regexes for parsing the HTML to locate insertion regions.
+        START_RE = re.compile("""<!-- BEGIN IMAGE MAP FOR "(.*)" -->""")
+        END_RE = re.compile("""<!-- END IMAGE MAP FOR "(.*)" -->""")
+
         # Read the HTML file, looking for places where an image
         # map should be inserted.
         htmlInputLineNumber = 0
@@ -176,7 +176,7 @@ def main():
                     dieContext(htmlFname+":"+str(htmlInputLineNumber))
 
         if dedFname:
-            die('Image map for "%s" is not terminated' % (dedFname,))
+            die('Image map for "%s" is not terminated' % (dedFname))
 
         # Make a backup of the original file before rewriting it.
         shutil.copyfile(htmlFname, htmlFname + ".bak")
