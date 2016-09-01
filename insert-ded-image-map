@@ -57,8 +57,8 @@ def parse_ded_file(dedFname, htmlOutput):
     """
     # Write a warning prologue.
     htmlOutput.append(
-      "  <!-- This image map is automatically inserted by the\n"
-      "       'insert-ded-image-map' script.  Do not edit it manually. -->\n"
+        "  <!-- This image map is automatically inserted by the\n"
+        "       'insert-ded-image-map' script.  Do not edit it manually. -->\n"
     )
 
     # Parse the diagram and process its entities.
@@ -66,17 +66,15 @@ def parse_ded_file(dedFname, htmlOutput):
         with open(dedFname, "rt") as dedFile:
             dedDiagram = json.load(dedFile)
 
-        # Emit <map> element per entity with an anchor name.
-        dedEntities = dedDiagram["entities"]
+        # Grab the entities array.
+        if "entities" in dedDiagram:
+            dedEntities = dedDiagram["entities"]
+        else:
+            die('missing "entities" attribute')
+
+        # Emit <area> element per entity with an anchor name.
         for entity in dedEntities:
             handle_entity(entity, htmlOutput)
-
-    except KeyError as e:
-        key = e.args[0]
-        die(
-            '%s: key not found: "%s" in %s'
-            % (dedFname, key, json.dumps(entity))
-        )
 
     except Exception:
         dieContext(dedFname)
@@ -111,10 +109,7 @@ def handle_entity(entity, htmlOutput):
             # Ignore entities without an anchor name.
             pass
         else:
-            die(
-                'entity "%s": key not found: "%s"'
-                % (name, key)
-            )
+            die('entity "%s": key not found: "%s"' % (name, key))
 
     except Exception:
         dieContext('entity "%s"' % (name))
