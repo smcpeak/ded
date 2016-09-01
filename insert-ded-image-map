@@ -1,28 +1,29 @@
 #!/usr/bin/env python3
 """
-insert HTML image map(s) based on DED source files
+Insert HTML image map(s) based on DED source files.
+
+DED entities have an "anchor name" field that specifies what
+value to use in the href of each area.
+
+Each image map must initially be added by hand to the HTML.
+The diagram file name is specified in a comment that must
+have a certain format.  It is possible to have multiple
+image maps, from different diagrams, in one HTML file.
+
+Example HTML:
+
+<img src="some-image.png" alt="some alt text"
+     usemap="#some-image-map">
+<map name="some-image-map">
+  <!-- BEGIN IMAGE MAP FOR "some-diagram.ded" -->
+  <!-- This image map is automatically inserted by the
+       'insert-ded-image-map' script.  Do not edit it manually. -->
+  <!--AUTO--><area shape="rect" coords="30,35,285,130" href="#EntityA" alt="EntityA" />
+  <!--AUTO--><area shape="rect" coords="415,35,545,100" href="#EntityB" alt="EntityB" />
+  <!--AUTO--><area shape="rect" coords="30,160,365,450" href="#EntityC" alt="EntityC" />
+  <!-- END IMAGE MAP FOR "some-diagram.ded" -->
+</map>
 """
-# DED entities have an "anchor name" field that specifies what
-# value to use in the href of each area.
-
-# Each image map must initially be added by hand to the HTML.
-# The diagram file name is specified in a comment that must
-# have a certain format.  It is possible to have multiple
-# image maps, from different diagrams, in one HTML file.
-
-# Example HTML:
-#
-# <img src="some-image.png" alt="some alt text"
-#      usemap="#some-image-map">
-# <map name="some-image-map">
-#   <!-- BEGIN IMAGE MAP FOR "some-diagram.ded" -->
-#   <!-- This image map is automatically inserted by the
-#        'insert-ded-image-map' script.  Do not edit it manually. -->
-#   <!--AUTO--><area shape="rect" coords="30,35,285,130" href="#EntityA" alt="EntityA" />
-#   <!--AUTO--><area shape="rect" coords="415,35,545,100" href="#EntityB" alt="EntityB" />
-#   <!--AUTO--><area shape="rect" coords="30,160,365,450" href="#EntityC" alt="EntityC" />
-#   <!-- END IMAGE MAP FOR "some-diagram.ded" -->
-# </map>
 
 import json                  # json.loads
 import re                    # re.search, etc.
@@ -62,7 +63,10 @@ def dieContext(context):
 
 
 def parse_ded_file(dedFname, htmlOutput):
-    """parse the DED file"""
+    """
+    Parse 'dedFname' and write <area> elements to 'htmlOutput'
+    corresponding to the entities in the diagram.
+    """
     try:
         with open(dedFname, "rt") as dedFile:
             dedDiagram = json.load(dedFile)
@@ -84,6 +88,10 @@ def parse_ded_file(dedFname, htmlOutput):
 
 
 def handle_entity(entity, htmlOutput):
+    """
+    If 'entity' has an anchor target, write a single <area> element
+    to 'htmlOutput' with that target and the entity's location.
+    """
     try:
         name = entity["anchorName"]
         if len(name) > 0:
@@ -117,7 +125,7 @@ def handle_entity(entity, htmlOutput):
 
 
 def main():
-    """main entry point"""
+    """Program entry point."""
     try:
         if len(sys.argv) != 2:
             print("usage: "+sys.argv[0]+" file-to-edit.html", file=sys.stderr)
@@ -194,6 +202,8 @@ def main():
         print("Error: " + str(sys.exc_info()[1]), file=sys.stderr)
         sys.exit(2)
 
+
 if __name__ == '__main__':
     main()
+
 # EOF
