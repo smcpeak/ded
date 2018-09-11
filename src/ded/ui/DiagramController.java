@@ -2277,12 +2277,16 @@ public class DiagramController extends JPanel
     /** Move all moveable, selected controllers by 'delta'. */
     public void moveSelectedControllersBy(Point delta)
     {
+        int changes = 0;
         for (Controller c : this.getSelectionSet()) {
             c.moveBy(delta);
+            changes++;
         }
 
-        this.diagramChanged("Move selected controllers by "+
-                            GeomUtil.pointToString(delta));
+        if (changes > 0) {
+            this.diagramChanged("Move "+changes+" selected controllers by "+
+                                GeomUtil.pointToString(delta));
+        }
     }
 
     /** Show an error message dialog box with 'message'. */
