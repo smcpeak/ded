@@ -642,24 +642,24 @@ public class Diagram implements JSONable {
     public static Diagram readFromERStream(InputStream is)
         throws XParse, IOException
     {
-        FlattenInputStream flat = new FlattenInputStream(is);
+        try (FlattenInputStream flat = new FlattenInputStream(is)) {
+            // Magic number identifier for the file format.
+            int magic = flat.readInt();
+            if (magic != 0x2B044C63) {
+                // The file is not in the expected format.
+                return null;
+            }
 
-        // Magic number identifier for the file format.
-        int magic = flat.readInt();
-        if (magic != 0x2B044C63) {
-            // The file is not in the expected format.
-            return null;
+            // File format version number.
+            int ver = flat.readInt();
+            if (!( 1 <= ver && ver <= 8 )) {
+                throw new XParse("ER file format version is "+ver+
+                                 " but I only know how to read 1 through 8.");
+            }
+            flat.version = ver;
+
+            return new Diagram(flat);
         }
-
-        // File format version number.
-        int ver = flat.readInt();
-        if (!( 1 <= ver && ver <= 8 )) {
-            throw new XParse("ER file format version is "+ver+
-                             " but I only know how to read 1 through 8.");
-        }
-        flat.version = ver;
-
-        return new Diagram(flat);
     }
 
     /** Read a Diagram from an ER FlattenInputStream */
