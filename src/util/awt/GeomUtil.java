@@ -256,6 +256,13 @@ public class GeomUtil {
         return new Polygon(px, py, 4);
     }
 
+    /** Return a string like "(1,2)".  (java.awt.Point.toString returns
+      * a string in an ugly, developer-centric format.) */
+    public static String pointToString(Point p)
+    {
+        return String.format("(%1$d,%2$d)", p.x, p.y);
+    }
+
     /** Return 'a' + 'b'. */
     public static Point add(Point a, Point b)
     {

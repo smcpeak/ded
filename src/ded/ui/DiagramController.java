@@ -2281,7 +2281,8 @@ public class DiagramController extends JPanel
             c.moveBy(delta);
         }
 
-        this.diagramChanged("Move selected controllers by "+delta);
+        this.diagramChanged("Move selected controllers by "+
+                            GeomUtil.pointToString(delta));
     }
 
     /** Show an error message dialog box with 'message'. */
