@@ -765,10 +765,25 @@ public class RelationController extends Controller {
     @Override
     public void insertControlPoint()
     {
-        this.insertControlPointAtWhere(new Point(
-            GeomUtil.midPoint(this.relation.start.getCenter(),
-                              this.relation.end.getCenter())),
-            0);
+        // Where to put the point.  The exact location isn't very
+        // important since I expect the user to immediately move it.
+        Point p = GeomUtil.midPoint(this.relation.start.getCenter(),
+                                    this.relation.end.getCenter());
+
+        // Current number of control points.
+        int n = this.relation.controlPts.size();
+
+        if (this.relation.end.isPoint()) {
+            // Extend the sequence as the user sees it: make the current
+            // end point be the last control point, and the new point
+            // the end point.
+            this.insertControlPointAtWhere(this.relation.end.getCenter(), n);
+            this.relation.end.pt = p;
+        }
+        else {
+            // Make the new control point be the last one.
+            this.insertControlPointAtWhere(p, n);
+        }
     }
 
     /** Insert a new control point at 'p', so it becomes number 'where'
