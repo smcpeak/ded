@@ -793,6 +793,22 @@ public class DiagramController extends JPanel
             case KeyEvent.VK_TAB:
                 this.selectNextController(!SwingUtil.shiftPressed(e) /*forward*/);
                 break;
+
+            case KeyEvent.VK_LEFT:
+                this.moveSelectedControllersBy(new Point(-SNAP_DIST, 0));
+                break;
+
+            case KeyEvent.VK_RIGHT:
+                this.moveSelectedControllersBy(new Point(+SNAP_DIST, 0));
+                break;
+
+            case KeyEvent.VK_UP:
+                this.moveSelectedControllersBy(new Point(0, -SNAP_DIST));
+                break;
+
+            case KeyEvent.VK_DOWN:
+                this.moveSelectedControllersBy(new Point(0, +SNAP_DIST));
+                break;
         }
     }
 
@@ -2256,6 +2272,16 @@ public class DiagramController extends JPanel
         this.diagramChanged(fmt(command == SetAnchorCommand.SAC_CLEAR?
             "Clear anchor names" :
             "Set anchor name to entity name"));
+    }
+
+    /** Move all moveable, selected controllers by 'delta'. */
+    public void moveSelectedControllersBy(Point delta)
+    {
+        for (Controller c : this.getSelectionSet()) {
+            c.moveBy(delta);
+        }
+
+        this.diagramChanged("Move selected controllers by "+delta);
     }
 
     /** Show an error message dialog box with 'message'. */

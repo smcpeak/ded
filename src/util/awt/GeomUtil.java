@@ -16,7 +16,9 @@ import util.Util;
 
 /** Utilities related to the java.awt.geom classes, particularly
   * various kinds of vector manipulations, where Point2D.Double
-  * acts as the vector type. */
+  * acts as the vector type.
+  *
+  * It also has utilities for integer Point and Rectangle. */
 public class GeomUtil {
     /** Return 'a' - 'b'. */
     public static Point2D.Double subtract(Point2D.Double a, Point2D.Double b)

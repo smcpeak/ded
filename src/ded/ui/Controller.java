@@ -21,6 +21,7 @@ import javax.swing.SwingUtilities;
 import ded.model.Diagram;
 import ded.model.TextAlign;
 
+import util.awt.GeomUtil;
 import util.swing.MenuAction;
 import util.swing.SwingUtil;
 
@@ -225,6 +226,12 @@ public abstract class Controller {
     // Should this be renamed to 'setLoc'?
     public void dragTo(Point p)
     {}
+
+    /** Move the 'getLoc()' point by 'delta'.  Default uses 'dragTo' and 'getLoc'. */
+    public void moveBy(Point delta)
+    {
+        this.dragTo(GeomUtil.add(getLoc(), delta));
+    }
 
     /** Edit the attributes of the controlled element using a dialog box,
       * or show an error dialog if that is not possible. */
