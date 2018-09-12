@@ -1025,26 +1025,31 @@ public class RelationController extends Controller {
         // Region's distance from line segment.
         int slop = relationBoundsSlop;
 
-        // Get a vector that is paralle to the segment but has length 'slop'.
+        // Get a vector that is parallel to the segment but has length 'slop'.
         Point2D.Double slopVector = GeomUtil.subtract(endPt, startPt);
         slopVector = GeomUtil.scale2DVectorTo(slopVector, slop);
 
-        // Rotate that 90 degrees clockwise (since we're using AWT coords).
+        // Rotate that 90 degrees.  This is a clockwise rotation (because
+        // we are using AWT coordinates).
         Point2D.Double slopV90 = GeomUtil.rot2DVector90(slopVector);
 
-        // Compute points on a rectangle that is +/0 slop all around.
+        // Compute points on a rectangle that is +/- slop in the direction
+        // perpendicular to the segment.  (In an earlier version, the bounds
+        // also extended in the same direction as the segment, but I found that
+        // made it hard to select adjacent small entities in some situations,
+        // so I have changed it to only deviate perpendicularly.)
         Polygon bounds = new Polygon();
         for (int i=0; i<4; i++) {
-            // Start by going off the long way.
+            // Start with the appropriate endpoint.
             Point2D.Double p;
             if (i==0 || i==3) {
-                p = GeomUtil.subtract(startPt, slopVector);     // p = start - slop
+                p = startPt;
             }
             else {
-                p = GeomUtil.add(endPt, slopVector);            // p = end + slop
+                p = endPt;
             }
 
-            // Then the short way.
+            // Then deviate in the perpendicular direction.
             if (i <= 1) {
                 p = GeomUtil.subtract(p, slopV90);              // p -= slop90
             }
