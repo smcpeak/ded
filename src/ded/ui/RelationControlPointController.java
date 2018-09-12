@@ -45,11 +45,13 @@ public class RelationControlPointController extends ResizeController {
     }
 
     @Override
-    public void dragTo(Point pt)
+    public boolean dragTo(Point pt)
     {
         this.rcontroller.relation.controlPts.set(this.which, pt);
 
         // Do not set dirty bit.  Wait for mouse button release.
+
+        return true;
     }
 
     @Override

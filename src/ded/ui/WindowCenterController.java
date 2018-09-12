@@ -45,9 +45,10 @@ public class WindowCenterController extends ResizeController {
     }
 
     @Override
-    public void dragTo(Point pt)
+    public boolean dragTo(Point pt)
     {
         Entity e = this.getEntity();
         this.getEntity().setShapeParams(pt.x - e.loc.x, pt.y - e.loc.y);
+        return true;
     }
 }

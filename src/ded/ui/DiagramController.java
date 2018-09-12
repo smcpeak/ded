@@ -776,9 +776,10 @@ public class DiagramController extends JPanel
             }
         }
 
+        boolean shift = SwingUtil.shiftPressed(e);
         switch (e.getKeyCode()) {
             case KeyEvent.VK_X:
-                if (SwingUtil.shiftPressed(e)) {
+                if (shift) {
                     assert(false);     // Make sure assertions are enabled.
                 }
                 else {
@@ -795,19 +796,19 @@ public class DiagramController extends JPanel
                 break;
 
             case KeyEvent.VK_LEFT:
-                this.moveSelectedControllersBy(new Point(-SNAP_DIST, 0));
+                this.moveOrResizeSelectedControllersBy(shift, new Point(-SNAP_DIST, 0));
                 break;
 
             case KeyEvent.VK_RIGHT:
-                this.moveSelectedControllersBy(new Point(+SNAP_DIST, 0));
+                this.moveOrResizeSelectedControllersBy(shift, new Point(+SNAP_DIST, 0));
                 break;
 
             case KeyEvent.VK_UP:
-                this.moveSelectedControllersBy(new Point(0, -SNAP_DIST));
+                this.moveOrResizeSelectedControllersBy(shift, new Point(0, -SNAP_DIST));
                 break;
 
             case KeyEvent.VK_DOWN:
-                this.moveSelectedControllersBy(new Point(0, +SNAP_DIST));
+                this.moveOrResizeSelectedControllersBy(shift, new Point(0, +SNAP_DIST));
                 break;
         }
     }
@@ -2308,17 +2309,28 @@ public class DiagramController extends JPanel
             "Set anchor name to entity name"));
     }
 
-    /** Move all moveable, selected controllers by 'delta'. */
-    public void moveSelectedControllersBy(Point delta)
+    /** Move or resize all selected controllers by 'delta'. */
+    public void moveOrResizeSelectedControllersBy(boolean resize, Point delta)
     {
         int changes = 0;
         for (Controller c : this.getSelectionSet()) {
-            c.moveBy(delta);
-            changes++;
+            boolean anyChange = false;
+            if (resize) {
+                anyChange = c.resizeBy(delta);
+            }
+            else {
+                anyChange = c.moveBy(delta);
+            }
+
+            if (anyChange) {
+                changes++;
+            }
         }
 
         if (changes > 0) {
-            this.diagramChanged("Move "+changes+" selected controllers by "+
+            this.diagramChanged((resize? "Resize " : "Move ") +
+                                changes +
+                                " selected controllers by "+
                                 GeomUtil.pointToString(delta));
         }
     }

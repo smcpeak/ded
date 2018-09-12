@@ -3,6 +3,7 @@
 
 package util.awt;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
@@ -327,6 +328,14 @@ public class GeomUtil {
             ret.addPoint(p.x, p.y);
         }
         return ret;
+    }
+
+    /** Return 'a' + 'b', except if that would make either dimension
+      * negative, set it to 0. */
+    public static Dimension addDP_nonnegative(Dimension d, Point p)
+    {
+        return new Dimension(Math.max(d.width + p.x, 0),
+                             Math.max(d.height + p.y, 0));
     }
 
     /** Return the magnitude of the cross product of 'a' and 'a',

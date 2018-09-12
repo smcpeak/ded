@@ -42,7 +42,7 @@ public class EntityResizeController extends ResizeController {
     }
 
     @Override
-    public void dragTo(Point pt)
+    public boolean dragTo(Point pt)
     {
         this.selfCheck();
 
@@ -87,6 +87,8 @@ public class EntityResizeController extends ResizeController {
         }
 
         // Do not set dirty bit.  Wait until mouse is released.
+
+        return true;
     }
 
     @Override

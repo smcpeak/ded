@@ -195,8 +195,10 @@ public class RelationController extends Controller {
     }
 
     @Override
-    public void dragTo(Point pt)
+    public boolean dragTo(Point pt)
     {
+        boolean anyChanges = false;
+
         // Convert to a delta relative to 'getLoc()'.
         Point delta = GeomUtil.subtract(pt, this.getLoc());
 
@@ -204,18 +206,23 @@ public class RelationController extends Controller {
         // points rather than Entities or Inheritances.
         if (this.relation.start.isPoint()) {
             this.relation.start.pt = GeomUtil.add(this.relation.start.pt, delta);
+            anyChanges = true;
         }
         if (this.relation.end.isPoint()) {
             this.relation.end.pt = GeomUtil.add(this.relation.end.pt, delta);
+            anyChanges = true;
         }
 
         // Apply the delta to all control points.
         for (int i=0; i < this.relation.controlPts.size(); i++) {
             Point cp = this.relation.controlPts.get(i);
             this.relation.controlPts.set(i, GeomUtil.add(cp, delta));
+            anyChanges = true;
         }
 
         // Do not set dirty bit.  Wait until mouse is released.
+
+        return anyChanges;
     }
 
     @Override

@@ -234,9 +234,10 @@ public class InheritanceController extends Controller {
     }
 
     @Override
-    public void dragTo(Point pt)
+    public boolean dragTo(Point pt)
     {
         this.inheritance.pt = pt;
+        return true;
     }
 
     @Override

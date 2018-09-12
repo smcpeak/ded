@@ -222,15 +222,27 @@ public abstract class Controller {
         this.selfCheck();
     }
 
-    /** Move the 'getLoc()' point to 'p'.  Default implementation is no-op. */
-    // Should this be renamed to 'setLoc'?
-    public void dragTo(Point p)
-    {}
+    /** Move the 'getLoc()' point to 'p'.  Return true if this controller
+      * can be moved.  Default implementation is no-op returning false. */
+    public boolean dragTo(Point p)
+    {
+        return false;
+    }
 
     /** Move the 'getLoc()' point by 'delta'.  Default uses 'dragTo' and 'getLoc'. */
-    public void moveBy(Point delta)
+    public boolean moveBy(Point delta)
     {
-        this.dragTo(GeomUtil.add(getLoc(), delta));
+        return this.dragTo(GeomUtil.add(getLoc(), delta));
+    }
+
+    /** Change the size by 'delta', or return false if that is not
+      * possible for this controller.  Default is false.
+      *
+      * This method shall not make either width or height negative.
+      * If 'delta' would do so, the relevant attribute is set to 0. */
+    public boolean resizeBy(Point delta)
+    {
+        return false;
     }
 
     /** Edit the attributes of the controlled element using a dialog box,

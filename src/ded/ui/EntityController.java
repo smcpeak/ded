@@ -262,7 +262,7 @@ public class EntityController extends Controller
     }
 
     @Override
-    public void dragTo(Point p)
+    public boolean dragTo(Point p)
     {
         this.entity.loc = p;
 
@@ -271,6 +271,16 @@ public class EntityController extends Controller
         // only create one undo/redo record for the entire drag.
         // That does mean that the dirty bit is clear during the
         // drag, which is slightly wrong, but I think acceptable.
+
+        return true;
+    }
+
+    @Override
+    public boolean resizeBy(Point delta)
+    {
+        Dimension oldSize = this.entity.size;
+        this.entity.size = GeomUtil.addDP_nonnegative(this.entity.size, delta);
+        return !oldSize.equals(this.entity.size);
     }
 
     @Override
