@@ -2197,6 +2197,40 @@ public class DiagramController extends JPanel
         this.diagramChanged(fmt("Set text align to \"%1$s\"", newAlign));
     }
 
+    /** Prompt for a new attribute value and apply it to all of the
+      * selected entities' attribute 'ega'. */
+    public void setSelectedEntitiesEGA(EntityGeometryAttribute ega)
+    {
+        ArrayList<EntityController> ents = this.getSelectedEntities();
+        if (ents.isEmpty()) {
+            return;
+        }
+
+        Long newValue = SwingUtil.showIntegerInputDialog(
+            this,                      // parent
+            "New " + ega.m_name,       // prompt
+            null,                      // initialValue
+            0,                         // minValue
+            2000000000);               // maxValue
+        if (newValue == null) {
+            return;
+        }
+
+        int v = newValue.intValue();
+        for (EntityController ec : ents) {
+            switch (ega) {
+                case EGA_LEFT:   ec.entity.loc.x       = v; break;
+                case EGA_TOP:    ec.entity.loc.y       = v; break;
+                case EGA_WIDTH:  ec.entity.size.width  = v; break;
+                case EGA_HEIGHT: ec.entity.size.height = v; break;
+            }
+        }
+
+        this.diagramChanged("Set " + ents.size() +
+                            " entities' " + ega.m_name +
+                            "s to " + v);
+    }
+
     /** Align selected entities according to 'ac'. */
     public void alignSelectedEntities(AlignCommand ac)
     {

@@ -1011,6 +1011,8 @@ public class EntityController extends Controller
     {
         final EntityController ths = this;
 
+        // Used mnemonic letters: afglstx
+
         JMenu fillColorMenu = new JMenu("Set fill color");
         fillColorMenu.setMnemonic(KeyEvent.VK_F);
         for (final String color : this.diagramController.diagram.namedColors.keySet()) {
@@ -1065,6 +1067,17 @@ public class EntityController extends Controller
             });
         }
         menu.add(textAlignMenu);
+
+        JMenu geometryMenu = new JMenu("Set geometry");
+        geometryMenu.setMnemonic(KeyEvent.VK_G);
+        for (final EntityGeometryAttribute ega : EnumSet.allOf(EntityGeometryAttribute.class)) {
+            geometryMenu.add(new MenuAction(ega.m_label, ega.m_mnemonic) {
+                public void actionPerformed(ActionEvent e) {
+                    ths.diagramController.setSelectedEntitiesEGA(ega);
+                }
+            });
+        }
+        menu.add(geometryMenu);
 
         JMenu alignMenu = new JMenu("Align edges");
         alignMenu.setMnemonic(KeyEvent.VK_A);
