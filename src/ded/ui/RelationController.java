@@ -462,9 +462,21 @@ public class RelationController extends Controller {
             drawArrowhead(g, secondToLast, last, this.relation.end.arrowStyle);
         }
 
-        // Label near midpoint of first segment.
-        g.setColor(this.getTextColor());
-        this.drawLabelAtSegment(g, points.get(0), points.get(1), this.relation.label);
+        // Label near midpoint of nth segment.
+        {
+            int n = this.relation.labelSegmentNumber;
+            if (n < 0) {
+                // Should not happen.
+            }
+            else if (n+1 >= points.size()) {
+                // Index is too large, do not draw a label.
+            }
+            else {
+                g.setColor(this.getTextColor());
+                this.drawLabelAtSegment(g, points.get(n), points.get(n+1),
+                    this.relation.label);
+            }
+        }
     }
 
     /** Get the color to use to draw this Relation's line. */

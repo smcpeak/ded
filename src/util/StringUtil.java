@@ -107,6 +107,63 @@ public class StringUtil {
         }
         return sb.toString();
     }
+
+    /** Parse 'input' as a 32-bit signed decimal integer.  Throw a
+      * RuntimeException with a useful error message if its syntax
+      * does not conform.  (This is as opposed to NumberFormatException,
+      * which has no useful message.) */
+    public static int parseInteger(String input)
+    {
+        try {
+            return Integer.parseInt(input);
+        }
+        catch (NumberFormatException e) {
+            throw new RuntimeException("Malformed integer: \"" + input + "\".");
+        }
+    }
+
+    /** Parse 'input' as a signed 32-bit decimal integer.  But if it is
+      * empty, return null. */
+    public static Integer parseOptionalInteger(String input)
+    {
+        if (input.isEmpty()) {
+            return null;
+        }
+        return parseInteger(input);
+    }
+
+    /** Parse 'input' as a non-negative 32-bit decimal integer. */
+    public static int parseNonnegativeInteger(String input)
+    {
+        int ret = parseInteger(input);
+        if (ret < 0) {
+            throw new RuntimeException("Non-negative value required, but "+
+                                       ret+" was supplied.");
+        }
+        return ret;
+    }
+
+    /** Parse 'input' as a non-negative 32-bit decimal integer, or null if empty. */
+    public static Integer parseOptionalNonnegativeInteger(String input)
+    {
+        Integer ret = parseOptionalInteger(input);
+        if (ret != null && ret < 0) {
+            throw new RuntimeException("Non-negative value required, but "+
+                                       ret+" was supplied.");
+        }
+        return ret;
+    }
+
+    /** Parse 'input' as a positive 32-bit decimal integer, or null if empty. */
+    public static Integer parseOptionalPositiveInteger(String input)
+    {
+        Integer ret = parseOptionalInteger(input);
+        if (ret != null && ret <= 0) {
+            throw new RuntimeException("Positive value required, but "+
+                                       ret+" was supplied.");
+        }
+        return ret;
+    }
 }
 
 // EOF

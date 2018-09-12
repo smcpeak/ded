@@ -11,6 +11,7 @@ import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 
+import util.StringUtil;
 import util.Util;
 import util.swing.ModalDialog;
 import util.swing.SwingUtil;
@@ -30,6 +31,7 @@ public class RelationDialog extends ModalDialog {
 
     // Controls.
     private JTextField labelField;
+    private JTextField labelSegmentNumberField;
     private JTextField lineWidthField;
     private JComboBox<RoutingAlgorithm> routingChooser;
     private JComboBox<ArrowStyle> startArrowStyleChooser,
@@ -48,6 +50,16 @@ public class RelationDialog extends ModalDialog {
         Box vb = ModalDialog.makeMarginVBox(this, ModalDialog.OUTER_MARGIN);
 
         this.labelField = ModalDialog.makeLineEdit(vb, "Label", 'l', this.relation.label);
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+
+        this.labelSegmentNumberField = ModalDialog.makeLineEditWithHelp(vb,
+            "Label segment number",
+            'n',
+            String.valueOf(this.relation.labelSegmentNumber),
+            parent,
+            "The line segment next to which the label will be placed, "+
+            "where 0 is the first segment.  The value must be "+
+            "non-negative, and if it is too large, no label is drawn.");
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
         this.lineWidthField = ModalDialog.makeLineEditWithHelp(vb, "Line width", 'w',
@@ -181,55 +193,58 @@ public class RelationDialog extends ModalDialog {
     @Override
     public void okPressed()
     {
-        RoutingAlgorithm ra = (RoutingAlgorithm)this.routingChooser.getSelectedItem();
-        ArrowStyle startStyle = (ArrowStyle)this.startArrowStyleChooser.getSelectedItem();
-        ArrowStyle endStyle = (ArrowStyle)this.endArrowStyleChooser.getSelectedItem();
-
-        String label = this.labelField.getText();
-
-        String lwt = this.lineWidthField.getText();
-        Integer lineWidth = null;
         try {
-            if (!lwt.isEmpty()) {
-                lineWidth = Integer.valueOf(lwt);
+            RoutingAlgorithm ra = (RoutingAlgorithm)this.routingChooser.getSelectedItem();
+            ArrowStyle startStyle = (ArrowStyle)this.startArrowStyleChooser.getSelectedItem();
+            ArrowStyle endStyle = (ArrowStyle)this.endArrowStyleChooser.getSelectedItem();
 
+            String label = this.labelField.getText();
+
+            int labelSegmentNumber = 0;
+            try {
+                labelSegmentNumber = StringUtil.parseNonnegativeInteger(
+                    this.labelSegmentNumberField.getText());
+            }
+            catch (Exception e) {
+                throw new RuntimeException("Label segment number: " +
+                    Util.getExceptionMessage(e), e);
+            }
+
+            Integer lineWidth = null;
+            try {
                 // I'd actually like 0 to be allowed and mean to not draw
                 // the line.  But, at the moment, 0 is treated the same as
                 // 1 during painting, so make it illegal.
-                if (lineWidth < 1) {
-                    SwingUtil.errorMessageBox(this,
-                        "Line width must be positive: "+lineWidth);
-                    return;      // no super.okPressed
-                }
+                lineWidth = StringUtil.parseOptionalPositiveInteger(
+                    this.lineWidthField.getText());
             }
-        }
-        catch (NumberFormatException e) {
-            SwingUtil.errorMessageBox(this,
-                "Cannot parse line width \""+lwt+"\": "+Util.getExceptionMessage(e));
-            return;     // do *not* call super.okPressed()
-        }
+            catch (Exception e) {
+                throw new RuntimeException("Line width: " + Util.getExceptionMessage(e), e);
+            }
 
-        ArrayList<Integer> dashStructure;
-        try {
-            dashStructure = stringToDashStructure(this.dashStructureField.getText());
+            ArrayList<Integer> dashStructure =
+                stringToDashStructure(this.dashStructureField.getText());
+
+            // We are now committed to closing the dialog without an error message.
+            // Update the underlying model object.
+            this.relation.label = label;
+            this.relation.labelSegmentNumber = labelSegmentNumber;
+            this.relation.routingAlg = ra;
+            this.relation.start.arrowStyle = startStyle;
+            this.relation.end.arrowStyle = endStyle;
+            this.relation.lineColor = (String)this.lineColorChooser.getSelectedItem();
+            this.relation.textColor = (String)this.textColorChooser.getSelectedItem();
+            this.relation.lineWidth = lineWidth;
+            this.relation.dashStructure = dashStructure;
+
+            super.okPressed();
         }
         catch (RuntimeException e) {
             SwingUtil.errorMessageBox(this, e.getLocalizedMessage());
-            return;
+
+            // Do *not* call super.okPressed().  Consequently, the
+            // dialog will remain open, waiting for valid input.
         }
-
-        // We are now committed to closing the dialog without an error message.
-        // Update the underlying model object.
-        this.relation.label = label;
-        this.relation.routingAlg = ra;
-        this.relation.start.arrowStyle = startStyle;
-        this.relation.end.arrowStyle = endStyle;
-        this.relation.lineColor = (String)this.lineColorChooser.getSelectedItem();
-        this.relation.textColor = (String)this.textColorChooser.getSelectedItem();
-        this.relation.lineWidth = lineWidth;
-        this.relation.dashStructure = dashStructure;
-
-        super.okPressed();
     }
 
     /** Launch the dialog, blocking until the dialog is dismissed.

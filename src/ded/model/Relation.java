@@ -43,6 +43,16 @@ public class Relation {
     /** Text label for the relation. */
     public String label = "";
 
+    /** Which line segment to label.  0 is the first, and the default.
+      * This must be non-negative.  If it is greater than the last
+      * segment, no label is drawn.
+      *
+      * Here, "line segment" means one of the straight segments drawn
+      * when the path is plotted.  The number of segments depends on
+      * how the control points are arranged.  Consequently, this is a
+      * somewhat fragile way to specify where the label goes. */
+    public int labelSegmentNumber = 0;
+
     /** Optional line width.  If null, use default, which depends
       * on whether this is an inheritance edge. */
     public Integer lineWidth = null;
@@ -81,6 +91,7 @@ public class Relation {
 
         this.routingAlg = obj.routingAlg;
         this.label = obj.label;
+        this.labelSegmentNumber = obj.labelSegmentNumber;
         this.lineWidth = obj.lineWidth;
         this.lineColor = obj.lineColor;
         this.textColor = obj.textColor;
@@ -120,6 +131,7 @@ public class Relation {
     {
         this.start.globalSelfCheck(d);
         this.end.globalSelfCheck(d);
+        assert(this.labelSegmentNumber >= 0);
 
         if (!this.dashStructure.isEmpty()) {
             int numPositive = 0;
@@ -147,6 +159,7 @@ public class Relation {
                    this.controlPts.equals(r.controlPts) &&
                    this.routingAlg.equals(r.routingAlg) &&
                    this.label.equals(r.label) &&
+                   this.labelSegmentNumber == r.labelSegmentNumber &&
                    Util.nullableEquals(this.lineWidth, r.lineWidth) &&
                    this.lineColor.equals(r.lineColor) &&
                    this.textColor.equals(r.textColor) &&
@@ -164,6 +177,7 @@ public class Relation {
         h = h*31 + Util.collectionHashCode(this.controlPts);
         h = h*31 + this.routingAlg.hashCode();
         h = h*31 + this.label.hashCode();
+        h = h*31 + this.labelSegmentNumber;
         h = h*31 + Util.nullableHashCode(this.lineWidth);
         h = h*31 + this.lineColor.hashCode();
         h = h*31 + this.textColor.hashCode();
@@ -196,6 +210,10 @@ public class Relation {
 
             if (!this.label.isEmpty()) {
                 o.put("label", this.label);
+            }
+
+            if (this.labelSegmentNumber != 0) {
+                o.put("labelSegmentNumber", this.labelSegmentNumber);
             }
 
             if (this.lineWidth != null) {
@@ -247,6 +265,10 @@ public class Relation {
         }
 
         this.label = o.optString("label", "");
+
+        if (o.has("labelSegmentNumber")) {
+            this.labelSegmentNumber = Integer.valueOf(o.getInt("labelSegmentNumber"));
+        }
 
         if (version < 9) {
             // The end arrowhead style was associated with the relation itself.
