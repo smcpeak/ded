@@ -17,6 +17,3 @@ After building it, run the 'ded' script, which does:
   java -jar dist/ded.jar
 
 Once it is running, Help|Help explains what to do.
-
-I can be reached at smcpeak coverity com.
-                           @        .
