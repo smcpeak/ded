@@ -644,6 +644,9 @@ public class Ded extends JFrame implements WindowListener {
                     ded.diagramController.loadFromNamedFile(args[0]);
                 }
 
+                // Center the window initially.
+                ded.setLocationRelativeTo(null);
+
                 ded.setVisible(true);
 
                 if (false) {
