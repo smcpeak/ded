@@ -6,7 +6,6 @@ package ded.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -71,6 +70,7 @@ public class EntityDialog extends ModalDialog
     private JTextField anchorNameText;
     private JTextField imageFileNameText;
     private JComboBox<ImageFillStyle> imageFillStyleChooser;
+    private JTextField objectGraphNodeID;
 
     // -------------- methods ---------------
     public EntityDialog(Component documentParent, Diagram diagram, Entity entity)
@@ -258,6 +258,14 @@ public class EntityDialog extends ModalDialog
                 this.entity.imageFillStyle);
             this.imageFillStyleChooser.addItemListener(this);
         }
+
+        // Object graph node name.
+        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+        this.objectGraphNodeID = ModalDialog.makeLineEditWithHelp(vb,
+            "Object graph node ID", 'o', this.entity.objectGraphNodeID, this,
+
+            "ID of the node in the object graph data source to "+
+            "display in this entity box.  See [TODO] for more info.");
     }
 
     /** Create the controls for the left column, which is just the
@@ -275,9 +283,7 @@ public class EntityDialog extends ModalDialog
         lbl.setLabelFor(this.attributeText);
 
         // Tab and shift-tab should move the focus, not insert characters.
-        // http://stackoverflow.com/questions/5042429/how-can-i-modify-the-behavior-of-the-tab-key-in-a-jtextarea
-        this.attributeText.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
-        this.attributeText.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
+        disableTabInTextArea(this.attributeText);
 
         JScrollPane scroll = new JScrollPane(this.attributeText);
 
@@ -445,6 +451,7 @@ public class EntityDialog extends ModalDialog
         this.entity.anchorName = this.anchorNameText.getText();
         this.entity.imageFileName = this.imageFileNameText.getText();
         this.entity.imageFillStyle = imageFillStyle;
+        this.entity.objectGraphNodeID = this.objectGraphNodeID.getText();
 
         // Not completely general at this time.
         if (this.entity.shape.numParams == 2) {

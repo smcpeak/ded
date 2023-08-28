@@ -7,8 +7,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+
 
 /** Generic Java utilities. */
 public class Util {
@@ -144,6 +149,20 @@ public class Util {
         return a < b ? -1 :
                a > b ? +1 :
                         0 ;
+    }
+
+    /** Return 'coll' in a sorted array. */
+    public static <T extends Comparable<? super T> >
+    ArrayList<T> sorted(Collection<T> coll)
+    {
+        ArrayList<T> arr = new ArrayList<T>();
+
+        for (T t : coll) {
+            arr.add(t);
+        }
+
+        Collections.sort(arr);
+        return arr;
     }
 }
 

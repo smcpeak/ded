@@ -3,6 +3,7 @@ in
 cov
 dist
 data-coverity
+personal-make-cmd.sh
 tests/image-map/output.html
 *.bak
 __pycache__

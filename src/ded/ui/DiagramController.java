@@ -59,6 +59,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import util.IdentityHashSet;
 import util.ImageFileUtil;
@@ -73,6 +74,7 @@ import ded.model.Diagram;
 import ded.model.Entity;
 import ded.model.EntityShape;
 import ded.model.Inheritance;
+import ded.model.ObjectGraphNode;
 import ded.model.Relation;
 import ded.model.RelationEndpoint;
 import ded.model.TextAlign;
@@ -129,6 +131,9 @@ public class DiagramController extends JPanel
     /** When true, turn on some extra diagnostics related to debugging
       * a problem with Abbot where it interferes with normal focus. */
     public static final boolean debugFocus = false;
+
+    /** Print some debug tracing for 'recomputeGraphEdges'. */
+    public static final boolean s_traceRecompute = false;
 
     // ------------- static data ---------------
     /** Granularity of drag/move snap action. */
@@ -230,6 +235,19 @@ public class DiagramController extends JPanel
 
     /** Window for directly displaying the undo history. */
     private UndoHistoryWindow undoHistoryWindow;
+
+    /** Set of node-to-node edges represented by existing relations, as
+      * a map from source node ID to a map from target node ID to a set
+      * of relations connecting that pair of entities.
+      *
+      * This uses a set of Relations because it is possible, although
+      * unusual, to have many such between any pair of nodes, and they
+      * can all have different labels.
+      *
+      * This is computed from 'diagram.relations', and recomputed
+      * whenever the diagram changes. */
+    private HashMap<String, HashMap<String, ArrayList<Relation> > >
+        m_graphEdges;
 
     /** When not 0, we use a "triple buffer" render technique to
       * avoid problems on Apple HiDPI/Retina displays.  Mode -1
@@ -920,6 +938,7 @@ public class DiagramController extends JPanel
     private void setDiagram(Diagram newDiagram)
     {
         this.diagram = newDiagram;
+        this.recomputeGraphEdges();
 
         // Sizing is achieved by specifying a preferred size for
         // the content pane, then packing other controls and the
@@ -1411,6 +1430,7 @@ public class DiagramController extends JPanel
         this.undoHistory.recordDiagramChange(this.diagram, command);
         this.undoHistoryWindow.updateHistory();
         this.populateRedoAlternateMenu();
+        this.recomputeGraphEdges();
 
         this.setDirty();
         this.repaint();
@@ -2427,6 +2447,14 @@ public class DiagramController extends JPanel
         this.repaint();
     }
 
+    /** Show the object graph dialog. */
+    public void editObjectGraph()
+    {
+        if (ObjectGraphDialog.exec(this, this.diagram)) {
+            this.diagramChanged("Edit object graph");
+        }
+    }
+
     /** Log the given one-line message.  A newline will be added after
       * it to mark its end in the total accumulated log. */
     public void log(String message)
@@ -2681,6 +2709,158 @@ public class DiagramController extends JPanel
     public void setUndoHistoryLimit(int newLimit)
     {
         this.undoHistoryLimit = newLimit;
+    }
+
+    /** Get the graph node for 'id', or null if none. */
+    public ObjectGraphNode getGraphNode(String id)
+    {
+        return this.diagram.getGraphNode(id);
+    }
+
+    /** If there is already an entity for 'id', find and return its
+      * controller.  Otherwise, make a new entity and controller at
+      * 'suggestedLoc', and return the controller. */
+    public EntityController findOrCreateEntityControllerWithGraphID(
+        String id,
+        Point suggestedLoc)
+    {
+        for (Controller c : this.controllers) {
+            if (c instanceof EntityController) {
+                EntityController ec = (EntityController)c;
+                if (id.equals(ec.entity.objectGraphNodeID)) {
+                    return ec;
+                }
+            }
+        }
+
+        EntityController ec = EntityController.createEntityAt(this,
+            suggestedLoc);
+        ec.entity.objectGraphNodeID = id;
+        this.diagramChanged(
+            fmt("Create entity for node ID \"%1$s\"", id));
+
+        return ec;
+    }
+
+    /** If there is an existing relation connecting 'fromEntity' to
+      * 'toEntity', with 'label', return its controller.  Otherwise make
+      * a new one and return its controller. */
+    public RelationController findOrCreateRelationControllerFromToLabel(
+        Entity fromEntity,
+        Entity toEntity,
+        String label)
+    {
+        for (Controller c : this.controllers) {
+            if (c instanceof RelationController) {
+                RelationController rc = (RelationController)c;
+
+                if (rc.relation.start.entity == fromEntity &&
+                    rc.relation.end.entity == toEntity &&
+                    rc.relation.label.equals(label))
+                {
+                    return rc;
+                }
+            }
+        }
+
+        Relation r = new Relation(
+            new RelationEndpoint(fromEntity),
+            new RelationEndpoint(toEntity).
+                withArrowStyle(ArrowStyle.AS_FILLED_TRIANGLE));
+        r.label = label;
+        this.diagram.relations.add(r);
+
+        RelationController rc = this.buildRelationController(r);
+
+        this.diagramChanged(
+            fmt("Create relation from %1$s to %2$s with label \"%3$s\"",
+                describeEntityForChange(fromEntity),
+                describeEntityForChange(toEntity),
+                label));
+
+        return rc;
+    }
+
+    /** Describe 'e' in a way that is suitable for inclusion in a
+      * diagram changed message. */
+    public String describeEntityForChange(Entity e)
+    {
+        if (!e.objectGraphNodeID.isEmpty()) {
+            return fmt("node with ID \"%1$s\"", e.objectGraphNodeID);
+        }
+
+        if (!e.name.isEmpty()) {
+            return fmt("node with name \"%1$s\"", e.name);
+        }
+
+        return fmt("node at (%1$d,%2$d)", e.loc.x, e.loc.y);
+    }
+
+    /** Return true if there is a relation with 'label' from an entity
+      * associated with 'fromID' to an entity associated with 'toID'. */
+    public boolean hasRelationFromToLabel(
+        String fromID, String toID, String label)
+    {
+        HashMap<String, ArrayList<Relation> > successors =
+            m_graphEdges.get(fromID);
+        if (successors == null) {
+            return false;
+        }
+
+        ArrayList<Relation> relations =
+            successors.get(toID);
+        if (relations == null) {
+            return false;
+        }
+
+        for (Relation r : relations) {
+            if (label.equals(r.label)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** Recompute 'm_graphEdges'. */
+    private void recomputeGraphEdges()
+    {
+        if (s_traceRecompute) {
+            System.out.println("recomputeGraphEdges");
+        }
+
+        m_graphEdges =
+            new HashMap<String, HashMap<String, ArrayList<Relation> > >();
+
+        for (Relation r : this.diagram.relations) {
+            String fromID = r.start.getObjectGraphNodeID();
+            String toID = r.end.getObjectGraphNodeID();
+
+            if (fromID.isEmpty() || toID.isEmpty() || r.label.isEmpty()) {
+                // Skip if any of the three are empty.
+            }
+            else {
+                if (s_traceRecompute) {
+                    System.out.println(fmt(
+                        "  edge: %1$s to %2$s with \"%3$s\"",
+                        fromID, toID, r.label));
+                }
+
+                if (!m_graphEdges.containsKey(fromID)) {
+                    m_graphEdges.put(fromID, new HashMap<String, ArrayList<Relation> >());
+                }
+                HashMap<String, ArrayList<Relation> > successors =
+                    m_graphEdges.get(fromID);
+
+                if (!successors.containsKey(toID)) {
+                    successors.put(toID, new ArrayList<Relation>());
+                }
+                ArrayList<Relation> relations =
+                    successors.get(toID);
+
+                relations.add(r);
+            }
+        }
     }
 }
 

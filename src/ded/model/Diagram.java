@@ -59,7 +59,7 @@ public class Diagram implements JSONable {
       * should include a bump--even though the old code might be
       * able to read the file without choking, the semantics would
       * not be preserved. */
-    public static final int currentFileVersion = 24;
+    public static final int currentFileVersion = 25;
 
     // ---------- public data ------------
     /** Size of window to display diagram.  Some elements might not fit
@@ -92,6 +92,10 @@ public class Diagram implements JSONable {
     /** Map from color names to Colors. */
     public LinkedHashMap<String, Color> namedColors;
 
+    /** Set of objects forming a graph that can be interactively
+      * explored using the editor. */
+    public ObjectGraph objectGraph;
+
     // ----------- public methods -----------
     public Diagram()
     {
@@ -101,6 +105,7 @@ public class Diagram implements JSONable {
         this.inheritances = new ArrayList<Inheritance>();
         this.relations = new ArrayList<Relation>();
         this.namedColors = makeDefaultColors();
+        this.objectGraph = new ObjectGraph();
     }
 
     public static LinkedHashMap<String, Color> makeDefaultColors()
@@ -227,6 +232,7 @@ public class Diagram implements JSONable {
         this.drawFileName = src.drawFileName;
         this.backgroundColor = src.backgroundColor;
         this.namedColors = new LinkedHashMap<String,Color>(src.namedColors);
+        this.objectGraph = new ObjectGraph(src.objectGraph);
 
         // Make empty containers for the diagram elements.
         this.entities = new ArrayList<Entity>();
@@ -342,6 +348,13 @@ public class Diagram implements JSONable {
         return new Diagram(this, new ElementFilter());
     }
 
+    /** Return the graph object whose "id" equals 'searchID', or null
+      * if none does. */
+    public ObjectGraphNode getGraphNode(String searchID)
+    {
+        return this.objectGraph.getOptNode(searchID);
+    }
+
     // ------------------ serialization --------------------
     @Override
     public JSONObject toJSON()
@@ -361,6 +374,8 @@ public class Diagram implements JSONable {
             if (!this.namedColors.equals(makeDefaultColors())) {
                 o.put("namedColors", colorTableToJSON(this.namedColors));
             }
+
+            o.put("objectGraph", this.objectGraph.toJSON());
 
             // Map from an entity to its position in the serialized
             // 'entities' array, so it can be referenced by inheritances
@@ -449,6 +464,16 @@ public class Diagram implements JSONable {
         }
         else {
             this.namedColors = parseColorTableFromJSON(colorArray);
+        }
+
+        if (ver >= 25) {
+            JSONObject jsonGraph = o.optJSONObject("objectGraph");
+            if (jsonGraph != null) {
+                this.objectGraph = new ObjectGraph(jsonGraph);
+            }
+        }
+        if (this.objectGraph == null) {
+            this.objectGraph = new ObjectGraph();
         }
 
         if (ver >= 3) {
@@ -672,6 +697,7 @@ public class Diagram implements JSONable {
         this.inheritances = new ArrayList<Inheritance>();
         this.relations = new ArrayList<Relation>();
         this.namedColors = makeDefaultColors();
+        this.objectGraph = new ObjectGraph();
 
         if (flat.version >= 5) {
             this.windowSize = flat.readDimension();
@@ -763,7 +789,9 @@ public class Diagram implements JSONable {
                    this.entities.equals(d.entities) &&
                    this.inheritances.equals(d.inheritances) &&
                    this.relations.equals(d.relations) &&
-                   this.namedColors.equals(d.namedColors);
+                   this.namedColors.equals(d.namedColors) &&
+                   this.objectGraph.equals(d.objectGraph) &&
+                   true;
         }
         return false;
     }
@@ -779,6 +807,7 @@ public class Diagram implements JSONable {
         h = h*31 + Util.collectionHashCode(this.inheritances);
         h = h*31 + Util.collectionHashCode(this.relations);
         h = h*31 + this.namedColors.hashCode();
+        h = h*31 + this.objectGraph.hashCode();
         return h;
     }
 

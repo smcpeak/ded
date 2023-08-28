@@ -11,6 +11,12 @@ import javax.swing.KeyStroke;
 public abstract class MenuAction extends AbstractAction {
     private static final long serialVersionUID = -7514077079980788428L;
 
+    /** Create a menu Action with specified title. */
+    public MenuAction(String title)
+    {
+        super(title);
+    }
+
     /** Create a menu Action with specified title and mnemonic.
       * The latter should be a KeyEvent.VK_XXX constant. */
     public MenuAction(String title, int mnemonicKeycode)

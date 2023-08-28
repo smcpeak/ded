@@ -1,0 +1,72 @@
+test-plan.txt
+Pre-release test plan
+---------------------
+
+This is a work-in-progress test plan.  I intend to expand it as I add
+new features I can't easily test automatically.
+
+
+
+---------------------
+Test: make_check
+
+* Run "make check".
+
+  Check that it succeeds.
+
+
+---------------------
+Test: objgraph
+
+* Run "./ded tests/objgraph.ded".
+
+  Check that attribute "succ: -> n2" appears in the "n1" box.
+
+  Check that "anotherAttrib: 123" is in "n1".
+
+* Right-click on "n1", "Follow pointer", "succ".
+
+  Check that "n2" is created with a "succ" edge to it.
+
+  Check that "succ" is no longer displayed in "n1".
+
+* Resize "n2" so all of its text can be seen.
+
+  Check that "pred" is in "n2".
+
+* Right-click on "n2", "Follow pointer", "pred".
+
+  Check that a "pred" edge going back to "n1" has been created.
+
+  Check that "pred" no longer is in "n2".
+
+* Right-click on "n1", "Follow pointer", "notHere".
+
+  Check that an error appears about no "null" node found.
+
+* Dismiss the error.
+
+* Choose menu "Diagram" -> "Edit object graph..."
+
+  Check that the JSON is displayed in the dialog.
+
+* Insert "x" at the start of the JSON, then press Ok.
+
+  Check that a parse error dialog is shown.
+
+* Dismiss the error.
+
+  Check that we are back at the JSON dialog.
+
+* Remove the stray "x".
+
+* Delete the "anotherAttrib" line, then press Ok.
+
+  Check that the dialog closes successfully.
+
+  Check that "anotherAttrib" is gone from "n1".
+
+* Quit without saving.
+
+
+EOF

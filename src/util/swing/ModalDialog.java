@@ -7,6 +7,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -24,6 +25,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JRootPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -43,6 +45,11 @@ public class ModalDialog extends JDialog {
     /** Initially false, this is set to true if the dialog is closed
       * by pressing the OK button. */
     public boolean okWasPressed;
+
+    /** If not null, a "Help" button will be created next to the
+      * "Cancel" and "Ok" buttons when 'finishCreatingDialog' is
+      * called. */
+    public String m_helpText = null;
 
     // ---------------- methods ----------------
     /** Create a new dialog.  'documentParent' is a Component that
@@ -323,6 +330,16 @@ public class ModalDialog extends JDialog {
         return comboBox;
     }
 
+    // Arrange so 'textArea' will ignore Tab and Shift-Tab so they can
+    // be used to change the focused element.
+    public static void disableTabInTextArea(
+        JTextArea textArea)
+    {
+        // http://stackoverflow.com/questions/5042429/how-can-i-modify-the-behavior-of-the-tab-key-in-a-jtextarea
+        textArea.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+        textArea.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
+    }
+
     /** Create a button that, when pressed, shows a help dialog with
       * 'helpText' in it.  The help dialog caption will be
       * "Help: $labelText". */
@@ -345,13 +362,29 @@ public class ModalDialog extends JDialog {
         return helpButton;
     }
 
-    /** Create Cancel and OK buttons and add them to 'containingVBox'. */
-    public void createCancelAndOkButtons(Box containingVBox)
+    /** Create Cancel and OK buttons and add them to 'containingVBox'.
+      * If 'm_helpText' is not null, also create a "Help" button. */
+    public void createCancelAndOkButtons(
+        Box containingVBox)
     {
         Box btnBox = ModalDialog.makeHBox(containingVBox);
 
         // Buttons will be on the right side of the dialog.
         btnBox.add(Box.createHorizontalGlue());
+
+        if (m_helpText != null) {
+            JButton helpButton = makeButton("Help", KeyEvent.VK_H,
+                new ActionListener() {
+                    @Override public void actionPerformed(ActionEvent e) {
+                        SwingUtil.informationMessageBox(ModalDialog.this,
+                            "Help: " + ModalDialog.this.getTitle(),
+                            m_helpText);
+                    }
+                });
+
+            btnBox.add(helpButton);
+            btnBox.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
+        }
 
         JButton cancelButton = this.makeCancelButton();
         btnBox.add(cancelButton);

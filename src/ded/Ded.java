@@ -363,6 +363,12 @@ public class Ded extends JFrame implements WindowListener {
             }
         });
 
+        m.add(new MenuAction("Edit object graph...", KeyEvent.VK_O) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.editObjectGraph();
+            }
+        });
+
         m.addSeparator();
 
         m.add(new MenuAction("Bring selected entities to front", KeyEvent.VK_F, KeyEvent.VK_F, 0) {

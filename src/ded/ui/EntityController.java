@@ -14,6 +14,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,7 +23,10 @@ import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
+import org.json.JSONObject;
+
 import util.IdentityHashSet;
+import util.Util;
 import util.awt.BitmapFont;
 import util.awt.G;
 import util.awt.GeomUtil;
@@ -33,6 +37,7 @@ import ded.model.Diagram;
 import ded.model.Entity;
 import ded.model.EntityShape;
 import ded.model.ImageFillStyle;
+import ded.model.ObjectGraphNode;
 import ded.model.ShapeFlag;
 import ded.model.TextAlign;
 
@@ -287,7 +292,7 @@ public class EntityController extends Controller
     public void paintSelectionBackground(Graphics g0)
     {
         Graphics g = g0.create();
-        Rectangle r = this.entity.getRect();
+        Rectangle r = this.getRect();
 
         // Paint selection box.  This is a little bigger than the actual
         // hit-test bounds because a lot of my new options for drawing
@@ -340,7 +345,7 @@ public class EntityController extends Controller
         Graphics g = g0.create();
 
         // Get bounding rectangle.
-        Rectangle r = this.entity.getRect();
+        Rectangle r = this.getRect();
 
         // If cuboid, draw visible side faces beside the front face,
         // outside 'r'.
@@ -454,20 +459,26 @@ public class EntityController extends Controller
                 break;
         }
 
+        // String to put in the title bar of the entity.
+        String entityName = this.getEntityNameForDisplay();
+
+        // String to put inside the main area, or "" for nothing.
+        String entityAttributes = this.getEntityAttributesForDisplay();
+
         if (!wantNameRender) {
             // Skip the name render code.
         }
-        else if (this.entity.attributes.isEmpty() &&
+        else if (entityAttributes.isEmpty() &&
                  this.entity.shape != EntityShape.ES_WINDOW)
         {
             // Name is vertically and horizontally centered in the space.
             g.setColor(this.getTextColor());
-            drawAlignedText(g, r, this.entity.name, this.entity.nameAlign);
+            drawAlignedText(g, r, entityName, this.entity.nameAlign);
         }
         else {
             // Name.
             Rectangle nameRect = new Rectangle(r);
-            if (this.entity.name.isEmpty() && this.entity.shape != EntityShape.ES_WINDOW) {
+            if (entityName.isEmpty() && this.entity.shape != EntityShape.ES_WINDOW) {
                 // Do not take up space, do not draw divider.
                 nameRect.height = 0;
             }
@@ -502,7 +513,7 @@ public class EntityController extends Controller
                 }
 
                 g.setColor(this.getTextColor());
-                drawAlignedText(g, nameRect, this.entity.name, this.entity.nameAlign);
+                drawAlignedText(g, nameRect, entityName, this.entity.nameAlign);
             }
 
             // Attributes.
@@ -517,7 +528,7 @@ public class EntityController extends Controller
             BitmapFont font = this.diagramController.getDiagramFont();
             int maxAscent = font.getMaxAscent();
             font.drawTextWithNewlines(g2,
-                this.entity.attributes,
+                entityAttributes,
                 attributeRect.x,
                 attributeRect.y + maxAscent);
         }
@@ -982,7 +993,8 @@ public class EntityController extends Controller
         G.drawImage(g, buttonImage, square);
 
         g.setColor(this.getTextColor());
-        drawAlignedText(g, labelArea, this.entity.name, this.entity.nameAlign);
+        drawAlignedText(g, labelArea, this.getEntityNameForDisplay(),
+                        this.entity.nameAlign);
     }
 
     /** Return the rectangle describing this controller's bounds. */
@@ -1021,7 +1033,7 @@ public class EntityController extends Controller
     {
         final EntityController ths = this;
 
-        // Used mnemonic letters: afglstx
+        // Used mnemonic letters: afglpstx
 
         JMenu fillColorMenu = new JMenu("Set fill color");
         fillColorMenu.setMnemonic(KeyEvent.VK_F);
@@ -1100,6 +1112,20 @@ public class EntityController extends Controller
         }
         menu.add(alignMenu);
 
+        ArrayList<String> pointers = getFollowablePointers();
+        if (!pointers.isEmpty()) {
+            JMenu pointerMenu = new JMenu("Follow pointer");
+            pointerMenu.setMnemonic(KeyEvent.VK_P);
+            for (String key : pointers) {
+                pointerMenu.add(new MenuAction(key) {
+                    public void actionPerformed(ActionEvent e) {
+                        ths.followPointer(key);
+                    }
+                });
+            }
+            menu.add(pointerMenu);
+        }
+
         menu.add(new AbstractAction("Set anchor name to entity name") {
             public void actionPerformed(ActionEvent e) {
                 ths.diagramController.setSelectedEntitiesAnchorName(
@@ -1134,7 +1160,8 @@ public class EntityController extends Controller
 
     /** Create a new entity at location 'p' in 'dc'.  This corresponds to
       * the user left-clicking on 'p' while in entity creation mode. */
-    public static void createEntityAt(DiagramController dc, Point p)
+    public static EntityController createEntityAt(
+        DiagramController dc, Point p)
     {
         Entity ent = new Entity();
         ent.loc = GeomUtil.snapPoint(new Point(p.x - ent.size.width/2,
@@ -1145,6 +1172,8 @@ public class EntityController extends Controller
         EntityController ec = new EntityController(dc, ent);
         dc.add(ec);
         dc.selectOnly(ec);
+
+        return ec;
     }
 
     @Override
@@ -1338,6 +1367,153 @@ public class EntityController extends Controller
         this.diagramController.remove(this);
 
         this.diagramController.selfCheck();
+    }
+
+    // Get the name we should draw.  Normally this is the same as the
+    // entity name, but is different for a graph node.
+    public String getEntityNameForDisplay()
+    {
+        // If the entity is associated with a graph node, use the name
+        // associated with that node.
+        ObjectGraphNode node = getGraphNode();
+        if (node != null) {
+            return node.getNameForDisplay();
+        }
+
+        else if (!this.entity.objectGraphNodeID.isEmpty()) {
+            return "node ID not found: " +
+                   this.entity.objectGraphNodeID;
+        }
+
+        else {
+            // Use the name stored in the entity.
+            //
+            // A possible idea for the future is to combine the name
+            // with the node ID somehow, so the entity name is not
+            // completely irrelevant.
+            return this.entity.name;
+        }
+    }
+
+    /** Get the attributes string to draw, possibly from a graph node,
+      * as a newline-separated string. */
+    public String getEntityAttributesForDisplay()
+    {
+        ObjectGraphNode node = getGraphNode();
+        if (node != null) {
+            StringBuilder sb = new StringBuilder();
+
+            // Attributes.
+            {
+                // Iterate in key order for determinism.
+                //Set<String> keySet = node.m_attributes.keySet();
+                ArrayList<String> keys = Util.sorted(node.m_attributes.keySet());
+                for (String key : keys) {
+                    sb.append(key + ": " + node.getAttributeString(key) + "\n");
+                }
+            }
+
+            // Pointers
+            {
+                ArrayList<String> followable = getFollowablePointers();
+                for (String key : followable) {
+                    String toID = node.m_pointers.get(key);
+                    sb.append(key + ": -> " + toID + "\n");
+                }
+            }
+
+            return sb.toString();
+        }
+
+        else {
+            return this.entity.attributes;
+        }
+    }
+
+    // If this entity is associated with a graph node, get it.
+    public ObjectGraphNode getGraphNode()
+    {
+        if (this.entity.objectGraphNodeID.isEmpty()) {
+            return null;
+        }
+        else {
+            return this.diagramController.getGraphNode(
+                this.entity.objectGraphNodeID);
+        }
+    }
+
+    /** Return the set of pointer attributes we could follow, sorted
+      * by their names. */
+    public ArrayList<String> getFollowablePointers()
+    {
+        ObjectGraphNode node = getGraphNode();
+        if (node == null) {
+            return new ArrayList<String>();
+        }
+
+        // TODO: Avoid this intermediate set.
+        Set<String> followable = new HashSet<String>();
+
+        Set<String> keys = node.m_pointers.keySet();
+        for (String key : keys) {
+            String toID = node.m_pointers.get(key);
+            if (this.diagramController.hasRelationFromToLabel(
+                    node.m_id, toID, key)) {
+                // We are already showing this pointer as an edge, so it
+                // is not followable.
+            }
+            else {
+                followable.add(key);
+            }
+        }
+
+        return Util.sorted(followable);
+    }
+
+    /** Create an entity and edge corresponding to pointer 'key'. */
+    void followPointer(String key)
+    {
+        ObjectGraphNode fromNode = getGraphNode();
+        if (fromNode == null) {
+            this.diagramController.errorMessageBox(
+                fmt("followPointer: No associated graph node."));
+            return;
+        }
+
+        String toID = fromNode.m_pointers.get(key);
+        if (toID == null) {
+            this.diagramController.errorMessageBox(
+                fmt("followPointer: No pointer for key \"%1$s\".", key));
+            return;
+        }
+
+        ObjectGraphNode toNode =
+            this.diagramController.getGraphNode(toID);
+        if (toNode == null) {
+            this.diagramController.errorMessageBox(
+                fmt("followPointer: No node in graph for ID \"%1$s\".", toID));
+            return;
+        }
+
+        // If we need to create the entity, put its center 100 pixels to
+        // the right of the one we already have, thereby leaving a 50
+        // pixel gap between them (since the new entity will be 100
+        // pixels wide).
+        Point targetLoc = new Point(
+            this.entity.loc.x + this.entity.size.width + 100,
+            this.entity.loc.y + this.entity.size.height/2);
+
+        EntityController toEntityController =
+            this.diagramController.findOrCreateEntityControllerWithGraphID(
+                toID, targetLoc);
+        this.diagramController.findOrCreateRelationControllerFromToLabel(
+            this.entity,
+            toEntityController.entity,
+            key);
+
+        // If the entity is created, it will be automatically selected;
+        // but if it already existed, then this is not redundant.
+        this.diagramController.selectOnly(toEntityController);
     }
 }
 

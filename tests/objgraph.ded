@@ -1,0 +1,47 @@
+{
+  "drawFileName": true,
+  "entities": [
+    {
+      "loc": {
+        "x": 150,
+        "y": 145
+      },
+      "objectGraphNodeID": "n1",
+      "size": {
+        "h": 90,
+        "w": 115
+      }
+    },
+    {
+      "loc": {
+        "x": 130,
+        "y": 275
+      },
+      "objectGraphNodeID": "bad_id",
+      "size": {
+        "h": 50,
+        "w": 200
+      }
+    }
+  ],
+  "inheritances": [],
+  "objectGraph": {
+    "n1": {
+      "anotherAttrib": 123,
+      "notHere": {"ptr": "null"},
+      "succ": {"ptr": "n2"},
+      "title": "one"
+    },
+    "n2": {
+      "color": "green",
+      "pred": {"ptr": "n1"}
+    }
+  },
+  "relations": [],
+  "type": "Diagram Editor Diagram",
+  "version": 25,
+  "windowSize": {
+    "h": 538,
+    "w": 784
+  }
+}

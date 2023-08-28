@@ -7,8 +7,9 @@ import java.util.Collection;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
-/** Utilities for de/serializing with JSONable objects. */
+/** Utilities for working with JSON objects. */
 public class JSONUtil {
     /** Put all the serialized elements of 'c' into a JSONArray. */
     public static <T extends JSONable>
@@ -23,6 +24,32 @@ public class JSONUtil {
 
     // I can't write 'collectionFromJSON' without reflection or some
     // factory classes (which I might decide to use at some point).
+
+    /** Return true if 'a' and 'b' are equal. */
+    public static boolean equalJSONObjects(JSONObject a, JSONObject b)
+    {
+        // This is crude, but JSONObject does not have a proper 'equals'
+        // method.  Fortunately, its serialization code alphabetizes
+        // the keys, so that does not cause problems here.
+        String aString = a.toString();
+        String bString = b.toString();
+
+        if (aString == bString) {
+            // This includes the case where both are null.  In that
+            // case, in a sense both do not represent anything, and will
+            // both serialize to "null", so calling them equal is
+            // perhaps sensible.
+            return true;
+        }
+
+        if (aString == null) {
+            // This can happen when the structure contains values that
+            // cannot be represented in JSON.
+            return false;
+        }
+
+        return aString.equals(bString);
+    }
 }
 
 // EOF

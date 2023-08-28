@@ -36,6 +36,9 @@ check:
 #   exec java -cp $ABBOT/lib/costello.jar junit.extensions.abbot.ScriptTestSuite "$@"
 #
 # where $ABBOT is where you unpacked Abbot.
+#
+# TODO: This test hasn't been maintained in a while and probably does
+# not work.  Remove it.
 uicheck:
 	run-abbot-test tests/abbot/*.xml
 

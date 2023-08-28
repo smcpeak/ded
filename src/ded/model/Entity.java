@@ -96,6 +96,11 @@ public class Entity implements JSONable {
       * the entity rectangle with it. */
     public ImageFillStyle imageFillStyle = defaultImageFillStyle;
 
+    /** ID of a node in the object graph whose attributes will be
+      * displayed in the contents area, and whose relations are
+      * available for interactive exploration. */
+    public String objectGraphNodeID = "";
+
     // ------------ public methods ------------
     public Entity()
     {
@@ -268,6 +273,10 @@ public class Entity implements JSONable {
             if (this.imageFillStyle != defaultImageFillStyle) {
                 o.put("imageFillStyle", this.imageFillStyle.name());
             }
+
+            if (!this.objectGraphNodeID.isEmpty()) {
+                o.put("objectGraphNodeID", this.objectGraphNodeID);
+            }
         }
         catch (JSONException e) { assert(false); }
         return o;
@@ -320,6 +329,10 @@ public class Entity implements JSONable {
         if (ver >= 8 && o.has("imageFillStyle")) {
             this.imageFillStyle =
                 ImageFillStyle.valueOf(ImageFillStyle.class, o.getString("imageFillStyle"));
+        }
+
+        if (ver >= 25) {
+            this.objectGraphNodeID = o.optString("objectGraphNodeID", "");
         }
     }
 
@@ -388,6 +401,7 @@ public class Entity implements JSONable {
         this.anchorName = obj.anchorName;
         this.imageFileName = obj.imageFileName;
         this.imageFillStyle = obj.imageFillStyle;
+        this.objectGraphNodeID = obj.objectGraphNodeID;
     }
 
     @Override
@@ -411,7 +425,9 @@ public class Entity implements JSONable {
                    this.shapeFlags.equals(e.shapeFlags) &&
                    this.anchorName.equals(e.anchorName) &&
                    this.imageFileName.equals(e.imageFileName) &&
-                   this.imageFillStyle.equals(e.imageFillStyle);
+                   this.imageFillStyle.equals(e.imageFillStyle) &&
+                   this.objectGraphNodeID.equals(e.objectGraphNodeID) &&
+                   true;
         }
         return false;
     }
@@ -434,6 +450,7 @@ public class Entity implements JSONable {
         h = h*31 + this.anchorName.hashCode();
         h = h*31 + this.imageFileName.hashCode();
         h = h*31 + this.imageFillStyle.hashCode();
+        h = h*31 + this.objectGraphNodeID.hashCode();
         return h;
     }
 

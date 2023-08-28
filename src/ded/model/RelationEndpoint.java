@@ -130,6 +130,25 @@ public class RelationEndpoint {
         }
     }
 
+    /** Set the arrow style to 's' and return 'this'. */
+    public RelationEndpoint withArrowStyle(ArrowStyle s)
+    {
+        this.arrowStyle = s;
+        return this;
+    }
+
+    /** Return the graph node ID associated with the endpoint, or "" if
+      * none. */
+    public String getObjectGraphNodeID()
+    {
+        if (this.entity == null) {
+            return "";
+        }
+        else {
+            return this.entity.objectGraphNodeID;
+        }
+    }
+
     public void globalSelfCheck(Diagram d)
     {
         assert((this.entity==null?0:1) +
