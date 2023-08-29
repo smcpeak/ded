@@ -3,8 +3,12 @@
 
 package util;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -13,6 +17,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+
+import static util.StringUtil.fmt;
 
 
 /** Generic Java utilities. */
@@ -163,6 +169,49 @@ public class Util {
 
         Collections.sort(arr);
         return arr;
+    }
+
+    /** Read all of 'stream' into a single string. */
+    public static String readStreamAsString(InputStreamReader stream)
+        throws IOException
+    {
+        StringBuilder sb = new StringBuilder();
+        char[] buffer = new char[1024];
+        while (true) {
+            int len = stream.read(buffer);
+            if (len > 0) {
+                sb.append(buffer, 0, len);
+            }
+            else {
+                break;
+            }
+        }
+        return sb.toString();
+    }
+
+    /** Read a resource file as a string. */
+    public static String readResourceString(String fname)
+    {
+        InputStream is = Util.class.getResourceAsStream(fname);
+        if (is != null) {
+            try {
+                return readStreamAsString(
+                  new InputStreamReader(is, "UTF-8"));
+            }
+            catch (IOException e) {
+                return fmt("[Error while reading resource \"%1$s\": %2$s]",
+                           fname, Util.getExceptionMessage(e));
+            }
+            finally {
+                try {
+                    is.close();
+                }
+                catch (IOException e) {/*ignore*/}
+            }
+        }
+        else {
+            return fmt("[Missing resource: \"%1$s\".]", fname);
+        }
     }
 }
 

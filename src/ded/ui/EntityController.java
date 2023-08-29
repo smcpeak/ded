@@ -15,6 +15,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,6 +27,7 @@ import javax.swing.JPopupMenu;
 import org.json.JSONObject;
 
 import util.IdentityHashSet;
+import util.StringVarSubst;
 import util.Util;
 import util.awt.BitmapFont;
 import util.awt.G;
@@ -1369,68 +1371,122 @@ public class EntityController extends Controller
         this.diagramController.selfCheck();
     }
 
-    // Get the name we should draw.  Normally this is the same as the
-    // entity name, but is different for a graph node.
+    /** Get the entity name we should draw.  Normally this is the same
+      * as the entity name, but is different for a graph node. */
     public String getEntityNameForDisplay()
     {
-        // If the entity is associated with a graph node, use the name
-        // associated with that node.
-        ObjectGraphNode node = getGraphNode();
-        if (node != null) {
-            return node.getNameForDisplay();
-        }
-
-        else if (!this.entity.objectGraphNodeID.isEmpty()) {
-            return "node ID not found: " +
-                   this.entity.objectGraphNodeID;
-        }
-
-        else {
-            // Use the name stored in the entity.
-            //
-            // A possible idea for the future is to combine the name
-            // with the node ID somehow, so the entity name is not
-            // completely irrelevant.
-            return this.entity.name;
-        }
+        return substituteVariableReferences(this.entity.name);
     }
 
-    /** Get the attributes string to draw, possibly from a graph node,
-      * as a newline-separated string. */
+    /** Get the text for the attributes box. */
     public String getEntityAttributesForDisplay()
     {
-        ObjectGraphNode node = getGraphNode();
-        if (node != null) {
-            StringBuilder sb = new StringBuilder();
+        return substituteVariableReferences(this.entity.attributes);
+    }
 
-            // Attributes.
-            {
-                // Iterate in key order for determinism.
-                //Set<String> keySet = node.m_attributes.keySet();
-                ArrayList<String> keys = Util.sorted(node.m_attributes.keySet());
-                for (String key : keys) {
-                    sb.append(key + ": " + node.getAttributeString(key) + "\n");
+    /** Replace "$(varName)" variable references in 'hasVarRefs' with
+      * their values according to 'getVariableValue'. */
+    public String substituteVariableReferences(String hasVarRefs)
+    {
+        // Only attempt substitutions if a graph node ID is set.
+        if (this.entity.objectGraphNodeID.isEmpty()) {
+            return hasVarRefs;
+        }
+
+        return StringVarSubst.substituteVariables(hasVarRefs,
+            new StringVarSubst.Replacer() {
+                public String getVar(String varName)
+                {
+                    return EntityController.this.getVariableValue(varName);
                 }
-            }
+            });
+    }
 
-            // Pointers
-            {
-                ArrayList<String> followable = getFollowablePointers();
-                for (String key : followable) {
-                    String toID = node.m_pointers.get(key);
-                    sb.append(key + ": -> " + toID + "\n");
-                }
-            }
+    /** Map 'varName' to its value according to this scheme:
 
-            return sb.toString();
+          $(graphNodeID): The graph node ID as stored in the Entity.
+
+          $(graphNode.attributes): A list of newline-terminated node
+          attributes.
+
+          $(graphNode.followablePtrs): A list of newline-terminated
+          pointers that can be followed.
+
+          $(graphNode.attrName): Look up "attrName" in the node's
+          JSON attributes and yield it as a string.
+      */
+    public String getVariableValue(String varName)
+    {
+        if (varName.equals("graphNodeID")) {
+            return this.entity.objectGraphNodeID;
+        }
+
+        else if (varName.startsWith("graphNode.")) {
+            return getGraphNodeAttribute(varName.substring(10));
         }
 
         else {
-            return this.entity.attributes;
+            return fmt("<unknown var: \"%1$s\">", varName);
         }
     }
 
-    // If this entity is associated with a graph node, get it.
+    /** Look up 'attrName' in the node attributes. */
+    public String getGraphNodeAttribute(String attrName)
+    {
+        ObjectGraphNode node = getGraphNode();
+        if (node == null) {
+            return fmt("<no node with ID: \"%1$s\">",
+                       this.entity.objectGraphNodeID);
+        }
+
+        if (attrName.equals("attributes")) {
+            return getGraphNodeAttributesString(node);
+        }
+
+        else if (attrName.equals("followablePtrs")) {
+            return getGraphNodeFollowablePtrsString(node);
+        }
+
+        else if (attrName.equals("attributesAndPtrs")) {
+            return getGraphNodeAttributesString(node) +
+                   getGraphNodeFollowablePtrsString(node);
+        }
+
+        else {
+            return node.getAttributeString(attrName);
+        }
+    }
+
+    /** Get a list of newline-terminated attribute values. */
+    public String getGraphNodeAttributesString(ObjectGraphNode node)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        // Iterate in key order for determinism.
+        ArrayList<String> keys = Util.sorted(node.m_attributes.keySet());
+        for (String key : keys) {
+            sb.append(key + ": " + node.getAttributeString(key) + "\n");
+        }
+
+        return sb.toString();
+    }
+
+    /** Get a list of newline-terminated followable pointers. */
+    public String getGraphNodeFollowablePtrsString(ObjectGraphNode node)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        ArrayList<String> followable = getFollowablePointersForNode(node);
+        for (String key : followable) {
+            String toID = node.m_pointers.get(key);
+            sb.append(key + ": -> " + toID + "\n");
+        }
+
+        return sb.toString();
+    }
+
+    /** If this entity is associated with a graph node, get it.
+      * Otherwise, return null. */
     public ObjectGraphNode getGraphNode()
     {
         if (this.entity.objectGraphNodeID.isEmpty()) {
@@ -1451,8 +1507,14 @@ public class EntityController extends Controller
             return new ArrayList<String>();
         }
 
-        // TODO: Avoid this intermediate set.
-        Set<String> followable = new HashSet<String>();
+        return getFollowablePointersForNode(node);
+    }
+
+    /** Like 'getFollowablePointers', but with the given 'node'. */
+    public ArrayList<String> getFollowablePointersForNode(
+        ObjectGraphNode node)
+    {
+        ArrayList<String> followable = new ArrayList<String>();
 
         Set<String> keys = node.m_pointers.keySet();
         for (String key : keys) {
@@ -1467,7 +1529,8 @@ public class EntityController extends Controller
             }
         }
 
-        return Util.sorted(followable);
+        Collections.sort(followable);
+        return followable;
     }
 
     /** Create an entity and edge corresponding to pointer 'key'. */
@@ -1505,7 +1568,11 @@ public class EntityController extends Controller
 
         EntityController toEntityController =
             this.diagramController.findOrCreateEntityControllerWithGraphID(
-                toID, targetLoc);
+                toID,
+                targetLoc,
+                "$(graphNodeID)",
+                "$(graphNode.attributesAndPtrs)");
+
         this.diagramController.findOrCreateRelationControllerFromToLabel(
             this.entity,
             toEntityController.entity,

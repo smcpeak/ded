@@ -26,6 +26,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import util.Util;
 import util.swing.ModalDialog;
 
 import ded.model.Diagram;
@@ -263,9 +264,8 @@ public class EntityDialog extends ModalDialog
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
         this.objectGraphNodeID = ModalDialog.makeLineEditWithHelp(vb,
             "Object graph node ID", 'o', this.entity.objectGraphNodeID, this,
-
-            "ID of the node in the object graph data source to "+
-            "display in this entity box.  See [TODO] for more info.");
+            Util.readResourceString(
+                "/resources/helptext/EntityDialog-objectGraphNodeID.txt"));
     }
 
     /** Create the controls for the left column, which is just the

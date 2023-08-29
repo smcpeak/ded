@@ -11,11 +11,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
-import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 
 import java.net.URL;
 
@@ -38,6 +36,7 @@ import util.awt.BitmapFont;
 import util.awt.ResourceImageCache;
 import util.swing.MenuAction;
 import util.swing.SwingUtil;
+import util.Util;
 
 import ded.model.Diagram;
 import ded.ui.DiagramController;
@@ -457,28 +456,8 @@ public class Ded extends JFrame implements WindowListener {
 
     private void showAboutBox()
     {
-        // Get the version number.
-        String version;
-        {
-            InputStream is = this.getClass().getResourceAsStream("/resources/version.txt");
-            if (is != null) {
-                try {
-                    version = new BufferedReader(new InputStreamReader(is, "UTF-8")).readLine();
-                }
-                catch (IOException e) {
-                    version = "(While retrieving version: "+e.getMessage()+")";
-                }
-                finally {
-                    try {
-                        is.close();
-                    }
-                    catch (IOException e) {/*ignore*/}
-                }
-            }
-            else {
-                version = "(No version information found.)";
-            }
-        }
+        String version =
+            Util.readResourceString("/resources/version.txt").trim();
 
         JOptionPane.showMessageDialog(
             this,

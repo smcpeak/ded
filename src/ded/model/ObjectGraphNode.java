@@ -14,6 +14,8 @@ import org.json.JSONObject;
 import util.json.JSONUtil;
 import util.json.JSONable;
 
+import static util.StringUtil.fmt;
+
 /** An object with attributes and pointers to other objects. */
 public class ObjectGraphNode implements JSONable {
     // ---------- public data ------------
@@ -79,6 +81,10 @@ public class ObjectGraphNode implements JSONable {
     public String getAttributeString(String key)
     {
         try {
+            if (!m_attributes.has(key)) {
+                return fmt("<No such key: \"%1$s\".>", key);
+            }
+
             return m_attributes.get(key).toString();
         }
         catch (JSONException e) {

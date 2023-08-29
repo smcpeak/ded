@@ -2,25 +2,42 @@
   "drawFileName": true,
   "entities": [
     {
+      "attributes": "$(graphNode.attributesAndPtrs)\n",
       "loc": {
-        "x": 150,
-        "y": 145
+        "x": 100,
+        "y": 115
       },
+      "name": "$(graphNodeID)",
       "objectGraphNodeID": "n1",
       "size": {
-        "h": 90,
-        "w": 115
+        "h": 100,
+        "w": 150
       }
     },
     {
+      "attributes": "$(graphNode.attributesAndPtrs)\n",
       "loc": {
-        "x": 130,
-        "y": 275
+        "x": 70,
+        "y": 340
       },
+      "name": "$(graphNodeID)",
       "objectGraphNodeID": "bad_id",
       "size": {
         "h": 50,
-        "w": 200
+        "w": 380
+      }
+    },
+    {
+      "attributes": "x: $(graphNode.x)\n",
+      "loc": {
+        "x": 70,
+        "y": 405
+      },
+      "name": "$(graphNode.badAttr)",
+      "objectGraphNodeID": "n4",
+      "size": {
+        "h": 55,
+        "w": 190
       }
     }
   ],
@@ -34,8 +51,11 @@
     },
     "n2": {
       "color": "green",
-      "pred": {"ptr": "n1"}
-    }
+      "pred": {"ptr": "n1"},
+      "to3": {"ptr": "n3"}
+    },
+    "n3": {"name": "Name of n3"},
+    "n4": {"x": "ecks"}
   },
   "relations": [],
   "type": "Diagram Editor Diagram",

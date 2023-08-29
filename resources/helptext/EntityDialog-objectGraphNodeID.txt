@@ -1,0 +1,22 @@
+This is the ID of the node in the object graph data source to display in
+this entity box.  See the Help text of the "Diagram -> Edit object
+graph..." dialog for more information on how to load a graph to begin
+with.
+
+To show object graph data within a node, use one of the following in its
+Name and/or Attribute fields:
+
+  $(graphNodeID): The node ID.
+
+  $(graphNode.attributes): List of attributes, one per line.
+
+  $(graphNode.followablePtrs): List of pointers for which there is not
+  a corresponding edge yet, one per line.
+
+  $(graphNode.attributesAndPtrs): The preceding two, concatenated.
+
+  $(graphNode.<attr>): Any attribute of the node.
+
+When a node is created by following a pointer (right click on an entity
+that has pointers, then choose "Follow pointer"), it is initially
+created with a Name and Attributes that uses the above variables.

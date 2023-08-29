@@ -24,6 +24,12 @@ Test: objgraph
 
   Check that "anotherAttrib: 123" is in "n1".
 
+  Check that "bad_id" has in its attributes area:
+  <no node with ID: "bad_id">
+
+  Check that below that is a node whose title area says:
+  <No such key: "badAttr">
+
 * Right-click on "n1", "Follow pointer", "succ".
 
   Check that "n2" is created with a "succ" edge to it.

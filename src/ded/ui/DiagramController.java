@@ -2718,11 +2718,14 @@ public class DiagramController extends JPanel
     }
 
     /** If there is already an entity for 'id', find and return its
-      * controller.  Otherwise, make a new entity and controller at
-      * 'suggestedLoc', and return the controller. */
+      * controller.  Otherwise, make a new entity and controller,
+      * setting it to have 'newEntityLoc', etc., and return the
+      * controller. */
     public EntityController findOrCreateEntityControllerWithGraphID(
         String id,
-        Point suggestedLoc)
+        Point newEntityLoc,
+        String newEntityName,
+        String newEntityAttributes)
     {
         for (Controller c : this.controllers) {
             if (c instanceof EntityController) {
@@ -2734,10 +2737,13 @@ public class DiagramController extends JPanel
         }
 
         EntityController ec = EntityController.createEntityAt(this,
-            suggestedLoc);
+            newEntityLoc);
+        ec.entity.name = newEntityName;
+        ec.entity.attributes = newEntityAttributes;
         ec.entity.objectGraphNodeID = id;
         this.diagramChanged(
-            fmt("Create entity for node ID \"%1$s\"", id));
+            fmt("Create entity for node ID \"%1$s\" at (%2$d,%3$d)",
+                id, ec.entity.loc.x, ec.entity.loc.y));
 
         return ec;
     }
