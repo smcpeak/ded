@@ -64,15 +64,16 @@ public class ObjectGraph implements JSONable {
 
         The fields of an object are treated as either attributes or
         pointers.  Pointers are recognized by having a value that is an
-        object with a single 'ptr' field whose string-typed value
-        matches the key for some node.
+        object with a 'ptr' field whose string-typed value matches the
+        key for some node, and an optional string-typed 'preview' value
+        that hints at what the pointer points at.
 
         Example:
 
           {
             "n1": {
               "title": "one",
-              "succ": { "ptr": "n2" },
+              "succ": { "ptr": "n2", "preview": "en two" },
             },
             "n2": {
               "color": "green",

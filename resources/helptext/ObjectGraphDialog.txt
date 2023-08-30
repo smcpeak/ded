@@ -7,17 +7,18 @@ entity's "Object graph node ID" is set to that value, the entity can be
 visually populated with data from the node, and have the ability to add
 edges corresponding to its pointers.
 
-Within a node object, if a value is an object with a single "ptr"
-attribute with string value, that is treated as a pointer to the node
-whose key is that value.  All other attributes are treated as scalar
-fields of the node.
+Within a node object, if a value is an object with a "ptr" attribute
+with string value, and an optional "preview", that is treated as a
+pointer to the node whose key is that value, and the preview will be
+shown alongside the ID in $(graphNode.followablePtrs).  All other
+attributes are treated as scalar fields of the node.
 
 Example:
 
   {
     "n1": {
       "title": "one",
-      "succ": { "ptr": "n2" },
+      "succ": { "ptr": "n2", "preview": "en two" },
     },
     "n2": {
       "color": "green",

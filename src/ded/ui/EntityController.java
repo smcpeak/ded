@@ -27,6 +27,7 @@ import javax.swing.JPopupMenu;
 import org.json.JSONObject;
 
 import util.IdentityHashSet;
+import util.StringUtil;
 import util.StringVarSubst;
 import util.Util;
 import util.awt.BitmapFont;
@@ -1478,8 +1479,12 @@ public class EntityController extends Controller
 
         ArrayList<String> followable = getFollowablePointersForNode(node);
         for (String key : followable) {
-            String toID = node.m_pointers.get(key);
-            sb.append(key + ": -> " + toID + "\n");
+            ObjectGraphNode.Ptr ptr = node.m_pointers.get(key);
+            sb.append(key + ": -> " + ptr.m_ptr);
+            if (ptr.m_preview != null) {
+                sb.append(" " + StringUtil.quoteAsJSONASCII(ptr.m_preview));
+            }
+            sb.append("\n");
         }
 
         return sb.toString();
@@ -1518,9 +1523,9 @@ public class EntityController extends Controller
 
         Set<String> keys = node.m_pointers.keySet();
         for (String key : keys) {
-            String toID = node.m_pointers.get(key);
+            ObjectGraphNode.Ptr ptr = node.m_pointers.get(key);
             if (this.diagramController.hasRelationFromToLabel(
-                    node.m_id, toID, key)) {
+                    node.m_id, ptr.m_ptr, key)) {
                 // We are already showing this pointer as an edge, so it
                 // is not followable.
             }
@@ -1543,18 +1548,19 @@ public class EntityController extends Controller
             return;
         }
 
-        String toID = fromNode.m_pointers.get(key);
-        if (toID == null) {
+        ObjectGraphNode.Ptr ptr = fromNode.m_pointers.get(key);
+        if (ptr == null) {
             this.diagramController.errorMessageBox(
                 fmt("followPointer: No pointer for key \"%1$s\".", key));
             return;
         }
 
         ObjectGraphNode toNode =
-            this.diagramController.getGraphNode(toID);
+            this.diagramController.getGraphNode(ptr.m_ptr);
         if (toNode == null) {
             this.diagramController.errorMessageBox(
-                fmt("followPointer: No node in graph for ID \"%1$s\".", toID));
+                fmt("followPointer: No node in graph for ID \"%1$s\".",
+                    ptr.m_ptr));
             return;
         }
 
@@ -1568,7 +1574,7 @@ public class EntityController extends Controller
 
         EntityController toEntityController =
             this.diagramController.findOrCreateEntityControllerWithGraphID(
-                toID,
+                ptr.m_ptr,
                 targetLoc,
                 "$(graphNodeID)",
                 "$(graphNode.attributesAndPtrs)");

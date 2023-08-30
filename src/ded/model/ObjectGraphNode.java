@@ -11,6 +11,7 @@ import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import util.Util;
 import util.json.JSONUtil;
 import util.json.JSONable;
 
@@ -18,7 +19,100 @@ import static util.StringUtil.fmt;
 
 /** An object with attributes and pointers to other objects. */
 public class ObjectGraphNode implements JSONable {
-    // ---------- public data ------------
+    // ---------- public types ------------
+    /** A 'Ptr' encodes a pointer from one object graph node to
+      * another, along with an optional "preview" string to display
+      * ahead of following that pointer interactively. */
+    public static class Ptr implements JSONable {
+        // ID of the node this points at.
+        //
+        // The pointee is identified by its ID rather than a direct
+        // ObjectGraphNode reference so that nodes are more
+        // self-contained, easing de/serialization and making it
+        // possible to tolerate broken links.
+        public String m_ptr;
+
+        // An optional (nullable) string containing some indication of
+        // what is in the referred object.
+        public String m_preview;
+
+        public Ptr(String ptr, String preview)
+        {
+            this.m_ptr = ptr;
+            this.m_preview = preview;
+        }
+
+        // ---- de/serialization ----
+        @Override
+        public JSONObject toJSON()
+        {
+            JSONObject json = new JSONObject();
+
+            try {
+                json.put("ptr", m_ptr);
+                if (m_preview != null) {
+                    json.put("preview", m_preview);
+                }
+            }
+            catch (JSONException e) {
+                // The only reason the comments in JSONObject give for
+                // possibly throwing from 'put' is if the key is null,
+                // so this should be impossible.
+                throw new RuntimeException(
+                    "ObjectGraphNode.toJSON failed", e);
+            }
+
+            return json;
+        }
+
+        public Ptr(JSONObject json) throws JSONException
+        {
+            this.m_ptr = json.getString("ptr");
+            this.m_preview = json.optString("preview", null);
+        }
+
+        // ---- data object boilerplate ----
+        /** Deep copy. */
+        public Ptr(Ptr src)
+        {
+            this.m_ptr = src.m_ptr;
+            this.m_preview = src.m_preview;
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (obj == null) {
+                return false;
+            }
+            if (this.getClass() != obj.getClass()) {
+                return false;
+            }
+            Ptr ptr = (Ptr)obj;
+
+            return this.m_ptr.equals(ptr.m_ptr) &&
+                   Util.nullableEquals(this.m_preview, ptr.m_preview);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return 31 * m_ptr.hashCode() +
+                   Util.nullableHashCode(m_preview);
+        }
+
+        @Override
+        public String toString()
+        {
+            return this.toJSON().toString();
+        }
+    }
+
+    // ---------- public class data ------------
+    /** Enable various debugging printouts. */
+    public static boolean s_debug = true;
+
+    // ---------- public instance data ------------
     // The identifier for this node, which must be unique among nodes in
     // the graph.
     public String m_id;
@@ -26,18 +120,15 @@ public class ObjectGraphNode implements JSONable {
     // Set of non-pointer attributes.
     public JSONObject m_attributes;
 
-    // Set of pointers to other nodes.  The pointee is identified by its
-    // ID rather than a direct reference so that nodes are more
-    // self-contained, easing de/serialization and making it possible to
-    // tolerate broken links.
-    public Map<String, String> m_pointers;
+    // Set of pointers to other nodes.
+    public Map<String, Ptr> m_pointers;
 
     // ----------- public methods -----------
     public ObjectGraphNode(String id)
     {
         m_id = id;
         m_attributes = new JSONObject();
-        m_pointers = new HashMap<String, String>();
+        m_pointers = new HashMap<String, Ptr>();
     }
 
     /** Return a deep copy of the attributes. */
@@ -52,29 +143,6 @@ public class ObjectGraphNode implements JSONable {
             throw new RuntimeException(
                 "Round-trip JSON array serialization failed", e);
         }
-    }
-
-    /** Add a pointer named 'key' at 'targetID', insisting that the key
-      * not already be mapped. */
-    void addNewPointer(String key, String targetID)
-    {
-        if (m_pointers.containsKey(key)) {
-            throw new RuntimeException("Key already mapped: "+key);
-        }
-        m_pointers.put(key, targetID);
-    }
-
-    /** Get a name for this node suitable for display. */
-    public String getNameForDisplay()
-    {
-        // If 'name' is set, then use that.
-        String name = m_attributes.optString("name", null);
-        if (name != null) {
-            return name;
-        }
-
-        // Fallback on the ID.
-        return m_id;
     }
 
     /** Get the attribute value of 'key' as a string. */
@@ -99,11 +167,10 @@ public class ObjectGraphNode implements JSONable {
     {
         JSONObject jsonNode = cloneAttributes();
 
-        for (Map.Entry<String, String> kv : m_pointers.entrySet()) {
+        for (Map.Entry<String, Ptr> kv : m_pointers.entrySet()) {
             try {
                 // Encode the value as an object with 'ptr' field.
-                JSONObject jsonPtr = new JSONObject();
-                jsonPtr.put("ptr", kv.getValue());
+                JSONObject jsonPtr = kv.getValue().toJSON();
 
                 // Put that into the JSON.  If an attribute and a
                 // pointer have the same key, the pointer will win.
@@ -122,9 +189,9 @@ public class ObjectGraphNode implements JSONable {
     }
 
     /** See if the value at 'key' in 'jsonNode' is the JSON encoding of
-      * a pointer, and if so, return the encoded ID.  Otherwise return
-      * null. */
-    private String getJSONNodeTargetID(String key, JSONObject jsonNode)
+      * a pointer, and if so, return it as a 'Ptr' object.  Otherwise
+      * return null. */
+    private Ptr getJSONNodePtrOpt(JSONObject jsonNode, String key)
     {
         JSONObject jsonPtr = jsonNode.optJSONObject(key);
         if (jsonPtr == null) {
@@ -136,17 +203,24 @@ public class ObjectGraphNode implements JSONable {
             return null;
         }
 
-        if (jsonPtr.length() != 1) {
+        int expectKeys = 1 + (jsonPtr.has("preview")? 1 : 0);
+        if (jsonPtr.length() != expectKeys) {
             return null;
         }
 
-        String targetID = jsonPtr.optString("ptr", null);
-        if (targetID == null) {
-            // Value was not a string.
+        try {
+            return new Ptr(jsonPtr);
+        }
+        catch (JSONException e) {
+            if (s_debug) {
+                System.err.println(fmt(
+                    "jsonPtr failed to parse: %1$s",
+                    Util.getExceptionMessage(e)));
+            }
+
+            // If it cannot be parsed as 'Ptr', just say it is not one.
             return null;
         }
-
-        return targetID;
     }
 
     /** Deserialize from JSON. */
@@ -155,15 +229,15 @@ public class ObjectGraphNode implements JSONable {
     {
         m_id = id;
         m_attributes = new JSONObject();
-        m_pointers = new HashMap<String, String>();
+        m_pointers = new HashMap<String, Ptr>();
 
         Iterator it = jsonNode.keys();
         while (it.hasNext()) {
             String key = (String)it.next();
 
-            String targetID = getJSONNodeTargetID(key, jsonNode);
-            if (targetID != null) {
-                m_pointers.put(key, targetID);
+            Ptr ptr = getJSONNodePtrOpt(jsonNode, key);
+            if (ptr != null) {
+                m_pointers.put(key, ptr);
             }
             else {
                 // Could be any kind of JSON data.
@@ -178,7 +252,11 @@ public class ObjectGraphNode implements JSONable {
     {
         this.m_id = src.m_id;
         this.m_attributes = src.cloneAttributes();
-        this.m_pointers = new HashMap<String, String>(src.m_pointers);
+
+        this.m_pointers = new HashMap<String, Ptr>();
+        for (Map.Entry<String, Ptr> kv : src.m_pointers.entrySet()) {
+            this.m_pointers.put(kv.getKey(), new Ptr(kv.getValue()));
+        }
     }
 
     @Override
