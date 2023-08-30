@@ -1037,7 +1037,7 @@ public class EntityController extends Controller
     {
         final EntityController ths = this;
 
-        // Used mnemonic letters: afglpstx
+        // Used mnemonic letters: afglnpstx
 
         JMenu fillColorMenu = new JMenu("Set fill color");
         fillColorMenu.setMnemonic(KeyEvent.VK_F);
@@ -1116,10 +1116,10 @@ public class EntityController extends Controller
         }
         menu.add(alignMenu);
 
+        JMenu pointerMenu = new JMenu("Follow pointer");
+        pointerMenu.setMnemonic(KeyEvent.VK_P);
         ArrayList<String> pointers = getFollowablePointers();
         if (!pointers.isEmpty()) {
-            JMenu pointerMenu = new JMenu("Follow pointer");
-            pointerMenu.setMnemonic(KeyEvent.VK_P);
             for (String key : pointers) {
                 pointerMenu.add(new MenuAction(key) {
                     public void actionPerformed(ActionEvent e) {
@@ -1127,8 +1127,22 @@ public class EntityController extends Controller
                     }
                 });
             }
-            menu.add(pointerMenu);
         }
+        else {
+            pointerMenu.setEnabled(false);
+        }
+        menu.add(pointerMenu);
+
+        MenuAction showNodeDetailsAction =
+            new MenuAction("Show object node details", KeyEvent.VK_N) {
+                public void actionPerformed(ActionEvent e) {
+                    ths.showNodeDetails();
+                }
+            };
+        if (!this.entity.hasObjectGraphNodeID()) {
+            showNodeDetailsAction.setEnabled(false);
+        }
+        menu.add(showNodeDetailsAction);
 
         menu.add(new AbstractAction("Set anchor name to entity name") {
             public void actionPerformed(ActionEvent e) {
@@ -1391,7 +1405,7 @@ public class EntityController extends Controller
     public String substituteVariableReferences(String hasVarRefs)
     {
         // Only attempt substitutions if a graph node ID is set.
-        if (this.entity.objectGraphNodeID.isEmpty()) {
+        if (!this.entity.hasObjectGraphNodeID()) {
             return hasVarRefs;
         }
 
@@ -1495,7 +1509,7 @@ public class EntityController extends Controller
       * Otherwise, return null. */
     public ObjectGraphNode getGraphNode()
     {
-        if (this.entity.objectGraphNodeID.isEmpty()) {
+        if (!this.entity.hasObjectGraphNodeID()) {
             return null;
         }
         else {
@@ -1540,7 +1554,7 @@ public class EntityController extends Controller
     }
 
     /** Create an entity and edge corresponding to pointer 'key'. */
-    void followPointer(String key)
+    private void followPointer(String key)
     {
         ObjectGraphNode fromNode = getGraphNode();
         if (fromNode == null) {
@@ -1588,6 +1602,12 @@ public class EntityController extends Controller
         // If the entity is created, it will be automatically selected;
         // but if it already existed, then this is not redundant.
         this.diagramController.selectOnly(toEntityController);
+    }
+
+    /** Show all of the object node details. */
+    private void showNodeDetails()
+    {
+        GraphNodeDialog.exec(this);
     }
 }
 

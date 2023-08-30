@@ -217,6 +217,14 @@ public class Entity implements JSONable {
         return ret;
     }
 
+    /** True if this entity has an associated object graph node ID.
+      * The node itself might not exist; this just says that the entity
+      * is intended to be associated with one. */
+    public boolean hasObjectGraphNodeID()
+    {
+        return !this.objectGraphNodeID.isEmpty();
+    }
+
     // ------------ serialization ------------
     @Override
     public JSONObject toJSON()
@@ -274,7 +282,7 @@ public class Entity implements JSONable {
                 o.put("imageFillStyle", this.imageFillStyle.name());
             }
 
-            if (!this.objectGraphNodeID.isEmpty()) {
+            if (this.hasObjectGraphNodeID()) {
                 o.put("objectGraphNodeID", this.objectGraphNodeID);
             }
         }

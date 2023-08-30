@@ -2386,6 +2386,12 @@ public class DiagramController extends JPanel
         }
     }
 
+    /** Show an informational message dialog box with 'message'. */
+    public void informationMessageBox(String caption, String message)
+    {
+        SwingUtil.informationMessageBox(this, caption, message);
+    }
+
     /** Show an error message dialog box with 'message'. */
     public void errorMessageBox(String message)
     {
@@ -2848,7 +2854,7 @@ public class DiagramController extends JPanel
       * diagram changed message. */
     public String describeEntityForChange(Entity e)
     {
-        if (!e.objectGraphNodeID.isEmpty()) {
+        if (e.hasObjectGraphNodeID()) {
             return fmt("node with ID \"%1$s\"", e.objectGraphNodeID);
         }
 
