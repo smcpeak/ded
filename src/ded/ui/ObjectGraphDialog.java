@@ -8,6 +8,7 @@ import java.awt.Dimension;
 
 import javax.swing.Box;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import org.json.JSONException;
@@ -44,7 +45,11 @@ public class ObjectGraphDialog extends ModalDialog {
         this.graphJsonTextArea = new JTextArea(
             this.diagram.objectGraph.toString());
         disableTabInTextArea(this.graphJsonTextArea);
-        vb.add(this.graphJsonTextArea);
+
+        JScrollPane scroll = new JScrollPane(this.graphJsonTextArea);
+        scroll.setPreferredSize(new Dimension(500,500));
+
+        vb.add(scroll);
 
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
@@ -52,7 +57,6 @@ public class ObjectGraphDialog extends ModalDialog {
             "/resources/helptext/ObjectGraphDialog.txt");
 
         this.finishBuildingDialog(vb);
-        this.setSize(500, 500);
     }
 
     @Override
