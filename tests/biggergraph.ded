@@ -2,7 +2,7 @@
   "drawFileName": true,
   "entities": [
     {
-      "attributes": "$(graphNode.attributesAndPtrs)\n",
+      "attributes": "$(graphNodeAttributesAndPtrs)\n",
       "loc": {
         "x": 40,
         "y": 170
@@ -11,11 +11,11 @@
       "objectGraphNodeID": "PointerType_37_",
       "size": {
         "h": 70,
-        "w": 200
+        "w": 170
       }
     },
     {
-      "attributes": "$(graphNode.attributesAndPtrs)",
+      "attributes": "$(graphNodeAttributesAndPtrs)",
       "loc": {
         "x": 45,
         "y": 40
@@ -28,15 +28,15 @@
       }
     },
     {
-      "attributes": "$(graphNode.attributesAndPtrs)",
+      "attributes": "$(graphNodeShowFields)",
       "loc": {
-        "x": 190,
-        "y": 160
+        "x": 230,
+        "y": 140
       },
       "name": "$(graphNodeID)",
       "objectGraphNodeID": "ClassTemplateSpecializationDecl_18_",
       "size": {
-        "h": 600,
+        "h": 325,
         "w": 490
       }
     }
@@ -557,6 +557,64 @@
       "skipping reserved": "\"__builtin_ms_va_list\""
     }
   },
+  "objectGraphConfig": {"showFields": [
+    {"key": "syntax"},
+    {
+      "displayKey": "NextInContext",
+      "key": "Decl::NextInContext"
+    },
+    {
+      "displayKey": "DC",
+      "key": "Decl::semanticDeclContext"
+    },
+    {
+      "displayKey": "FirstDecl",
+      "key": "DeclContext::FirstDecl"
+    },
+    {
+      "displayKey": "LastDecl",
+      "key": "DeclContext::LastDecl"
+    },
+    {
+      "displayKey": "Name",
+      "key": "NamedDecl::Name"
+    },
+    {
+      "displayKey": "TypeForDecl",
+      "key": "TypeDecl::TypeForDecl"
+    },
+    {"key": "Redeclarable::Previous"},
+    {"key": "Redeclarable::First"},
+    {"key": "TagDecl::TagDeclBits"},
+    {
+      "displayKey": "qualifier->TemplParamLists[0]",
+      "key": "TagDecl::TypedefNameDeclOrQualifier.qualifier->TemplParamLists[0]"
+    },
+    {
+      "displayKey": "DefinitionData",
+      "key": "CXXRecordDecl::DefinitionData"
+    },
+    {
+      "displayKey": "TemplateOrInstantiation",
+      "key": "CXXRecordDecl::TemplateOrInstantiation"
+    },
+    {
+      "displayKey": "classTemplateDecl",
+      "key": "ClassTemplateSpecializationDecl::SpecializedTemplate.classTemplateDecl"
+    },
+    {
+      "displayKey": "TemplateArgs",
+      "key": "ClassTemplateSpecializationDecl::TemplateArgs"
+    },
+    {
+      "displayKey": "SpecializationKind",
+      "key": "ClassTemplateSpecializationDecl::SpecializationKind"
+    },
+    {
+      "displayKey": "TemplateArgs[0].TypeOrValue.V",
+      "key": "ClassTemplateSpecializationDecl::TemplateArgs[0].TypeOrValue.V"
+    }
+  ]},
   "relations": [
     {
       "end": {"entityRef": 1},
@@ -574,14 +632,14 @@
         "y": 80
       }],
       "end": {"entityRef": 1},
-      "label": "TypeDecl::TypeForDecl",
+      "label": "TypeForDecl",
       "start": {"entityRef": 2}
     }
   ],
   "type": "Diagram Editor Diagram",
-  "version": 25,
+  "version": 26,
   "windowSize": {
-    "h": 804,
-    "w": 1045
+    "h": 554,
+    "w": 955
   }
 }

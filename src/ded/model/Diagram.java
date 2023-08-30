@@ -59,7 +59,7 @@ public class Diagram implements JSONable {
       * should include a bump--even though the old code might be
       * able to read the file without choking, the semantics would
       * not be preserved. */
-    public static final int currentFileVersion = 25;
+    public static final int currentFileVersion = 26;
 
     // ---------- public data ------------
     /** Size of window to display diagram.  Some elements might not fit
@@ -96,6 +96,9 @@ public class Diagram implements JSONable {
       * explored using the editor. */
     public ObjectGraph objectGraph;
 
+    /** Graph interaction options. */
+    public ObjectGraphConfig m_objectGraphConfig;
+
     // ----------- public methods -----------
     public Diagram()
     {
@@ -106,6 +109,7 @@ public class Diagram implements JSONable {
         this.relations = new ArrayList<Relation>();
         this.namedColors = makeDefaultColors();
         this.objectGraph = new ObjectGraph();
+        this.m_objectGraphConfig = new ObjectGraphConfig();
     }
 
     public static LinkedHashMap<String, Color> makeDefaultColors()
@@ -233,6 +237,7 @@ public class Diagram implements JSONable {
         this.backgroundColor = src.backgroundColor;
         this.namedColors = new LinkedHashMap<String,Color>(src.namedColors);
         this.objectGraph = new ObjectGraph(src.objectGraph);
+        this.m_objectGraphConfig = new ObjectGraphConfig(src.m_objectGraphConfig);
 
         // Make empty containers for the diagram elements.
         this.entities = new ArrayList<Entity>();
@@ -376,6 +381,7 @@ public class Diagram implements JSONable {
             }
 
             o.put("objectGraph", this.objectGraph.toJSON());
+            o.put("objectGraphConfig", this.m_objectGraphConfig.toJSON());
 
             // Map from an entity to its position in the serialized
             // 'entities' array, so it can be referenced by inheritances
@@ -474,6 +480,16 @@ public class Diagram implements JSONable {
         }
         if (this.objectGraph == null) {
             this.objectGraph = new ObjectGraph();
+        }
+
+        if (ver >= 26) {
+            JSONObject c = o.optJSONObject("objectGraphConfig");
+            if (c != null) {
+                this.m_objectGraphConfig = new ObjectGraphConfig(c);
+            }
+        }
+        if (this.m_objectGraphConfig == null) {
+            this.m_objectGraphConfig = new ObjectGraphConfig();
         }
 
         if (ver >= 3) {
@@ -698,6 +714,7 @@ public class Diagram implements JSONable {
         this.relations = new ArrayList<Relation>();
         this.namedColors = makeDefaultColors();
         this.objectGraph = new ObjectGraph();
+        this.m_objectGraphConfig = new ObjectGraphConfig();
 
         if (flat.version >= 5) {
             this.windowSize = flat.readDimension();
@@ -791,6 +808,7 @@ public class Diagram implements JSONable {
                    this.relations.equals(d.relations) &&
                    this.namedColors.equals(d.namedColors) &&
                    this.objectGraph.equals(d.objectGraph) &&
+                   this.m_objectGraphConfig.equals(d.m_objectGraphConfig) &&
                    true;
         }
         return false;
@@ -808,6 +826,7 @@ public class Diagram implements JSONable {
         h = h*31 + Util.collectionHashCode(this.relations);
         h = h*31 + this.namedColors.hashCode();
         h = h*31 + this.objectGraph.hashCode();
+        h = h*31 + this.m_objectGraphConfig.hashCode();
         return h;
     }
 

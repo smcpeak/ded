@@ -1,4 +1,4 @@
-// ObjectGraphDialog.java
+// ObjectGraphConfigDialog.java
 // See toplevel license.txt for copyright and license terms.
 
 package ded.ui;
@@ -18,22 +18,22 @@ import util.Util;
 import util.swing.ModalDialog;
 
 import ded.model.Diagram;
-import ded.model.ObjectGraph;
+import ded.model.ObjectGraphConfig;
 
-public class ObjectGraphDialog extends ModalDialog {
+public class ObjectGraphConfigDialog extends ModalDialog {
     // ---- data ----
-    private static final long serialVersionUID = -7376121462630597313L;
+    private static final long serialVersionUID = -1525842890592454353L;
 
     /** Diagram whose properties will be edited. */
     private Diagram diagram;
 
     // Controls.
-    private JTextArea graphJsonTextArea;
+    private JTextArea jsonTextArea;
 
     // ---- methods ----
-    public ObjectGraphDialog(Component parent, Diagram d)
+    public ObjectGraphConfigDialog(Component parent, Diagram d)
     {
-        super(parent, "Object Graph");
+        super(parent, "Object Graph Configuration");
         this.diagram = d;
 
         Box vb = ModalDialog.makeMarginVBox(this, ModalDialog.OUTER_MARGIN);
@@ -42,11 +42,11 @@ public class ObjectGraphDialog extends ModalDialog {
         // envision primarily using it as a vehicle for copying and
         // pasting to or from, rather than a place to actually edit the
         // contents.
-        this.graphJsonTextArea = new JTextArea(
-            this.diagram.objectGraph.toString());
-        disableTabInTextArea(this.graphJsonTextArea);
+        this.jsonTextArea = new JTextArea(
+            this.diagram.m_objectGraphConfig.toString());
+        disableTabInTextArea(this.jsonTextArea);
 
-        JScrollPane scroll = new JScrollPane(this.graphJsonTextArea);
+        JScrollPane scroll = new JScrollPane(this.jsonTextArea);
         scroll.setPreferredSize(new Dimension(500,500));
 
         vb.add(scroll);
@@ -54,7 +54,7 @@ public class ObjectGraphDialog extends ModalDialog {
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
         m_helpText = Util.readResourceString(
-            "/resources/helptext/ObjectGraphDialog.txt");
+            "/resources/helptext/ObjectGraphConfigDialog.txt");
 
         this.finishBuildingDialog(vb);
     }
@@ -64,8 +64,9 @@ public class ObjectGraphDialog extends ModalDialog {
     {
         try {
             JSONObject json = new JSONObject(
-                this.graphJsonTextArea.getText());
-            this.diagram.objectGraph = new ObjectGraph(json);
+                this.jsonTextArea.getText());
+            this.diagram.m_objectGraphConfig =
+                new ObjectGraphConfig(json);
         }
         catch (JSONException e) {
             JOptionPane.showMessageDialog(this,
@@ -83,7 +84,7 @@ public class ObjectGraphDialog extends ModalDialog {
       * true returned.  Otherwise, 'diagram' is not modified, and false is returned. */
     public static boolean exec(Component documentParent, Diagram diagram)
     {
-        return (new ObjectGraphDialog(documentParent, diagram)).exec();
+        return (new ObjectGraphConfigDialog(documentParent, diagram)).exec();
     }
 }
 

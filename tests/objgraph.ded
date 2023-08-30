@@ -2,7 +2,7 @@
   "drawFileName": true,
   "entities": [
     {
-      "attributes": "$(graphNode.attributesAndPtrs)\n",
+      "attributes": "$(graphNodeShowFields)\n",
       "loc": {
         "x": 100,
         "y": 115
@@ -15,7 +15,7 @@
       }
     },
     {
-      "attributes": "$(graphNode.attributesAndPtrs)\n",
+      "attributes": "$(graphNodeShowFields)\n",
       "loc": {
         "x": 70,
         "y": 340
@@ -57,9 +57,10 @@
     "n3": {"name": "Name of n3"},
     "n4": {"x": "ecks"}
   },
+  "objectGraphConfig": {"showFields": []},
   "relations": [],
   "type": "Diagram Editor Diagram",
-  "version": 25,
+  "version": 26,
   "windowSize": {
     "h": 538,
     "w": 546

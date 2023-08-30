@@ -41,6 +41,7 @@ import ded.model.Diagram;
 import ded.model.Entity;
 import ded.model.EntityShape;
 import ded.model.ImageFillStyle;
+import ded.model.ObjectGraphConfig;
 import ded.model.ObjectGraphNode;
 import ded.model.ShapeFlag;
 import ded.model.TextAlign;
@@ -1433,12 +1434,12 @@ public class EntityController extends Controller
       */
     public String getVariableValue(String varName)
     {
-        if (varName.equals("graphNodeID")) {
-            return this.entity.objectGraphNodeID;
+        if (varName.startsWith("graphNode.")) {
+            return getGraphNodeAttribute(varName.substring(10));
         }
 
-        else if (varName.startsWith("graphNode.")) {
-            return getGraphNodeAttribute(varName.substring(10));
+        else if (varName.startsWith("graphNode")) {
+            return getGraphNodeComputation(varName.substring(9));
         }
 
         else {
@@ -1455,21 +1456,44 @@ public class EntityController extends Controller
                        this.entity.objectGraphNodeID);
         }
 
-        if (attrName.equals("attributes")) {
+        else {
+            return node.getAttributeString(attrName);
+        }
+    }
+
+    /** Do one of a set of specified computations relating to the
+      * associated object graph node. */
+    public String getGraphNodeComputation(String name)
+    {
+        if (name.equals("ID")) {
+            return this.entity.objectGraphNodeID;
+        }
+
+        ObjectGraphNode node = getGraphNode();
+        if (node == null) {
+            return fmt("<no node with ID: \"%1$s\">",
+                       this.entity.objectGraphNodeID);
+        }
+
+        else if (name.equals("Attributes")) {
             return getGraphNodeAttributesString(node);
         }
 
-        else if (attrName.equals("followablePtrs")) {
+        else if (name.equals("FollowablePtrs")) {
             return getGraphNodeFollowablePtrsString(node);
         }
 
-        else if (attrName.equals("attributesAndPtrs")) {
+        else if (name.equals("AttributesAndPtrs")) {
             return getGraphNodeAttributesString(node) +
                    getGraphNodeFollowablePtrsString(node);
         }
 
+        else if (name.equals("ShowFields")) {
+            return getShowFields(node);
+        }
+
         else {
-            return node.getAttributeString(attrName);
+            return fmt("<unknown computation: \"%1$s\">", name);
         }
     }
 
@@ -1495,12 +1519,23 @@ public class EntityController extends Controller
         ArrayList<String> followable = getFollowablePointersForNode(node);
         for (String key : followable) {
             ObjectGraphNode.Ptr ptr = node.m_pointers.get(key);
-            sb.append(key + ": -> " + ptr.m_ptr);
-            if (ptr.m_preview != null) {
-                sb.append(" " + StringUtil.quoteAsJSONASCII(ptr.m_preview));
-            }
-            sb.append("\n");
+            sb.append(ptrToString(key, ptr));
         }
+
+        return sb.toString();
+    }
+
+    /** Return a string denoting 'ptr', including a final newline.  If
+      * 'displayKeyOpt' is not null, use it as the key. */
+    private String ptrToString(String key, ObjectGraphNode.Ptr ptr)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(key + ": -> " + ptr.m_ptr);
+        if (ptr.m_preview != null) {
+            sb.append(" " + StringUtil.quoteAsJSONASCII(ptr.m_preview));
+        }
+        sb.append("\n");
 
         return sb.toString();
     }
@@ -1539,8 +1574,12 @@ public class EntityController extends Controller
         Set<String> keys = node.m_pointers.keySet();
         for (String key : keys) {
             ObjectGraphNode.Ptr ptr = node.m_pointers.get(key);
+
+            // Query using the display key, since that is what we add to
+            // the diagram, but return the real key, since that will be
+            // used to find the destination node, etc.
             if (this.diagramController.hasRelationFromToLabel(
-                    node.m_id, ptr.m_ptr, key)) {
+                    node.m_id, ptr.m_ptr, getDisplayKey(key))) {
                 // We are already showing this pointer as an edge, so it
                 // is not followable.
             }
@@ -1592,22 +1631,70 @@ public class EntityController extends Controller
                 ptr.m_ptr,
                 targetLoc,
                 "$(graphNodeID)",
-                "$(graphNode.attributesAndPtrs)");
+                "$(graphNodeShowFields)");
 
         this.diagramController.findOrCreateRelationControllerFromToLabel(
             this.entity,
             toEntityController.entity,
-            key);
+            getDisplayKey(key));
 
         // If the entity is created, it will be automatically selected;
         // but if it already existed, then this is not redundant.
         this.diagramController.selectOnly(toEntityController);
     }
 
+    /** Get the display key for 'key'. */
+    private String getDisplayKey(String key)
+    {
+        return this.diagramController.diagram.m_objectGraphConfig.
+                   getDisplayKey(key);
+    }
+
     /** Show all of the object node details. */
     private void showNodeDetails()
     {
         GraphNodeDialog.exec(this);
+    }
+
+    /** Return a string of "shown fields" by consulting the current
+      * graph configuration. */
+    private String getShowFields(ObjectGraphNode node)
+    {
+        ObjectGraphConfig config =
+            this.diagramController.diagram.m_objectGraphConfig;
+
+        if (config.m_showFields.isEmpty()) {
+            // Fall back on attrs+ptrs.
+            return getGraphNodeAttributesString(node) +
+                   getGraphNodeFollowablePtrsString(node);
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        for (ObjectGraphConfig.Field field : config.m_showFields) {
+            ObjectGraphNode.Ptr ptr = node.m_pointers.get(field.m_key);
+            if (ptr != null) {
+                if (this.diagramController.hasRelationFromToLabel(
+                        node.m_id, ptr.m_ptr, field.getDisplayKey())) {
+                    // Pointer is shown as relation, skip.
+                }
+                else {
+                    sb.append(ptrToString(field.getDisplayKey(), ptr));
+                }
+                continue;
+            }
+
+            Object o = node.m_attributes.opt(field.m_key);
+            if (o != null) {
+                sb.append(field.getDisplayKey() + ": " +
+                          o.toString() + "\n");
+            }
+            else {
+                // The key is not in this object, so skip.
+            }
+        }
+
+        return sb.toString();
     }
 }
 

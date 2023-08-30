@@ -2492,6 +2492,14 @@ public class DiagramController extends JPanel
         }
     }
 
+    /** Show the object graph configuration dialog. */
+    public void editObjectGraphConfig()
+    {
+        if (ObjectGraphConfigDialog.exec(this, this.diagram)) {
+            this.diagramChanged("Edit object graph configuration");
+        }
+    }
+
     /** Log the given one-line message.  A newline will be added after
       * it to mark its end in the total accumulated log. */
     public void log(String message)

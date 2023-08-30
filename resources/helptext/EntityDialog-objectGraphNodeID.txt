@@ -8,14 +8,18 @@ Name and/or Attribute fields:
 
   $(graphNodeID): The node ID.
 
-  $(graphNode.attributes): List of attributes, one per line.
+  $(graphNodeAttributes): List of attributes, one per line.
 
-  $(graphNode.followablePtrs): List of pointers for which there is not
+  $(graphNodeFollowablePtrs): List of pointers for which there is not
   a corresponding edge yet, one per line.
 
-  $(graphNode.attributesAndPtrs): The preceding two, concatenated.
+  $(graphNodeAttributesAndPtrs): The preceding two, concatenated.
 
   $(graphNode.<attr>): Any attribute of the node.
+
+  $(graphNodeShowFields): Fields and pointers, as mediated through the
+  object graph configuration field "showFields".  See Help in dialog in
+  "Diagram -> Edit graph configuration...".
 
 When a node is created by following a pointer (right click on an entity
 that has pointers, then choose "Follow pointer"), it is initially
