@@ -2,8 +2,6 @@ TODOs for Diagram Editor
 ------------------------
 
 Small:
-- everything in right-click should also be available from the main menu
-  under "Object" or something like that
 - help window not modal
 - toolbar: create elements, other keyboard shortcuts
 - labels that (optionally) work more like Powerpoint

@@ -35,6 +35,7 @@ import util.awt.G;
 import util.awt.GeomUtil;
 import util.awt.HorizOrVert;
 import util.swing.MenuAction;
+import util.swing.MenuDelegate;
 
 import ded.model.Diagram;
 import ded.model.Entity;
@@ -1032,7 +1033,7 @@ public class EntityController extends Controller
 
     @SuppressWarnings("serial")
     @Override
-    protected void addToRightClickMenu(JPopupMenu menu, MouseEvent ev)
+    protected void addToObjectMenu(MenuDelegate menu, MouseEvent ev)
     {
         final EntityController ths = this;
 

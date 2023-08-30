@@ -23,6 +23,7 @@ import ded.model.TextAlign;
 
 import util.awt.GeomUtil;
 import util.swing.MenuAction;
+import util.swing.MenuDelegate;
 import util.swing.SwingUtil;
 
 
@@ -178,15 +179,17 @@ public abstract class Controller {
             }
         });
 
-        this.addToRightClickMenu(menu, ev);
+        this.addToObjectMenu(new MenuDelegate(menu), ev);
 
         menu.show(this.diagramController, ev.getPoint().x, ev.getPoint().y);
     }
 
-    /** Add more items to the right click menu if desired.  'ev' is the
-      * click that opened the menu, which can be useful if a menu item
-      * will do something with the clicked location. */
-    protected void addToRightClickMenu(JPopupMenu menu, MouseEvent ev)
+    /** Add more items to the right click or Object menu if desired.
+      *
+      * 'ev' is the click that opened the menu, which can be useful if a
+      * menu item will do something with the clicked location.  It can
+      * also be null for the case of building the Object menu. */
+    protected void addToObjectMenu(MenuDelegate menu, MouseEvent ev)
     {}
 
     /** Respond to a mouse press on the controller.  The default action

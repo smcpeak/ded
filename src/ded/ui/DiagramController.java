@@ -66,6 +66,8 @@ import util.ImageFileUtil;
 import util.Util;
 import util.awt.BitmapFont;
 import util.awt.GeomUtil;
+import util.swing.MenuAction;
+import util.swing.MenuDelegate;
 import util.swing.SwingUtil;
 
 import ded.Ded;
@@ -496,8 +498,12 @@ public class DiagramController extends JPanel
         }
     }
 
-    /** Deselect all controllers and return the number that were previously selected. */
-    public int deselectAll()
+    /** Deselect all controllers and return the number that were
+      * previously selected.  Does not call
+      * 'updateAfterSelectionChanged', the idea being the caller will
+      * arrange to do that afterward, perhaps after further changing
+      * what is selected. */
+    public int deselectAll_noUpdateAfter()
     {
         // Get selection set first, so we only change state after iterating.
         HashSet<Controller> toDeselect = getSelectionSet();
@@ -506,6 +512,17 @@ public class DiagramController extends JPanel
         setMultipleSelected(toDeselect, SelectionState.SS_UNSELECTED);
 
         return toDeselect.size();
+    }
+
+    /** Deselect all controllers and return the number that were
+      * previously selected. */
+    public int deselectAll()
+    {
+        int ret = deselectAll_noUpdateAfter();
+
+        updateAfterSelectionChanged();
+
+        return ret;
     }
 
     /** Return the top-most Controller that contains 'point' and satisfies 'filter'
@@ -1349,6 +1366,9 @@ public class DiagramController extends JPanel
             // Restore selection state.
             setSelectionSet(originalSelection);
         }
+
+        // We do not call 'updateAfterSelectionChanged' here because the
+        // intent is that it is unchanged from the start of the call.
     }
 
     /** Get and log some details related to display scaling, particularly
@@ -1813,7 +1833,7 @@ public class DiagramController extends JPanel
         }
 
         // Prepare to select only the new controllers.
-        this.deselectAll();
+        this.deselectAll_noUpdateAfter();
 
         // Insert the new entities, making controllers for them.
         final IdentityHashSet<Controller> newControllers =
@@ -1864,6 +1884,7 @@ public class DiagramController extends JPanel
             IdentityHashSet<Controller> sel = this.getAllSelected();
             int n = sel.size();
             this.deleteControllers(sel);
+            this.updateAfterSelectionChanged();
             this.diagramChanged(isCutCommand?
                 fmt("Cut %1$d elements", n) :
                 fmt("Delete %1$d elements", n));
@@ -1915,8 +1936,9 @@ public class DiagramController extends JPanel
     /** Select a single controller. */
     public void selectOnly(Controller c)
     {
-        this.deselectAll();
+        this.deselectAll_noUpdateAfter();
         c.setSelected(SelectionState.SS_EXCLUSIVE);
+        this.updateAfterSelectionChanged();
         this.repaint();
     }
 
@@ -1995,6 +2017,8 @@ public class DiagramController extends JPanel
             // Set state of all selected controls.
             setMultipleSelected(toSelect, SelectionState.SS_SELECTED);
         }
+
+        updateAfterSelectionChanged();
     }
 
     /** Return the current lasso rectangle. */
@@ -2034,6 +2058,13 @@ public class DiagramController extends JPanel
                 return c.boundsIntersects(lasso);
             }
         });
+    }
+
+    /** Called when the set of selected controllers has changed, in
+      * order to update dependent data. */
+    private void updateAfterSelectionChanged()
+    {
+        rebuildObjectMenu();
     }
 
     /** Add an active controller. */
@@ -2709,6 +2740,32 @@ public class DiagramController extends JPanel
     public void setUndoHistoryLimit(int newLimit)
     {
         this.undoHistoryLimit = newLimit;
+    }
+
+    /** Rebuild the "Object" menu based on what is selected. */
+    private void rebuildObjectMenu()
+    {
+        JMenu objectMenu = this.dedWindow.m_objectMenu;
+        objectMenu.removeAll();
+
+        Controller selController = this.getUniqueSelected();
+        if (selController == null) {
+            objectMenu.setEnabled(false);
+        }
+        else {
+            objectMenu.setEnabled(true);
+
+            objectMenu.add(new MenuAction("Edit selected ...",
+                                           KeyEvent.VK_ENTER,
+                                           KeyEvent.VK_ENTER, 0) {
+                public void actionPerformed(ActionEvent e) {
+                    DiagramController.this.editSelected();
+                }
+            });
+
+            selController.addToObjectMenu(
+                new MenuDelegate(objectMenu), null /*ev*/);
+        }
     }
 
     /** Get the graph node for 'id', or null if none. */

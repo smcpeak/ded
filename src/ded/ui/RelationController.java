@@ -32,6 +32,7 @@ import util.awt.BitmapFont;
 import util.awt.GeomUtil;
 import util.awt.HorizOrVert;
 import util.swing.MenuAction;
+import util.swing.MenuDelegate;
 import util.swing.SwingUtil;
 
 import ded.model.ArrowStyle;
@@ -896,11 +897,19 @@ public class RelationController extends Controller {
 
     @SuppressWarnings("serial")
     @Override
-    protected void addToRightClickMenu(JPopupMenu menu, final MouseEvent ev)
+    protected void addToObjectMenu(MenuDelegate menu, final MouseEvent ev)
     {
-        menu.add(new MenuAction("Insert control point", KeyEvent.VK_I) {
+        menu.add(new MenuAction("Insert control point", KeyEvent.VK_I,
+                                KeyEvent.VK_INSERT, 0) {
             public void actionPerformed(ActionEvent e) {
-                RelationController.this.insertControlPointAt(ev.getPoint());
+                if (ev != null) {
+                    // Invoked via right-click menu.
+                    RelationController.this.insertControlPointAt(ev.getPoint());
+                }
+                else {
+                    // Invoked via Object menu.
+                    RelationController.this.insertControlPoint();
+                }
             }
         });
 

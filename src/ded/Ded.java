@@ -20,6 +20,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.zip.GZIPInputStream;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
@@ -72,6 +74,10 @@ public class Ded extends JFrame implements WindowListener {
     /** The sub-menu for redo alternate.  This is public so that
       * DiagramController can populate it as needed. */
     public JMenu redoSubmenu;
+
+    /** The Object menu, exposed so I can update it when the selection
+      * changes. */
+    public JMenu m_objectMenu;
 
     // ---------- public methods -------------
     public Ded()
@@ -173,6 +179,7 @@ public class Ded extends JFrame implements WindowListener {
         menuBar.add(buildFileMenu());
         menuBar.add(buildEditMenu());
         menuBar.add(buildModeMenu());
+        menuBar.add(buildObjectMenu());
         menuBar.add(buildDiagramMenu());
         menuBar.add(buildHelpMenu());
         this.setJMenuBar(menuBar);
@@ -226,18 +233,6 @@ public class Ded extends JFrame implements WindowListener {
         JMenu m = new JMenu("Edit");
         m.setName("edit");
         m.setMnemonic(KeyEvent.VK_E);
-
-        m.add(new MenuAction("Edit selected ...", KeyEvent.VK_ENTER, KeyEvent.VK_ENTER, 0) {
-            public void actionPerformed(ActionEvent e) {
-                Ded.this.diagramController.editSelected();
-            }
-        });
-
-        m.add(new MenuAction("Insert control point", KeyEvent.VK_INSERT, KeyEvent.VK_INSERT, 0) {
-            public void actionPerformed(ActionEvent e) {
-                Ded.this.diagramController.insertControlPoint();
-            }
-        });
 
         m.add(new MenuAction("Cut", KeyEvent.VK_T, KeyEvent.VK_X, ActionEvent.CTRL_MASK) {
             public void actionPerformed(ActionEvent e) {
@@ -323,6 +318,22 @@ public class Ded extends JFrame implements WindowListener {
                 Ded.this.diagramController.setMode(DiagramController.Mode.DCM_CREATE_INHERITANCE);
             }
         });
+
+        return m;
+    }
+
+    @SuppressWarnings("serial")
+    private JMenu buildObjectMenu()
+    {
+        // This just builds an empty container.  The menu will be
+        // properly built out by DiagramController.rebuildObjectMenu.
+
+        JMenu m = new JMenu("Object");
+        m.setName("object");
+        m.setMnemonic(KeyEvent.VK_O);
+        m.setEnabled(false);
+
+        this.m_objectMenu = m;
 
         return m;
     }
