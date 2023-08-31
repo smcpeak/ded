@@ -6,11 +6,14 @@ package ded.model;
 import java.awt.Dimension;
 import java.awt.Point;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 /** Test serialization of Diagram. */
 public class SerializationTests {
+    private static final boolean s_debug = false;
+
     /** Run the tests.  Throw exception on failure. */
     public static void main(String args[]) throws Exception
     {
@@ -19,6 +22,7 @@ public class SerializationTests {
         // Run unit tests when run w/o arguments.
         if (args.length == 0) {
             t.test1();
+            t.testNumGraphJSONBytes();
         }
 
         // Parse inputs specified on command line.
@@ -132,6 +136,52 @@ public class SerializationTests {
         // Serialize and check.
         String ser3 = d3.toJSON().toString(2);
         assert(ser3.equals(serialized));
+    }
+
+    private void testNumGraphJSONBytes()
+    {
+        try {
+            Diagram d = new Diagram();
+            if (s_debug) {
+                System.err.println("JSON bytes: "+
+                    Diagram.numGraphJSONBytes(d.objectGraph));
+                System.err.println("PNG bytes: "+
+                    Diagram.numGraphPNGBytes(d.objectGraph));
+            }
+
+            // The particular value here is what I observe when testing
+            // the mechanism and getting what seems to be the right
+            // answer.  I then want to check that it does not change
+            // silently.
+            assert(Diagram.numGraphJSONBytes(d.objectGraph) == 24);
+
+            ObjectGraphNode node1 = new ObjectGraphNode("id1");
+            node1.m_attributes.put("attr1", "val1");
+            node1.m_pointers.put("ptr1", new ObjectGraphNode.Ptr("id2", null));
+            d.objectGraph.m_nodes.put("id1", node1);
+            if (s_debug) {
+                System.err.println("JSON bytes: "+
+                    Diagram.numGraphJSONBytes(d.objectGraph));
+                System.err.println("PNG bytes: "+
+                    Diagram.numGraphPNGBytes(d.objectGraph));
+            }
+            assert(Diagram.numGraphJSONBytes(d.objectGraph) == 84);
+
+            ObjectGraphNode node2 = new ObjectGraphNode("id2");
+            node1.m_attributes.put("attr1", "val2");
+            node1.m_pointers.put("ptr1", new ObjectGraphNode.Ptr("id1", null));
+            d.objectGraph.m_nodes.put("id2", node2);
+            if (s_debug) {
+                System.err.println("JSON bytes: "+
+                    Diagram.numGraphJSONBytes(d.objectGraph));
+                System.err.println("PNG bytes: "+
+                    Diagram.numGraphPNGBytes(d.objectGraph));
+            }
+            assert(Diagram.numGraphJSONBytes(d.objectGraph) == 113);
+        }
+        catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

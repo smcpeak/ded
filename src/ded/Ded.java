@@ -345,7 +345,7 @@ public class Ded extends JFrame implements WindowListener {
         m.setName("diagram");
         m.setMnemonic(KeyEvent.VK_D);
 
-        // Used mnemonics: bcfgiopr
+        // Used mnemonics: bcfgioprs
 
         this.drawFileNameCheckbox =
             new JCheckBoxMenuItem("Draw file name in upper-left corner", true);
@@ -375,6 +375,8 @@ public class Ded extends JFrame implements WindowListener {
             }
         });
 
+        m.addSeparator();
+
         m.add(new MenuAction("Edit object graph...", KeyEvent.VK_O) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.editObjectGraph();
@@ -384,6 +386,12 @@ public class Ded extends JFrame implements WindowListener {
         m.add(new MenuAction("Edit object graph configuration...", KeyEvent.VK_G) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.editObjectGraphConfig();
+            }
+        });
+
+        m.add(new MenuAction("Object graph sizes...", KeyEvent.VK_S) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.editObjectGraphSizes();
             }
         });
 

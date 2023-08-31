@@ -36,5 +36,4 @@ Entity dialog for details on how to show object graph data within a
 node.
 
 The intended usage model of this dialog is to create the JSON using some
-external program or script, then copy+paste it into this box for
-exploration.
+external program, then copy+paste it into this box for exploration.

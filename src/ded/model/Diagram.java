@@ -35,6 +35,7 @@ import util.StringUtil;
 import util.Util;
 import util.XParse;
 import util.awt.AWTJSONUtil;
+import util.json.JSONUtil;
 import util.json.JSONable;
 
 /** Complete diagram. */
@@ -202,6 +203,8 @@ public class Diagram implements JSONable {
         for (Inheritance i : this.inheritances) {
             i.globalSelfCheck(this);
         }
+
+        this.objectGraph.selfCheck();
     }
 
     /** This is an interface and default implementation for a filter
@@ -437,6 +440,50 @@ public class Diagram implements JSONable {
             colorArray.put(colorObj);
         }
         return colorArray;
+    }
+
+    /** Return the number of bytes that the specified graph uses in the
+      * JSON representation (.ded file), including indentation.  Returns
+      * -1 if there is a JSON encoding error. */
+    public static int numGraphJSONBytes(ObjectGraph graph)
+    {
+        return numGraphBytes(false /*png*/, graph);
+    }
+
+    /** Return the number of bytes that the specified graph uses in the
+      * PNG representation.  Returns -1 if there is a JSON encoding
+      * error. */
+    public static int numGraphPNGBytes(ObjectGraph graph)
+    {
+        return numGraphBytes(true /*png*/, graph);
+    }
+
+    /** Return the number of bytes for the graph in either PNG or DED
+      * format. */
+    private static int numGraphBytes(boolean png, ObjectGraph graph)
+    {
+        try {
+            JSONObject o = new JSONObject();
+            o.put("objectGraph", graph.toJSON());
+
+            if (!png) {
+                // Force the 'objectGraph' to be indented once, so its
+                // contents are indented twice, as in the real file.
+                o.put("x", 1);
+            }
+
+            // For PNG size, we just assume that zlib compression will
+            // approximate the size in the PNG file.
+            int ret = JSONUtil.jsonEncodingBytes(o,
+                png? 0 : 2 /*indent*/,
+                png /*compress*/);
+
+            // Subtract the encoding of 'x'.
+            return ret - (png? 0 : 9);
+        }
+        catch (JSONException e) {
+            return -1;
+        }
     }
 
     /** Deserialize from 'o'. */

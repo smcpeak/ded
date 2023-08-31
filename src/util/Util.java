@@ -241,6 +241,18 @@ public class Util {
         }
         return a.compareTo((T)b) == 0;
     }
+
+    /** True if 'a' and 'b' are disjoint. */
+    public static <T>
+    boolean disjointSets(Set<T> a, Set<T> b)
+    {
+        for (T t : a) {
+            if (b.contains(t)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
 
 // EOF

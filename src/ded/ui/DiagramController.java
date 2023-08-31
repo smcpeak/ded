@@ -2500,6 +2500,14 @@ public class DiagramController extends JPanel
         }
     }
 
+    /** Show the object graph sizes dialog. */
+    public void editObjectGraphSizes()
+    {
+        if (ObjectGraphSizesDialog.exec(this, this.diagram)) {
+            this.diagramChanged("Edit object graph sizes");
+        }
+    }
+
     /** Log the given one-line message.  A newline will be added after
       * it to mark its end in the total accumulated log. */
     public void log(String message)

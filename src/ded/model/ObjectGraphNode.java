@@ -114,14 +114,19 @@ public class ObjectGraphNode implements JSONable {
     public static boolean s_debug = true;
 
     // ---------- public instance data ------------
-    // The identifier for this node, which must be unique among nodes in
-    // the graph.
+    /** The identifier for this node, which must be unique among nodes
+      * in the graph. */
     public String m_id;
 
-    // Set of non-pointer attributes.
+    /** Set of non-pointer attributes. */
     public JSONObject m_attributes;
 
-    // Set of pointers to other nodes.
+    /*
+      Set of pointers to other nodes.
+
+      Invariant:
+          Util.disjointSets(m_attributes.keySet(), m_pointers.keySet())
+    */
     public Map<String, Ptr> m_pointers;
 
     // ----------- public methods -----------
@@ -178,6 +183,12 @@ public class ObjectGraphNode implements JSONable {
 
             return sb.toString();
         }
+    }
+
+    public void selfCheck()
+    {
+        // Check that the key sets are disjoint.
+        Util.disjointSets(m_attributes.keySet(), m_pointers.keySet());
     }
 
     // ------------------ serialization --------------------

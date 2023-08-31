@@ -15,8 +15,14 @@ import util.json.JSONable;
 /** Set of objects with attributes and pointers. */
 public class ObjectGraph implements JSONable {
     // ---------- public data ------------
-    /** The set of nodes. */
-    Map<String, ObjectGraphNode> m_nodes;
+    /**
+      The set of nodes.
+
+      Invariant:
+          forall String key in m_nodes:
+              m_nodes.get(key).m_id.equals(key)
+    */
+    public Map<String, ObjectGraphNode> m_nodes;
 
     // ---------- public methods ------------
     public ObjectGraph()
@@ -38,6 +44,18 @@ public class ObjectGraph implements JSONable {
             throw new RuntimeException("Node not found: "+id);
         }
         return n;
+    }
+
+    public void selfCheck()
+    {
+        for (Map.Entry<String, ObjectGraphNode> kv : m_nodes.entrySet()) {
+            String key = kv.getKey();
+            ObjectGraphNode node = kv.getValue();
+
+            assert(node.m_id.equals(key));
+
+            node.selfCheck();
+        }
     }
 
     // ------------------ serialization --------------------

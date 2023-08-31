@@ -5,12 +5,19 @@ package util.json;
 
 import java.util.Collection;
 
+import java.util.zip.Deflater;
+
+import java.nio.charset.StandardCharsets;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /** Utilities for working with JSON objects. */
 public class JSONUtil {
+    /** True to enable some debug printouts. */
+    public static final boolean s_debug = false;
+
     /** Put all the serialized elements of 'c' into a JSONArray. */
     public static <T extends JSONable>
     JSONArray collectionToJSON(Collection<T> c) throws JSONException
@@ -61,6 +68,39 @@ public class JSONUtil {
         }
 
         return aString.equals(bString);
+    }
+
+    /** Get the number of bytes required to encode 'o' as JSON when
+      * using the specified amount of indentation.  When 'indent' is 0,
+      * no indentation, spacing, or newlines are used.  If 'compressed',
+      * then we compress using Deflate and count the compressed size. */
+    public static int jsonEncodingBytes(
+        JSONObject o,
+        int indent,
+        boolean compressed) throws JSONException
+    {
+        String jsonString = o.toString(indent);
+        if (s_debug) {
+            System.err.println(jsonString);
+        }
+        byte[] jsonBytes = jsonString.getBytes(StandardCharsets.UTF_8);
+
+        if (compressed) {
+            Deflater deflater =
+                new Deflater(Deflater.BEST_COMPRESSION, true /*nowrap*/);
+            deflater.setInput(jsonBytes);
+            deflater.finish();
+
+            // Is this how it's supposed to be used?
+            byte[] compressedBytes = new byte[jsonBytes.length + 10];
+            int compressedLen = deflater.deflate(compressedBytes);
+            assert(compressedLen != 0);
+
+            return compressedLen;
+        }
+        else {
+            return jsonBytes.length;
+        }
     }
 }
 
