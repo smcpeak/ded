@@ -1518,24 +1518,8 @@ public class EntityController extends Controller
 
         ArrayList<String> followable = getFollowablePointersForNode(node);
         for (String key : followable) {
-            ObjectGraphNode.Ptr ptr = node.m_pointers.get(key);
-            sb.append(ptrToString(key, ptr));
+            sb.append(key + ": " + node.getPointerString(key) + "\n");
         }
-
-        return sb.toString();
-    }
-
-    /** Return a string denoting 'ptr', including a final newline.  If
-      * 'displayKeyOpt' is not null, use it as the key. */
-    private String ptrToString(String key, ObjectGraphNode.Ptr ptr)
-    {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(key + ": -> " + ptr.m_ptr);
-        if (ptr.m_preview != null) {
-            sb.append(" " + StringUtil.quoteAsJSONASCII(ptr.m_preview));
-        }
-        sb.append("\n");
 
         return sb.toString();
     }
@@ -1672,14 +1656,14 @@ public class EntityController extends Controller
                     // Pointer is shown as relation, skip.
                 }
                 else {
-                    sb.append(ptrToString(key, ptr));
+                    sb.append(key + ": " + node.getPointerString(key) + "\n");
                 }
                 continue;
             }
 
             Object o = node.m_attributes.opt(key);
             if (o != null) {
-                sb.append(key + ": " + o.toString() + "\n");
+                sb.append(key + ": " + node.getAttributeString(key) + "\n");
             }
             else {
                 // The key is not in this object, so skip.

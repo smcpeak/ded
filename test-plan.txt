@@ -28,7 +28,7 @@ Test: objgraph
   <no node with ID: "bad_id">
 
   Check that below that is a node whose title area says:
-  <No such key: "badAttr">
+  <No such attr key: "badAttr">
 
 * Right-click on "n1", "Follow pointer", "succ".
 

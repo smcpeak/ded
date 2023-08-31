@@ -4,7 +4,7 @@
 package ded.model;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -16,28 +16,53 @@ import util.json.JSONable;
 
 /** Configuration for how to interact with an object graph. */
 public class ObjectGraphConfig implements JSONable {
+    // ---- private data ----
+    /** Map of elements in 'm_showFields' to their 0-based ordinal
+      * position. */
+    private HashMap<String, Integer> m_showFieldsMap;
+
     // ---- public data ----
     /** Sequence of fields to show in the attributes area of an
       * entity box.  Not null.  After changing, one must call
-      * 'recomputeShowFieldsSet()'. */
+      * 'recomputeShowFieldsMap()'. */
     public ArrayList<String> m_showFields;
-
-    /** Set of elements in 'm_showFields'. */
-    public HashSet<String> m_showFieldsSet;
 
     // ---- public methods ----
     public ObjectGraphConfig()
     {
-        m_showFields = new ArrayList<String>();
-        recomputeShowFieldsSet();
+        setShowFields(new ArrayList<String>());
     }
 
-    /** Recompute 'm_showFieldsSet'. */
-    public void recomputeShowFieldsSet()
+    /** Update the "show fields" sequence and recompute the map. */
+    public void setShowFields(ArrayList<String> newShowFields)
     {
-        m_showFieldsSet = new HashSet<String>();
+        m_showFields = newShowFields;
+        recomputeShowFieldsMap();
+    }
+
+    /** Recompute 'm_showFieldsMap'. */
+    public void recomputeShowFieldsMap()
+    {
+        m_showFieldsMap = new HashMap<String, Integer>();
+
+        int pos = 0;
         for (String f : m_showFields) {
-            m_showFieldsSet.add(f);
+            m_showFieldsMap.put(f, pos);
+            ++pos;
+        }
+    }
+
+    /** If 'key' is in 'm_showFields', return its 0-based ordinal
+      * position as a Float with integer value.  Otherwise return null.
+      */
+    public Float getFieldOrdinalFloatOpt(String key)
+    {
+        Integer i = m_showFieldsMap.get(key);
+        if (i != null) {
+            return Float.valueOf(i);
+        }
+        else {
+            return null;
         }
     }
 
@@ -65,14 +90,14 @@ public class ObjectGraphConfig implements JSONable {
             m_showFields.add(arr.getString(i));
         }
 
-        recomputeShowFieldsSet();
+        recomputeShowFieldsMap();
     }
 
     // ---- data class boilerplate ----
     public ObjectGraphConfig(ObjectGraphConfig src)
     {
         m_showFields = new ArrayList<String>(src.m_showFields);
-        recomputeShowFieldsSet();
+        recomputeShowFieldsMap();
     }
 
     @Override

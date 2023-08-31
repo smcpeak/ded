@@ -157,6 +157,18 @@ public class Util {
                         0 ;
     }
 
+    /** Return -1/0/+1 for 'a' lt/eq/gt 'b' where 'null' comes before
+      * non-null. */
+    public static int compareNullability(Object a, Object b)
+    {
+        if (a == null) {
+            return b==null? 0 : -1;
+        }
+        else {
+            return b==null? +1 : 0;
+        }
+    }
+
     /** Return 'coll' in a sorted array. */
     public static <T extends Comparable<? super T> >
     ArrayList<T> sorted(Collection<T> coll)
@@ -212,6 +224,22 @@ public class Util {
         else {
             return fmt("[Missing resource: \"%1$s\".]", fname);
         }
+    }
+
+    /** Provide an implementation of 'equals' in terms of 'compareTo'. */
+    public static <T extends Comparable<? super T> >
+    boolean equalsViaCompare(T a, Object b)
+    {
+        if (a == null) {
+            return b == null;
+        }
+        if (b == null) {
+            return false;
+        }
+        if (a.getClass() != b.getClass()) {
+            return false;
+        }
+        return a.compareTo((T)b) == 0;
     }
 }
 

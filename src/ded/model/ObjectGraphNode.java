@@ -11,6 +11,7 @@ import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import util.StringUtil;
 import util.Util;
 import util.json.JSONUtil;
 import util.json.JSONable;
@@ -150,13 +151,32 @@ public class ObjectGraphNode implements JSONable {
     {
         try {
             if (!m_attributes.has(key)) {
-                return fmt("<No such key: \"%1$s\".>", key);
+                return fmt("<No such attr key: \"%1$s\".>", key);
             }
 
             return m_attributes.get(key).toString();
         }
         catch (JSONException e) {
             return "<exn: "+e+">";
+        }
+    }
+
+    /** Get the pointer value of 'key' as a string. */
+    public String getPointerString(String key)
+    {
+        Ptr ptr = m_pointers.get(key);
+        if (ptr == null) {
+            return fmt("<No such ptr key: \"%1$s\".>", key);
+        }
+        else {
+            StringBuilder sb = new StringBuilder();
+
+            sb.append("-> " + ptr.m_ptr);
+            if (ptr.m_preview != null) {
+                sb.append(" " + StringUtil.quoteAsJSONASCII(ptr.m_preview));
+            }
+
+            return sb.toString();
         }
     }
 

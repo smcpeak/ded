@@ -39,6 +39,19 @@
         "h": 325,
         "w": 490
       }
+    },
+    {
+      "attributes": "$(graphNodeShowFields)",
+      "loc": {
+        "x": 740,
+        "y": 485
+      },
+      "name": "$(graphNodeID)",
+      "objectGraphNodeID": "BuiltinType_20_",
+      "size": {
+        "h": 55,
+        "w": 160
+      }
     }
   ],
   "inheritances": [],
@@ -557,7 +570,25 @@
       "skipping reserved": "\"__builtin_ms_va_list\""
     }
   },
-  "objectGraphConfig": {"showFields": []},
+  "objectGraphConfig": {"showFields": [
+    "syntax",
+    "Name",
+    "SpecializationKind",
+    "TagDeclBits",
+    "qualifier->TemplParamLists[0]",
+    "TemplateArgs",
+    "TemplateOrInstantiation",
+    "DefinitionData",
+    "First",
+    "Previous",
+    "FirstDecl",
+    "LastDecl",
+    "NextInContext",
+    "SpecializedTemplate.classTemplateDecl",
+    "TemplateArgs[0].TypeOrValue.V",
+    "TypeForDecl",
+    "semanticDeclContext"
+  ]},
   "relations": [
     {
       "end": {"entityRef": 1},
@@ -576,6 +607,11 @@
       }],
       "end": {"entityRef": 1},
       "label": "TypeForDecl",
+      "start": {"entityRef": 2}
+    },
+    {
+      "end": {"entityRef": 3},
+      "label": "TemplateArgs[0].TypeOrValue.V",
       "start": {"entityRef": 2}
     }
   ],

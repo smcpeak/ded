@@ -1,0 +1,22 @@
+This dialog shows all of the graph node attributes and pointers
+associated with the graph node with the specified ID.  Pointers have a
+"P" in the "P" ("Pointer?") column.
+
+It can also be used to show and hide attributes and pointers that are
+displayed in entities via the "$(graphNodeShowFields)" variable.  In the
+first "Ord" column is either a blank space or a number.  Blank spaces
+correspond to fields that are not shown, and numbered fields are shown,
+in increasing order.  The numbers can be specified as decimal values to
+insert fields between others, or very large or negative values to put
+them at the ends.
+
+To edit a cell, double-click it with the mouse, or use the cursor keys
+to navigate, then start typing a number.
+
+When the dialog is closed (with "Ok"), the global "show fields" sequence
+will be updated according to the changes specified here.  Specifically,
+elements that were not listed here are combined, using their original
+sequential ordinal, with those that are listed here and have an ordinal.
+That set of elements is then sorted by ordinal and becomes the new
+sequence.  When the dialog is opened again, the ordinals will reflect
+the elements' new positions in that sequence.
