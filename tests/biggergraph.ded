@@ -557,64 +557,7 @@
       "skipping reserved": "\"__builtin_ms_va_list\""
     }
   },
-  "objectGraphConfig": {"showFields": [
-    {"key": "syntax"},
-    {
-      "displayKey": "NextInContext",
-      "key": "Decl::NextInContext"
-    },
-    {
-      "displayKey": "DC",
-      "key": "Decl::semanticDeclContext"
-    },
-    {
-      "displayKey": "FirstDecl",
-      "key": "DeclContext::FirstDecl"
-    },
-    {
-      "displayKey": "LastDecl",
-      "key": "DeclContext::LastDecl"
-    },
-    {
-      "displayKey": "Name",
-      "key": "NamedDecl::Name"
-    },
-    {
-      "displayKey": "TypeForDecl",
-      "key": "TypeDecl::TypeForDecl"
-    },
-    {"key": "Redeclarable::Previous"},
-    {"key": "Redeclarable::First"},
-    {"key": "TagDecl::TagDeclBits"},
-    {
-      "displayKey": "qualifier->TemplParamLists[0]",
-      "key": "TagDecl::TypedefNameDeclOrQualifier.qualifier->TemplParamLists[0]"
-    },
-    {
-      "displayKey": "DefinitionData",
-      "key": "CXXRecordDecl::DefinitionData"
-    },
-    {
-      "displayKey": "TemplateOrInstantiation",
-      "key": "CXXRecordDecl::TemplateOrInstantiation"
-    },
-    {
-      "displayKey": "classTemplateDecl",
-      "key": "ClassTemplateSpecializationDecl::SpecializedTemplate.classTemplateDecl"
-    },
-    {
-      "displayKey": "TemplateArgs",
-      "key": "ClassTemplateSpecializationDecl::TemplateArgs"
-    },
-    {
-      "displayKey": "SpecializationKind",
-      "key": "ClassTemplateSpecializationDecl::SpecializationKind"
-    },
-    {
-      "displayKey": "TemplateArgs[0].TypeOrValue.V",
-      "key": "ClassTemplateSpecializationDecl::TemplateArgs[0].TypeOrValue.V"
-    }
-  ]},
+  "objectGraphConfig": {"showFields": []},
   "relations": [
     {
       "end": {"entityRef": 1},
@@ -637,7 +580,7 @@
     }
   ],
   "type": "Diagram Editor Diagram",
-  "version": 26,
+  "version": 27,
   "windowSize": {
     "h": 554,
     "w": 955

@@ -59,7 +59,7 @@ public class Diagram implements JSONable {
       * should include a bump--even though the old code might be
       * able to read the file without choking, the semantics would
       * not be preserved. */
-    public static final int currentFileVersion = 26;
+    public static final int currentFileVersion = 27;
 
     // ---------- public data ------------
     /** Size of window to display diagram.  Some elements might not fit
@@ -460,6 +460,15 @@ public class Diagram implements JSONable {
                 "reading is "+currentFileVersion+".  You need to get "+
                 "a later version of the program in order to read "+
                 "this file.");
+        }
+        else if (ver == 26) {
+            // I think I'm the only one to have had this version and
+            // there are no important files, so no reason to write an
+            // importer.
+            throw new JSONException(
+                "Version 26 contains a feature that was later removed. "+
+                "You have to manually remove objectGraphConfig and set "+
+                "the version to 27.");
         }
 
         this.windowSize = AWTJSONUtil.dimensionFromJSON(o.getJSONObject("windowSize"));

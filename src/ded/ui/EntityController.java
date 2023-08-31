@@ -1579,7 +1579,7 @@ public class EntityController extends Controller
             // the diagram, but return the real key, since that will be
             // used to find the destination node, etc.
             if (this.diagramController.hasRelationFromToLabel(
-                    node.m_id, ptr.m_ptr, getDisplayKey(key))) {
+                    node.m_id, ptr.m_ptr, key)) {
                 // We are already showing this pointer as an edge, so it
                 // is not followable.
             }
@@ -1636,18 +1636,11 @@ public class EntityController extends Controller
         this.diagramController.findOrCreateRelationControllerFromToLabel(
             this.entity,
             toEntityController.entity,
-            getDisplayKey(key));
+            key);
 
         // If the entity is created, it will be automatically selected;
         // but if it already existed, then this is not redundant.
         this.diagramController.selectOnly(toEntityController);
-    }
-
-    /** Get the display key for 'key'. */
-    private String getDisplayKey(String key)
-    {
-        return this.diagramController.diagram.m_objectGraphConfig.
-                   getDisplayKey(key);
     }
 
     /** Show all of the object node details. */
@@ -1671,23 +1664,22 @@ public class EntityController extends Controller
 
         StringBuilder sb = new StringBuilder();
 
-        for (ObjectGraphConfig.Field field : config.m_showFields) {
-            ObjectGraphNode.Ptr ptr = node.m_pointers.get(field.m_key);
+        for (String key : config.m_showFields) {
+            ObjectGraphNode.Ptr ptr = node.m_pointers.get(key);
             if (ptr != null) {
                 if (this.diagramController.hasRelationFromToLabel(
-                        node.m_id, ptr.m_ptr, field.getDisplayKey())) {
+                        node.m_id, ptr.m_ptr, key)) {
                     // Pointer is shown as relation, skip.
                 }
                 else {
-                    sb.append(ptrToString(field.getDisplayKey(), ptr));
+                    sb.append(ptrToString(key, ptr));
                 }
                 continue;
             }
 
-            Object o = node.m_attributes.opt(field.m_key);
+            Object o = node.m_attributes.opt(key);
             if (o != null) {
-                sb.append(field.getDisplayKey() + ": " +
-                          o.toString() + "\n");
+                sb.append(key + ": " + o.toString() + "\n");
             }
             else {
                 // The key is not in this object, so skip.

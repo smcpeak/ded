@@ -22,6 +22,18 @@ public class JSONUtil {
         return a;
     }
 
+    /** Put all the serialized elements of 'c' into a JSONArray. */
+    public static
+    JSONArray stringCollectionToJSONArray(Collection<String> c)
+        throws JSONException
+    {
+        JSONArray a = new JSONArray();
+        for (String s : c) {
+            a.put(s);
+        }
+        return a;
+    }
+
     // I can't write 'collectionFromJSON' without reflection or some
     // factory classes (which I might decide to use at some point).
 

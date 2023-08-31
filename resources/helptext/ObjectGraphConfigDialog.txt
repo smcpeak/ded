@@ -2,8 +2,6 @@ This text box contains JSON that configures the interaction with the
 object graph.
 
 Currently there is only one field, "showFields", which is an array of
-objects that have a "key" and an optional "displayKey".  This determines
-the sequence of attributes and pointers that are produced by the
-"$(graphNodeShowFields)" variable.  When "displayKey" is present, that
-is the key shown, even though the data is accessed using "key".  If the
+field names.  This determines the sequence of attributes and pointers
+that are produced by the "$(graphNodeShowFields)" variable.  If the
 array is empty, then all fields are shown.
