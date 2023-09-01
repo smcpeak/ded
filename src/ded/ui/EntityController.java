@@ -1637,13 +1637,54 @@ public class EntityController extends Controller
       * graph configuration. */
     private String getShowFields(ObjectGraphNode node)
     {
+        // Attributes, newline, pointers.
+        //
+        // This separation helps to easily see the pointers when I want
+        // to, and also makes it easy to hide them by adjusting the
+        // entity height (without leaving part of a line showing at the
+        // edge).
+        return getShowFieldsAttrs(node) +
+               "\n" +
+               getShowFieldsPtrs(node);
+    }
+
+    /** Return a string of just the attributes listed in 'm_showFields'
+      * of the graph configuration. */
+    private String getShowFieldsAttrs(ObjectGraphNode node)
+    {
         ObjectGraphConfig config =
             this.diagramController.diagram.m_objectGraphConfig;
 
         if (config.m_showFields.isEmpty()) {
-            // Fall back on attrs+ptrs.
-            return getGraphNodeAttributesString(node) +
-                   getGraphNodeFollowablePtrsString(node);
+            // Get all attributes.
+            return getGraphNodeAttributesString(node);
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        for (String key : config.m_showFields) {
+            Object o = node.m_attributes.opt(key);
+            if (o != null) {
+                sb.append(key + ": " + node.getAttributeString(key) + "\n");
+            }
+            else {
+                // The key is not in this object, so skip.
+            }
+        }
+
+        return sb.toString();
+    }
+
+    /** Return a string of just the pointers listed in 'm_showFields'
+      * of the graph configuration. */
+    private String getShowFieldsPtrs(ObjectGraphNode node)
+    {
+        ObjectGraphConfig config =
+            this.diagramController.diagram.m_objectGraphConfig;
+
+        if (config.m_showFields.isEmpty()) {
+            // Get all pointers.
+            return getGraphNodeFollowablePtrsString(node);
         }
 
         StringBuilder sb = new StringBuilder();
@@ -1658,15 +1699,6 @@ public class EntityController extends Controller
                 else {
                     sb.append(key + ": " + node.getPointerString(key) + "\n");
                 }
-                continue;
-            }
-
-            Object o = node.m_attributes.opt(key);
-            if (o != null) {
-                sb.append(key + ": " + node.getAttributeString(key) + "\n");
-            }
-            else {
-                // The key is not in this object, so skip.
             }
         }
 

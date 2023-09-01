@@ -49,7 +49,7 @@
       "name": "$(graphNodeID)",
       "objectGraphNodeID": "ClassTemplateDecl_Common 33",
       "size": {
-        "h": 60,
+        "h": 75,
         "w": 240
       }
     },
@@ -114,7 +114,7 @@
       "name": "$(graphNodeID)",
       "objectGraphNodeID": "TemplateTypeParmType 34",
       "size": {
-        "h": 90,
+        "h": 105,
         "w": 180
       }
     },
@@ -127,7 +127,7 @@
       "name": "$(graphNodeID)",
       "objectGraphNodeID": "TemplateSpecializationType 39",
       "size": {
-        "h": 60,
+        "h": 65,
         "w": 205
       }
     }

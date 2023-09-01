@@ -10,7 +10,7 @@
       "name": "$(graphNodeID)",
       "objectGraphNodeID": "n1",
       "size": {
-        "h": 100,
+        "h": 105,
         "w": 150
       }
     },
