@@ -5,6 +5,7 @@ package ded.ui;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 
 import javax.swing.Box;
 import javax.swing.JOptionPane;
@@ -57,6 +58,12 @@ public class EditJsonDialog extends ModalDialog {
         // contents.
         m_jsonTextArea = new JTextArea(initialJsonText);
         disableTabInTextArea(m_jsonTextArea);
+
+        // Use a monospace font for the JSON.
+        Font origFont = m_jsonTextArea.getFont();
+        Font newFont = new Font(Font.MONOSPACED, origFont.getStyle(),
+                                origFont.getSize());
+        m_jsonTextArea.setFont(newFont);
 
         JScrollPane scroll = new JScrollPane(m_jsonTextArea);
         scroll.setPreferredSize(new Dimension(500,500));
