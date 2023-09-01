@@ -4,79 +4,45 @@
 package ded.ui;
 
 import java.awt.Component;
-import java.awt.Dimension;
-
-import javax.swing.Box;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import util.Util;
-import util.swing.ModalDialog;
 
 import ded.model.Diagram;
 import ded.model.ObjectGraphConfig;
 
-public class ObjectGraphConfigDialog extends ModalDialog {
+import ded.ui.EditJsonDialog;
+
+
+/** Dialog to edit Diagram.m_objectGraphConfig. */
+public class ObjectGraphConfigDialog extends EditJsonDialog {
     // ---- data ----
     private static final long serialVersionUID = -1525842890592454353L;
 
     /** Diagram whose properties will be edited. */
-    private Diagram diagram;
-
-    // Controls.
-    private JTextArea jsonTextArea;
+    private Diagram m_diagram;
 
     // ---- methods ----
-    public ObjectGraphConfigDialog(Component parent, Diagram d)
+    public ObjectGraphConfigDialog(Component parent, Diagram diagram)
+        throws JSONException
     {
-        super(parent, "Object Graph Configuration");
-        this.diagram = d;
+        super(parent,
+            "Object Graph Configuration",
+            Util.readResourceString(
+                "/resources/helptext/ObjectGraphConfigDialog.txt"),
+            diagram.m_objectGraphConfig.toJSON());
 
-        Box vb = ModalDialog.makeMarginVBox(this, ModalDialog.OUTER_MARGIN);
-
-        // This is of course an extremely crude editing interface.  I
-        // envision primarily using it as a vehicle for copying and
-        // pasting to or from, rather than a place to actually edit the
-        // contents.
-        this.jsonTextArea = new JTextArea(
-            this.diagram.m_objectGraphConfig.toString());
-        disableTabInTextArea(this.jsonTextArea);
-
-        JScrollPane scroll = new JScrollPane(this.jsonTextArea);
-        scroll.setPreferredSize(new Dimension(500,500));
-
-        vb.add(scroll);
-
-        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
-
-        m_helpText = Util.readResourceString(
-            "/resources/helptext/ObjectGraphConfigDialog.txt");
-
-        this.finishBuildingDialog(vb);
+        m_diagram = diagram;
     }
 
     @Override
-    public void okPressed()
+    protected void processEditedJSONObject(JSONObject json)
+        throws JSONException
     {
-        try {
-            JSONObject json = new JSONObject(
-                this.jsonTextArea.getText());
-            this.diagram.m_objectGraphConfig =
-                new ObjectGraphConfig(json);
-        }
-        catch (JSONException e) {
-            JOptionPane.showMessageDialog(this,
-                e.getMessage(),
-                "Error parsing JSON",
-                JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        super.okPressed();
+        m_diagram.m_objectGraphConfig =
+            new ObjectGraphConfig(json);
     }
 
     /** Show the dialog, waiting until the user closes the dialog
@@ -84,7 +50,12 @@ public class ObjectGraphConfigDialog extends ModalDialog {
       * true returned.  Otherwise, 'diagram' is not modified, and false is returned. */
     public static boolean exec(Component documentParent, Diagram diagram)
     {
-        return (new ObjectGraphConfigDialog(documentParent, diagram)).exec();
+        try {
+            return (new ObjectGraphConfigDialog(documentParent, diagram)).exec();
+        }
+        catch (JSONException e) {
+            return handleJSONExceptionFromCtor(documentParent, e);
+        }
     }
 }
 
