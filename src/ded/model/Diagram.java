@@ -443,9 +443,9 @@ public class Diagram implements JSONable {
     }
 
     /** Return the number of bytes that the specified graph uses in the
-      * JSON representation (.ded file), including indentation.  Returns
+      * DED representation (JSON file), including indentation.  Returns
       * -1 if there is a JSON encoding error. */
-    public static int numGraphJSONBytes(ObjectGraph graph)
+    public static int numGraphDEDBytes(ObjectGraph graph)
     {
         return numGraphBytes(false /*png*/, graph);
     }

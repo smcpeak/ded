@@ -23,6 +23,7 @@ check:
 	java -cp bin -ea ded.model.SerializationTests tests/*.ded
 	java -cp bin -ea ded.model.SerializationTests tests/*.er
 	java -cp bin -ea ded.ui.GraphNodeDialogTests
+	java -cp bin -ea ded.ui.ObjectGraphSizesDialogTests
 	java -cp bin -ea util.UtilTests
 	java -cp bin -ea util.IdentityHashSetTests
 	make -C tests/image-map check
