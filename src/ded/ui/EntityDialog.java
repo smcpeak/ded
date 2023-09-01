@@ -264,7 +264,7 @@ public class EntityDialog extends ModalDialog
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
         this.objectGraphNodeID = ModalDialog.makeLineEditWithHelp(vb,
             "Object graph node ID", 'o', this.entity.objectGraphNodeID, this,
-            Util.readResourceString(
+            Util.readResourceString_joinAdjacentLines(
                 "/resources/helptext/EntityDialog-objectGraphNodeID.txt"));
     }
 

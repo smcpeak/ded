@@ -306,7 +306,7 @@ public class GraphNodeDialog extends ModalDialog
 
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
-        m_helpText = Util.readResourceString(
+        m_helpText = Util.readResourceString_joinAdjacentLines(
             "/resources/helptext/GraphNodeDialog.txt");
 
         this.finishBuildingDialog(vb);

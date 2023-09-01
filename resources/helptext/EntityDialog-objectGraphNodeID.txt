@@ -6,20 +6,20 @@ with.
 To show object graph data within a node, use one of the following in its
 Name and/or Attribute fields:
 
-  $(graphNodeID): The node ID.
+* $(graphNodeID): The node ID.
 
-  $(graphNodeAttributes): List of attributes, one per line.
+* $(graphNodeAttributes): List of attributes, one per line.
 
-  $(graphNodeFollowablePtrs): List of pointers for which there is not
-  a corresponding edge yet, one per line.
+* $(graphNodeFollowablePtrs): List of pointers for which there is not
+a corresponding edge yet, one per line.
 
-  $(graphNodeAttributesAndPtrs): The preceding two, concatenated.
+* $(graphNodeAttributesAndPtrs): The preceding two, concatenated.
 
-  $(graphNode.<attr>): Any attribute of the node.
+* $(graphNode.<attr>): Any attribute of the node.
 
-  $(graphNodeShowFields): Fields and pointers, as mediated through the
-  object graph configuration field "showFields".  See Help in dialog in
-  "Diagram -> Edit graph configuration...".
+* $(graphNodeShowFields): Fields and pointers, as mediated through the
+object graph configuration field "showFields".  See Help in dialog in
+"Diagram -> Edit graph configuration...".
 
 When a node is created by following a pointer (right click on an entity
 that has pointers, then choose "Follow pointer"), it is initially

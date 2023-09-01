@@ -30,7 +30,7 @@ public class ObjectGraphConfigDialog extends EditJsonDialog {
     {
         super(parent,
             "Object Graph Configuration",
-            Util.readResourceString(
+            Util.readResourceString_joinAdjacentLines(
                 "/resources/helptext/ObjectGraphConfigDialog.txt"),
             diagram.m_objectGraphConfig.toJSON());
 

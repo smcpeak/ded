@@ -18,6 +18,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
+import util.StringUtil;
+
 import static util.StringUtil.fmt;
 
 
@@ -224,6 +226,14 @@ public class Util {
         else {
             return fmt("[Missing resource: \"%1$s\".]", fname);
         }
+    }
+
+    /** Read a resource file, then join its adjacent lines before
+      * returning the result. */
+    public static String readResourceString_joinAdjacentLines(
+        String fname)
+    {
+        return StringUtil.joinAdjacentLines(readResourceString(fname));
     }
 
     /** Provide an implementation of 'equals' in terms of 'compareTo'. */

@@ -164,6 +164,79 @@ public class StringUtil {
         }
         return ret;
     }
+
+    /** Given an input that is written like a text file with hard line
+      * breaks within a paragraph and consecutive newlines between
+      * paragraphs, convert it so each paragraph is its own line.
+      *
+      * Additionally, recognize Markdown-like triple-backquote lines,
+      * which start and end sections whose whitespace is to be
+      * transferred verbatim. */
+    public static String joinAdjacentLines(String input)
+    {
+        if (input.isEmpty()) {
+            // Splitting the empty string yields a single empty string,
+            // which would then turn into a newline, so handle this
+            // specially.
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        // The line we saw on the previous iteration of the loop.
+        String prevLine = "";
+
+        // True if we are in a triple-backquote section.
+        boolean inLiteralSection = false;
+
+        // A limit of -1 means we will get trailing empty strings, i.e.,
+        // we can see the trailing newlines.
+        String[] lines = input.split("\n", -1);
+        for (String line : lines) {
+            if (inLiteralSection) {
+                if (line.equals("```")) {
+                    inLiteralSection = false;
+                }
+                else {
+                    sb.append(line+"\n");
+                }
+            }
+            else if (line.equals("```")) {
+                sb.append("\n");
+                inLiteralSection = true;
+            }
+            else if (line.isEmpty()) {
+                sb.append("\n");
+            }
+            else {
+                if (prevLine.endsWith(".") ||
+                    prevLine.endsWith("?") ||
+                    prevLine.endsWith("!"))
+                {
+                    // Two spaces separating a sentence terminator from
+                    // the next word.
+                    sb.append("  ");
+                }
+                else if (prevLine.endsWith(" ") ||
+                         prevLine.endsWith("\t") ||
+                         prevLine.equals("```") ||
+                         prevLine.isEmpty()) {
+                    // Don't add more space if the previous line ended
+                    // with space, or wasn't there.
+                }
+                else {
+                    // Single space separating words within a sentence.
+                    sb.append(" ");
+                }
+
+                sb.append(line);
+            }
+
+            prevLine = line;
+        }
+
+        return sb.toString();
+    }
 }
 
 // EOF

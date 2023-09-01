@@ -14,7 +14,7 @@ shown alongside the ID in $(graphNode.followablePtrs).  All other
 attributes are treated as scalar fields of the node.
 
 Example:
-
+```
   {
     "n1": {
       "title": "one",
@@ -25,7 +25,7 @@ Example:
       "pred": { "ptr": "n1" },
     },
   }
-
+```
 Within the diagram editor, when an entity is associated with a node that
 has pointers, you can right-click on the entity and choose to "Follow
 pointer", thereby creating the corresponding destination entity and an
