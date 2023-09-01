@@ -471,6 +471,10 @@ public class DiagramColorsDialog extends ModalDialog {
         // Rebuild a new color table to put in the diagram.
         LinkedHashMap<String, Color> newTable = new LinkedHashMap<String, Color>();
         for (ColorTableEntry entry : this.tableModel.colors) {
+            if (entry.name.isEmpty()) {
+                SwingUtil.errorMessageBox(this, "A color name is empty.");
+                return;
+            }
             if (newTable.containsKey(entry.name)) {
                 SwingUtil.errorMessageBox(this, "Color \""+entry.name+"\" appears more than once.");
                 return;     // Do not close the dialog.

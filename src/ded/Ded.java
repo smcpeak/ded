@@ -345,7 +345,7 @@ public class Ded extends JFrame implements WindowListener {
         m.setName("diagram");
         m.setMnemonic(KeyEvent.VK_D);
 
-        // Used mnemonics: bcfgioprs
+        // Used mnemonics: bcfgioprsx
 
         this.drawFileNameCheckbox =
             new JCheckBoxMenuItem("Draw file name in upper-left corner", true);
@@ -366,6 +366,12 @@ public class Ded extends JFrame implements WindowListener {
         m.add(new MenuAction("Edit custom colors...", KeyEvent.VK_C) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.editCustomColors();
+            }
+        });
+
+        m.add(new MenuAction("Export/import custom colors...", KeyEvent.VK_X) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.exportCustomColors();
             }
         });
 

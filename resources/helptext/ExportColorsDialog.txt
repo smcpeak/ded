@@ -1,0 +1,7 @@
+This dialog allows the custom colors to be imported or exported as JSON
+by copying and pasting.
+
+The JSON format is an array of objects, each having a 'color' and a
+'name'.  The color must be of the form "RGB(r,g,b)" where 'r', 'g', and
+'b' are ASCII decimal integers in [0,255].  The name must be unique and
+non-empty.

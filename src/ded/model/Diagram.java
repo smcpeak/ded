@@ -90,7 +90,9 @@ public class Diagram implements JSONable {
     /** Relations. */
     public ArrayList<Relation> relations;
 
-    /** Map from color names to Colors. */
+    /** Map from color names to Colors.
+      *
+      * Invariant: No key is null or empty. */
     public LinkedHashMap<String, Color> namedColors;
 
     /** Set of objects forming a graph that can be interactively
@@ -202,6 +204,11 @@ public class Diagram implements JSONable {
 
         for (Inheritance i : this.inheritances) {
             i.globalSelfCheck(this);
+        }
+
+        for (String s : this.namedColors.keySet()) {
+            assert(s != null);
+            assert(!s.isEmpty());
         }
 
         this.objectGraph.selfCheck();
@@ -610,6 +617,10 @@ public class Diagram implements JSONable {
             if (color == null) {
                 throw new JSONException(
                     "Color \""+name+"\" has invalid RGB spec \""+rgbSpec+"\".");
+            }
+            if (name.isEmpty()) {
+                throw new JSONException(
+                    "A color has an empty name.");
             }
             if (ret.containsKey(name)) {
                 throw new JSONException(

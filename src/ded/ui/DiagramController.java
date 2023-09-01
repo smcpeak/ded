@@ -2531,6 +2531,14 @@ public class DiagramController extends JPanel
         }
     }
 
+    /** Show the export/import colors dialog. */
+    public void exportCustomColors()
+    {
+        if (ExportColorsDialog.exec(this, this.diagram)) {
+            this.diagramChanged("Import diagram colors");
+        }
+    }
+
     /** Show the diagram properties dialog. */
     public void editDiagramProperties()
     {
