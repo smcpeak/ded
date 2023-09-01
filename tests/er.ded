@@ -1,0 +1,141 @@
+{
+  "drawFileName": true,
+  "entities": [
+    {
+      "attributes": "open?\nPoint pt\n\n",
+      "loc": {
+        "x": 220,
+        "y": 117
+      },
+      "name": "Inheritance",
+      "size": {
+        "h": 64,
+        "w": 87
+      }
+    },
+    {
+      "attributes": "Point pt",
+      "loc": {
+        "x": 196,
+        "y": 35
+      },
+      "name": "RelationEndpoint",
+      "size": {
+        "h": 48,
+        "w": 108
+      }
+    },
+    {
+      "attributes": "Point loc",
+      "loc": {
+        "x": 491,
+        "y": 166
+      },
+      "name": "ControlPoint",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "attributes": "Size windowSize",
+      "loc": {
+        "x": 122,
+        "y": 233
+      },
+      "name": "Diagram",
+      "size": {
+        "h": 49,
+        "w": 303
+      }
+    },
+    {
+      "attributes": "string label?\n[Point labelOffset]\nroutingAlg in\n  {direct,manhattan{h,v}}",
+      "loc": {
+        "x": 392,
+        "y": 36
+      },
+      "name": "Relation",
+      "size": {
+        "h": 94,
+        "w": 192
+      }
+    },
+    {
+      "attributes": "Point loc\nSize size\nstring name\nstring attributes\nshape in\n  { box, ellipse, ... }",
+      "loc": {
+        "x": 13,
+        "y": 34
+      },
+      "name": "Entity",
+      "size": {
+        "h": 130,
+        "w": 137
+      }
+    }
+  ],
+  "inheritances": [],
+  "objectGraph": {},
+  "objectGraphConfig": {"showFields": []},
+  "relations": [
+    {
+      "end": {"entityRef": 0},
+      "label": "inheritances*",
+      "start": {"entityRef": 3}
+    },
+    {
+      "end": {"entityRef": 0},
+      "label": "inherit?",
+      "start": {"entityRef": 1}
+    },
+    {
+      "end": {"entityRef": 5},
+      "label": "parent",
+      "start": {"entityRef": 0}
+    },
+    {
+      "end": {"entityRef": 5},
+      "label": "entity?",
+      "start": {"entityRef": 1}
+    },
+    {
+      "end": {"entityRef": 2},
+      "label": "controlPts[]",
+      "start": {"entityRef": 4}
+    },
+    {
+      "end": {"entityRef": 4},
+      "label": "relations*",
+      "start": {"entityRef": 3}
+    },
+    {
+      "end": {"entityRef": 5},
+      "label": "entities*",
+      "start": {"entityRef": 3}
+    },
+    {
+      "controlPts": [{
+        "x": 310,
+        "y": 44
+      }],
+      "end": {"entityRef": 1},
+      "label": "end",
+      "start": {"entityRef": 4}
+    },
+    {
+      "controlPts": [{
+        "x": 306,
+        "y": 74
+      }],
+      "end": {"entityRef": 1},
+      "label": "start",
+      "start": {"entityRef": 4}
+    }
+  ],
+  "type": "Diagram Editor Diagram",
+  "version": 27,
+  "windowSize": {
+    "h": 316,
+    "w": 630
+  }
+}
