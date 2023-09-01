@@ -102,6 +102,20 @@ public class JSONUtil {
             return jsonBytes.length;
         }
     }
+
+    /** Put (key,value) into 'o'.  If 'value' is null, explicitly use
+      * JSONObject.NULL as the value, whereas, otherwise, null means to
+      * remove the key from the object. */
+    public static void putExplicitNullable(
+        JSONObject o, String key, Object value) throws JSONException
+    {
+        if (value == null) {
+            o.put(key, JSONObject.NULL);
+        }
+        else {
+            o.put(key, value);
+        }
+    }
 }
 
 // EOF

@@ -21,6 +21,10 @@ a corresponding edge yet, one per line.
 object graph configuration field "showFields".  See Help in dialog in
 "Diagram -> Edit graph configuration...".
 
+* $(graphNodeShowFieldsAttrs): Just the attributes of "show fields".
+
+* $(graphNodeShowFieldsPtrs): Just the pointers of "show fields".
+
 When a node is created by following a pointer (right click on an entity
 that has pointers, then choose "Follow pointer"), it is initially
 created with a Name and Attributes that uses the above variables.

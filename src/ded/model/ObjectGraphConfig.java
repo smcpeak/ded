@@ -27,6 +27,14 @@ public class ObjectGraphConfig implements JSONable {
       * 'recomputeShowFieldsMap()'. */
     public ArrayList<String> m_showFields;
 
+    /** The name to assign a newly created graph node.  If null, we use
+      * a hardcoded default. */
+    public String m_newNodeName = null;
+
+    /** The attributes to assign a newly created graph node.  If null,
+      * we use a hardcoded default. */
+    public String m_newNodeAttributes = null;
+
     // ---- public methods ----
     public ObjectGraphConfig()
     {
@@ -66,14 +74,48 @@ public class ObjectGraphConfig implements JSONable {
         }
     }
 
+    /** Get the string to put into the 'name' member of a newly
+      * created Entity that represents a graph node. */
+    public String getNewNodeName()
+    {
+        if (m_newNodeName == null) {
+            return "$(graphNodeID)";
+        }
+        else {
+            return m_newNodeName;
+        }
+    }
+
+    /** Get the string to put into the 'attributes' member of a newly
+      * created Entity that represents a graph node. */
+    public String getNewNodeAttributes()
+    {
+        if (m_newNodeAttributes == null) {
+            // This separation helps to easily see the pointers when I
+            // want to, and also makes it easy to hide them by adjusting
+            // the entity height (without leaving part of a line showing
+            // at the edge).
+            return "$(graphNodeShowFieldsAttrs)\n"+
+                   "\n"+
+                   "$(graphNodeShowFieldsPtrs)\n";
+        }
+        else {
+            return m_newNodeAttributes;
+        }
+    }
+
     // ---- serialization ----
     @Override
     public JSONObject toJSON()
     {
         try {
             JSONObject o = new JSONObject();
+
             o.put("showFields",
                 JSONUtil.stringCollectionToJSONArray(m_showFields));
+            JSONUtil.putExplicitNullable(o, "newNodeName", m_newNodeName);
+            JSONUtil.putExplicitNullable(o, "newNodeAttributes", m_newNodeAttributes);
+
             return o;
         }
         catch (JSONException e) {
@@ -91,6 +133,9 @@ public class ObjectGraphConfig implements JSONable {
         }
 
         recomputeShowFieldsMap();
+
+        m_newNodeName = o.optString("newNodeName", null);
+        m_newNodeAttributes = o.optString("newNodeAttributes", null);
     }
 
     // ---- data class boilerplate ----
@@ -98,6 +143,9 @@ public class ObjectGraphConfig implements JSONable {
     {
         m_showFields = new ArrayList<String>(src.m_showFields);
         recomputeShowFieldsMap();
+
+        m_newNodeName = src.m_newNodeName;
+        m_newNodeAttributes = src.m_newNodeAttributes;
     }
 
     @Override
@@ -111,7 +159,9 @@ public class ObjectGraphConfig implements JSONable {
         }
         ObjectGraphConfig c = (ObjectGraphConfig)obj;
 
-        return m_showFields.equals(c.m_showFields);
+        return m_showFields.equals(c.m_showFields) &&
+               Util.nullableEquals(m_newNodeName, c.m_newNodeName) &&
+               Util.nullableEquals(m_newNodeAttributes, c.m_newNodeAttributes);
     }
 
     @Override
@@ -119,6 +169,8 @@ public class ObjectGraphConfig implements JSONable {
     {
         int h = 0;
         h = h*31 + m_showFields.hashCode();
+        h = h*31 + Util.nullableHashCode(m_newNodeName);
+        h = h*31 + Util.nullableHashCode(m_newNodeAttributes);
         return h;
     }
 

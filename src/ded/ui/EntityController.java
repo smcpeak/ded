@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
@@ -1421,17 +1422,12 @@ public class EntityController extends Controller
 
     /** Map 'varName' to its value according to this scheme:
 
-          $(graphNodeID): The graph node ID as stored in the Entity.
-
-          $(graphNode.attributes): A list of newline-terminated node
-          attributes.
-
-          $(graphNode.followablePtrs): A list of newline-terminated
-          pointers that can be followed.
-
-          $(graphNode.attrName): Look up "attrName" in the node's
+          $(graphNode.<attrName>): Look up "attrName" in the node's
           JSON attributes and yield it as a string.
-      */
+
+          $(graphNode<name>): Perform some computation specified by
+          "<name>".  See 'getGraphNodeComputation'.
+    */
     public String getVariableValue(String varName)
     {
         if (varName.startsWith("graphNode.")) {
@@ -1462,7 +1458,8 @@ public class EntityController extends Controller
     }
 
     /** Do one of a set of specified computations relating to the
-      * associated object graph node. */
+        associated object graph node.  The specification is in
+        resources/helptext/EntityDialog-objectGraphNodeID.txt. */
     public String getGraphNodeComputation(String name)
     {
         if (name.equals("ID")) {
@@ -1492,36 +1489,46 @@ public class EntityController extends Controller
             return getShowFields(node);
         }
 
+        else if (name.equals("ShowFieldsAttrs")) {
+            return getShowFieldsAttrs(node);
+        }
+
+        else if (name.equals("ShowFieldsPtrs")) {
+            return getShowFieldsPtrs(node);
+        }
+
         else {
             return fmt("<unknown computation: \"%1$s\">", name);
         }
     }
 
-    /** Get a list of newline-terminated attribute values. */
+    /** Get a list of newline-separated attribute values. */
     public String getGraphNodeAttributesString(ObjectGraphNode node)
     {
-        StringBuilder sb = new StringBuilder();
+        List<String> lines = new ArrayList<String>();
 
         // Iterate in key order for determinism.
         ArrayList<String> keys = Util.sorted(node.m_attributes.keySet());
+
+        int ct=0;
         for (String key : keys) {
-            sb.append(key + ": " + node.getAttributeString(key) + "\n");
+            lines.add(key + ": " + node.getAttributeString(key));
         }
 
-        return sb.toString();
+        return String.join("\n", lines);
     }
 
-    /** Get a list of newline-terminated followable pointers. */
+    /** Get a list of newline-separated followable pointers. */
     public String getGraphNodeFollowablePtrsString(ObjectGraphNode node)
     {
-        StringBuilder sb = new StringBuilder();
+        List<String> lines = new ArrayList<String>();
 
         ArrayList<String> followable = getFollowablePointersForNode(node);
         for (String key : followable) {
-            sb.append(key + ": " + node.getPointerString(key) + "\n");
+            lines.add(key + ": " + node.getPointerString(key));
         }
 
-        return sb.toString();
+        return String.join("\n", lines);
     }
 
     /** If this entity is associated with a graph node, get it.
@@ -1576,6 +1583,12 @@ public class EntityController extends Controller
         return followable;
     }
 
+    /** Get the relevant graph configuration. */
+    private ObjectGraphConfig gConfig()
+    {
+        return this.diagramController.diagram.m_objectGraphConfig;
+    }
+
     /** Create an entity and edge corresponding to pointer 'key'. */
     private void followPointer(String key)
     {
@@ -1614,8 +1627,8 @@ public class EntityController extends Controller
             this.diagramController.findOrCreateEntityControllerWithGraphID(
                 ptr.m_ptr,
                 targetLoc,
-                "$(graphNodeID)",
-                "$(graphNodeShowFields)");
+                gConfig().getNewNodeName(),
+                gConfig().getNewNodeAttributes());
 
         this.diagramController.findOrCreateRelationControllerFromToLabel(
             this.entity,
@@ -1637,72 +1650,74 @@ public class EntityController extends Controller
       * graph configuration. */
     private String getShowFields(ObjectGraphNode node)
     {
-        // Attributes, newline, pointers.
-        //
-        // This separation helps to easily see the pointers when I want
-        // to, and also makes it easy to hide them by adjusting the
-        // entity height (without leaving part of a line showing at the
-        // edge).
-        return getShowFieldsAttrs(node) +
-               "\n" +
-               getShowFieldsPtrs(node);
+        if (gConfig().m_showFields.isEmpty()) {
+            // Fallback: all attrs then all ptrs.
+            return StringUtil.appendIfNotEmpty("\n",
+                       getGraphNodeAttributesString(node)) +
+                   getGraphNodeFollowablePtrsString(node);
+        }
+
+        return getFilteredShowFields(node, true /*attrs*/, true /*ptrs*/);
     }
 
     /** Return a string of just the attributes listed in 'm_showFields'
       * of the graph configuration. */
     private String getShowFieldsAttrs(ObjectGraphNode node)
     {
-        ObjectGraphConfig config =
-            this.diagramController.diagram.m_objectGraphConfig;
-
-        if (config.m_showFields.isEmpty()) {
+        if (gConfig().m_showFields.isEmpty()) {
             // Get all attributes.
             return getGraphNodeAttributesString(node);
         }
 
-        StringBuilder sb = new StringBuilder();
-
-        for (String key : config.m_showFields) {
-            Object o = node.m_attributes.opt(key);
-            if (o != null) {
-                sb.append(key + ": " + node.getAttributeString(key) + "\n");
-            }
-            else {
-                // The key is not in this object, so skip.
-            }
-        }
-
-        return sb.toString();
+        return getFilteredShowFields(node, true /*attrs*/, false /*ptrs*/);
     }
 
     /** Return a string of just the pointers listed in 'm_showFields'
       * of the graph configuration. */
     private String getShowFieldsPtrs(ObjectGraphNode node)
     {
-        ObjectGraphConfig config =
-            this.diagramController.diagram.m_objectGraphConfig;
-
-        if (config.m_showFields.isEmpty()) {
+        if (gConfig().m_showFields.isEmpty()) {
             // Get all pointers.
             return getGraphNodeFollowablePtrsString(node);
         }
 
-        StringBuilder sb = new StringBuilder();
+        return getFilteredShowFields(node, false /*attrs*/, true /*ptrs*/);
+    }
 
-        for (String key : config.m_showFields) {
-            ObjectGraphNode.Ptr ptr = node.m_pointers.get(key);
-            if (ptr != null) {
-                if (this.diagramController.hasRelationFromToLabel(
-                        node.m_id, ptr.m_ptr, key)) {
-                    // Pointer is shown as relation, skip.
+    /** Return a string of filtered showFields. */
+    private String getFilteredShowFields(
+        ObjectGraphNode node,
+        boolean includeAttrs,
+        boolean includePtrs)
+    {
+        List<String> lines = new ArrayList<String>();
+
+        for (String key : gConfig().m_showFields) {
+            if (includeAttrs) {
+                Object o = node.m_attributes.opt(key);
+                if (o != null) {
+                    lines.add(key + ": " + node.getAttributeString(key));
                 }
                 else {
-                    sb.append(key + ": " + node.getPointerString(key) + "\n");
+                    // The key is not in this object, so skip.
+                }
+            }
+
+            if (includePtrs) {
+                ObjectGraphNode.Ptr ptr = node.m_pointers.get(key);
+                if (ptr != null) {
+                    if (this.diagramController.hasRelationFromToLabel(
+                            node.m_id, ptr.m_ptr, key)) {
+                        // Pointer is shown as relation, skip.
+                    }
+                    else {
+                        lines.add(key + ": " + node.getPointerString(key));
+                    }
                 }
             }
         }
 
-        return sb.toString();
+        return String.join("\n", lines);
     }
 }
 

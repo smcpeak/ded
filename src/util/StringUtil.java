@@ -237,6 +237,18 @@ public class StringUtil {
 
         return sb.toString();
     }
+
+    /** If 's' is not empty, return 's+toAppend'.  Otherwise return
+        the empty string. */
+    public static String appendIfNotEmpty(String toAppend, String s)
+    {
+        if (s.isEmpty()) {
+            return s;
+        }
+        else {
+            return s+toAppend;
+        }
+    }
 }
 
 // EOF

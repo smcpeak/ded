@@ -1,7 +1,16 @@
 This text box contains JSON that configures the interaction with the
-object graph.
+object graph.  (This crude interface is meant as a place-holder for a
+proper GUI to be added later.)
 
-Currently there is only one field, "showFields", which is an array of
-field names.  This determines the sequence of attributes and pointers
-that are produced by the "$(graphNodeShowFields)" variable.  If the
-array is empty, then all fields are shown.
+newNodeName: If not null, the string to put into the Name field of an
+Entity newly created to represent a graph node.  Otherwise, the default
+value of "$(objectGraphID)" is used.
+
+newNodeAttributes: If not null, the string to put into the Attributes
+field of new Entity graph node.  Otherwise, the default value of
+"$(graphNodeShowFieldsAttrs)\n\n$(graphNodeShowFieldsPtrs)\n" is used.
+
+showFields: An array of field names.  This determines the sequence of
+attributes and pointers that are produced by the
+"$(graphNodeShowFields)" variable.  If the array is empty, then all
+fields are shown.
