@@ -39,6 +39,7 @@ public class UndoHistoryWindow extends JFrame {
         super("Undo History");
         this.diagramController = dc;
         this.setSize(450,600);
+        SwingUtil.workAroundWindowMovingBug(this);
 
         Container content = this.getContentPane();
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));

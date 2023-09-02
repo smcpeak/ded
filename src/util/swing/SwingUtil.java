@@ -9,8 +9,10 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.font.LineMetrics;
 
@@ -21,6 +23,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.Timer;
 
 
 /** Miscellaneous Swing-related utililities. */
@@ -270,6 +273,38 @@ public class SwingUtil {
                     "Malformed integer: \"" + result + "\".");
             }
         }
+    }
+
+    /** Arrange to slightly adjust the window's position after it is
+        first shown, in order to work around a bug where the first
+        attempt to move it does not work.  This must be called before
+        calling 'setVisible(true)'.
+
+        See: https://stackoverflow.com/questions/13406549/why-does-my-java-gui-jump-when-moving-it-the-first-time/77026748
+    */
+    public static void workAroundWindowMovingBug(Window window)
+    {
+        window.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowOpened(WindowEvent e) {
+                final Window w = e.getWindow();
+
+                Timer t = new Timer(100 /*ms*/,
+                    new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            // Slightly adjust the window position to
+                            // work around a bug where the window
+                            // manager "rejects" the first attempt to
+                            // move the window.
+                            int y = w.getLocation().y;
+                            w.setLocation(w.getLocation().x, y+1);
+                        }
+                    });
+                t.setRepeats(false);
+                t.start();
+            }
+        });
     }
 }
 

@@ -85,6 +85,7 @@ public class Ded extends JFrame implements WindowListener {
         super(windowTitle);
 
         SwingUtil.assignJFrameImplicitPaneNames(this);
+        SwingUtil.workAroundWindowMovingBug(this);
 
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         this.addWindowListener(this);

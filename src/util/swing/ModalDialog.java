@@ -30,6 +30,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
+
 /** Base class with common functionality for modal dialogs. */
 public class ModalDialog extends JDialog {
     // --------------- constants ---------------
@@ -405,6 +406,8 @@ public class ModalDialog extends JDialog {
         this.createCancelAndOkButtons(containingVBox);
         this.pack();
         this.setLocationRelativeTo(this.getParent());
+
+        SwingUtil.workAroundWindowMovingBug(this);
     }
 }
 
