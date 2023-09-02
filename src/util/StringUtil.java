@@ -58,6 +58,13 @@ public class StringUtil {
         return sb.toString();
     }
 
+    /** Return 's' in Java double-quoted string literal syntax. */
+    public static String doubleQuote(String s)
+    {
+        // This will suffice as an approximation for now.
+        return quoteAsJSONASCII(s);
+    }
+
     /** Attempt to match a substring of 'stringToParse' against 'regex'.
       * If a match is found, return an array of all the capture groups,
       * where element 0 is the entire matched substring, element 1 is

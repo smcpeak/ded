@@ -26,6 +26,7 @@ check:
 	java -cp bin -ea ded.ui.ObjectGraphSizesDialogTests
 	java -cp bin -ea util.IdentityHashSetTests
 	java -cp bin -ea util.UtilTests
+	java -cp bin -ea util.WrapTextTests
 	java -cp bin -ea util.StringUtilTests
 	make -C tests/image-map check
 
