@@ -165,6 +165,20 @@ public class ModalDialog extends JDialog {
         return ret;
     }
 
+    /** Create a horizontal strut that has no height, so will not
+        pointlessly steal space from other controls like
+        'Box.createHorizontalStrut()' does. */
+    public static Component makeHStrut(int width)
+    {
+        return Box.createRigidArea(new Dimension(width, 0));
+    }
+
+    /** Create a horizontal control padding strut. */
+    public static Component makeHCPadStrut()
+    {
+        return makeHStrut(CONTROL_PADDING);
+    }
+
     /** Create a line edit control and associated label. */
     public static JTextField makeLineEdit(Container parent, String label, char mnemonic,
                                           String initialValue)
@@ -174,7 +188,7 @@ public class ModalDialog extends JDialog {
         labelControl.setDisplayedMnemonic(mnemonic);
         hbox.add(labelControl);
 
-        hbox.add(Box.createHorizontalStrut(CONTROL_PADDING));
+        hbox.add(makeHCPadStrut());
 
         final JTextField ret = new JTextField(initialValue);
         hbox.add(ret);
@@ -227,7 +241,7 @@ public class ModalDialog extends JDialog {
         Box hb = ModalDialog.makeHBox(parentBox);
         JTextField textField = ModalDialog.makeLineEdit(hb,
             label, mnemonic, initialValue);
-        hb.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
+        hb.add(makeHCPadStrut());
         hb.add(ModalDialog.makeHelpButton(parentWindow, label, helpText));
         return textField;
     }

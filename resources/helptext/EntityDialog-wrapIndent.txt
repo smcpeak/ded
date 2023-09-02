@@ -1,0 +1,16 @@
+When the "Wrap text" dropdown is set to "Never", the text is not
+wrapped, and will simply flow off the right edge of the entity box and
+be clipped when the entity is drawn.
+
+When it is "At whitespace", lines can be broken at the transition from
+non-whitespace to whitespace characters (replacing the contiguous
+whitespace at that point with a line break) to make them fit into the
+entity box.  If there are not enough break candidates, the unbreakable
+text will again run off the right edge and be clipped.
+
+When it is "After sentences", lines can be broken whenever one of the
+characters in {'.', '?', '!', ':', ';'} is followed by whitespace,
+again replacing the contiguous whitespace with a line break.
+
+When a line is broken, the number of spaces specified by "Indent" are
+inserted at the start of the new line.

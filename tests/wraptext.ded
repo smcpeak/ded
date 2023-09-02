@@ -1,0 +1,114 @@
+{
+  "drawFileName": true,
+  "entities": [
+    {
+      "attributes": "a line with some text that should get wrapped because it does not fit without that\nshort line\n\nline 4\nthis is another long line to test more wrapping when the text gets beyond the edge of the entity\n",
+      "attributesWrapTextIndentSpaces": 4,
+      "attributesWrapTextPolicy": "Whitespace",
+      "loc": {
+        "x": 10,
+        "y": 25
+      },
+      "name": "whitespace",
+      "size": {
+        "h": 300,
+        "w": 100
+      }
+    },
+    {
+      "attributes": "a line with some text that should get wrapped because it does not fit without that\nshort line\n\nline 4\nthis is another long line to test more wrapping when the text gets beyond the edge of the entity\n",
+      "loc": {
+        "x": 125,
+        "y": 25
+      },
+      "name": "none",
+      "size": {
+        "h": 300,
+        "w": 100
+      }
+    },
+    {
+      "attributes": "a line with some text that should get wrapped because it does not fit without that\nshort line\n\nline 4\nthis is another long line to test more wrapping when the text gets beyond the edge of the entity\n",
+      "attributesWrapTextIndentSpaces": 4,
+      "attributesWrapTextPolicy": "Sentence",
+      "loc": {
+        "x": 240,
+        "y": 25
+      },
+      "name": "sentences",
+      "size": {
+        "h": 300,
+        "w": 100
+      }
+    },
+    {
+      "attributes": "Here is a sentence.  And another.  Perhaps?  More!\nHello?\n\nAnother test sentence.\n\nfield name: long value after that\nshort: val\n",
+      "attributesWrapTextIndentSpaces": 4,
+      "attributesWrapTextPolicy": "Sentence",
+      "loc": {
+        "x": 355,
+        "y": 25
+      },
+      "name": "sentences 2",
+      "size": {
+        "h": 300,
+        "w": 100
+      }
+    },
+    {
+      "attributes": "a line with some text that should get wrapped because it does not fit without that\nshort line\n\nline 4\nthis is another long line to test more wrapping when the text gets beyond the edge of the entity\n",
+      "attributesWrapTextIndentSpaces": 4,
+      "attributesWrapTextPolicy": "Whitespace",
+      "loc": {
+        "x": 10,
+        "y": 335
+      },
+      "name": "whitespace",
+      "size": {
+        "h": 200,
+        "w": 170
+      }
+    },
+    {
+      "attributes": "a line with some text that should get wrapped because it does not fit without that\nshort line\n\nline 4\nthis is another long line to test more wrapping when the text gets beyond the edge of the entity\n",
+      "attributesWrapTextIndentSpaces": 4,
+      "attributesWrapTextPolicy": "Whitespace",
+      "loc": {
+        "x": 190,
+        "y": 335
+      },
+      "name": "whitespace",
+      "size": {
+        "h": 200,
+        "w": 265
+      }
+    },
+    {
+      "attributes": "a line with some text that should get wrapped because it does not fit without that\nshort line\n\nline 4\nthis is another long line to test more wrapping when the text gets beyond the edge of the entity\n",
+      "attributesWrapTextPolicy": "Whitespace",
+      "loc": {
+        "x": 465,
+        "y": 25
+      },
+      "name": "no indent",
+      "size": {
+        "h": 300,
+        "w": 100
+      }
+    }
+  ],
+  "inheritances": [],
+  "objectGraph": {},
+  "objectGraphConfig": {
+    "newNodeAttributes": null,
+    "newNodeName": null,
+    "showFields": []
+  },
+  "relations": [],
+  "type": "Diagram Editor Diagram",
+  "version": 29,
+  "windowSize": {
+    "h": 552,
+    "w": 577
+  }
+}

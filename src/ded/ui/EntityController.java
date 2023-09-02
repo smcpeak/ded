@@ -31,6 +31,7 @@ import util.IdentityHashSet;
 import util.StringUtil;
 import util.StringVarSubst;
 import util.Util;
+import util.WrapText;
 import util.awt.BitmapFont;
 import util.awt.G;
 import util.awt.GeomUtil;
@@ -534,7 +535,12 @@ public class EntityController extends Controller
             BitmapFont font = this.diagramController.getDiagramFont();
             int maxAscent = font.getMaxAscent();
             font.drawTextWithNewlines(g2,
-                entityAttributes,
+                WrapText.wrapText(
+                    this.entity.m_attributesWrapTextPolicy,
+                    attributeRect.width,
+                    this.entity.m_attributesWrapTextIndentSpaces,
+                    entityAttributes,
+                    font),
                 attributeRect.x,
                 attributeRect.y + maxAscent);
         }

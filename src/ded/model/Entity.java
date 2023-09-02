@@ -18,11 +18,16 @@ import org.json.JSONObject;
 
 import util.FlattenInputStream;
 import util.Util;
+import util.WrapTextPolicy;
 import util.XParse;
 import util.awt.AWTJSONUtil;
 import util.json.JSONable;
 
-/** An ER entity, represented as a box with a label and text contents. */
+import static util.StringUtil.fmt;
+
+
+/** An Entity-Relation entity, represented as a box with a label and
+    text contents. */
 public class Entity implements JSONable {
     // ------------ constants -------------
     /** Default shape. */
@@ -100,6 +105,14 @@ public class Entity implements JSONable {
       * displayed in the contents area, and whose relations are
       * available for interactive exploration. */
     public String objectGraphNodeID = "";
+
+    /** How the 'attributes' text should be wrapped. */
+    public WrapTextPolicy m_attributesWrapTextPolicy =
+        WrapTextPolicy.NoWrap;
+
+    /** If the 'attributes' text is wrapped, this is the number of
+        spaces to indent the wrapped lines. */
+    public int m_attributesWrapTextIndentSpaces = 0;
 
     // ------------ public methods ------------
     public Entity()
@@ -285,6 +298,16 @@ public class Entity implements JSONable {
             if (this.hasObjectGraphNodeID()) {
                 o.put("objectGraphNodeID", this.objectGraphNodeID);
             }
+
+            if (m_attributesWrapTextPolicy != WrapTextPolicy.NoWrap) {
+                o.put("attributesWrapTextPolicy",
+                      m_attributesWrapTextPolicy.name());
+            }
+
+            if (m_attributesWrapTextIndentSpaces != 0) {
+                o.put("attributesWrapTextIndentSpaces",
+                      m_attributesWrapTextIndentSpaces);
+            }
         }
         catch (JSONException e) { assert(false); }
         return o;
@@ -341,6 +364,20 @@ public class Entity implements JSONable {
 
         if (ver >= 25) {
             this.objectGraphNodeID = o.optString("objectGraphNodeID", "");
+        }
+
+        if (ver >= 29) {
+            String wtp = o.optString("attributesWrapTextPolicy", null);
+            if (wtp != null) {
+                m_attributesWrapTextPolicy = WrapTextPolicy.fromString(wtp);
+                if (m_attributesWrapTextPolicy == null) {
+                    throw new JSONException(fmt(
+                        "Invalid WrapTextPolicy: \"%1$s\"", wtp));
+                }
+            }
+
+            m_attributesWrapTextIndentSpaces =
+                o.optInt("attributesWrapTextIndentSpaces", 0);
         }
     }
 
@@ -410,6 +447,9 @@ public class Entity implements JSONable {
         this.imageFileName = obj.imageFileName;
         this.imageFillStyle = obj.imageFillStyle;
         this.objectGraphNodeID = obj.objectGraphNodeID;
+
+        m_attributesWrapTextPolicy = obj.m_attributesWrapTextPolicy;
+        m_attributesWrapTextIndentSpaces = obj.m_attributesWrapTextIndentSpaces;
     }
 
     @Override
@@ -435,6 +475,8 @@ public class Entity implements JSONable {
                    this.imageFileName.equals(e.imageFileName) &&
                    this.imageFillStyle.equals(e.imageFillStyle) &&
                    this.objectGraphNodeID.equals(e.objectGraphNodeID) &&
+                   m_attributesWrapTextPolicy == e.m_attributesWrapTextPolicy &&
+                   m_attributesWrapTextIndentSpaces == e.m_attributesWrapTextIndentSpaces &&
                    true;
         }
         return false;
@@ -459,6 +501,8 @@ public class Entity implements JSONable {
         h = h*31 + this.imageFileName.hashCode();
         h = h*31 + this.imageFillStyle.hashCode();
         h = h*31 + this.objectGraphNodeID.hashCode();
+        h = h*31 + m_attributesWrapTextPolicy.hashCode();
+        h = h*31 + m_attributesWrapTextIndentSpaces;
         return h;
     }
 

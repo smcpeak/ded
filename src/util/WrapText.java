@@ -36,7 +36,7 @@ public class WrapText {
         String origText,
         StringMeasurer measurer)
     {
-        if (policy == WrapTextPolicy.WTP_NoWrap) {
+        if (policy == WrapTextPolicy.NoWrap) {
             return origText;
         }
 
@@ -60,7 +60,7 @@ public class WrapText {
         StringMeasurer measurer)
     {
         // Maybe no wrapping is needed?
-        if (policy == WrapTextPolicy.WTP_NoWrap ||
+        if (policy == WrapTextPolicy.NoWrap ||
             measurer.substringWidth(origLine, 0, origLine.length()) <= maxWidth)
         {
             return origLine;
@@ -146,7 +146,7 @@ public class WrapText {
         assert(start > 0);
 
         // We should not get here if the policy is to not wrap.
-        assert(policy != WrapTextPolicy.WTP_NoWrap);
+        assert(policy != WrapTextPolicy.NoWrap);
 
         int i = start;
         for (; i < origLine.length(); ++i) {
@@ -180,13 +180,13 @@ public class WrapText {
         char ch)
     {
         switch (policy) {
-            case WTP_NoWrap:
+            case NoWrap:
                 return false;
 
-            case WTP_Sentence:
+            case Sentence:
                 return ".?!:;".indexOf(ch) >= 0;
 
-            case WTP_Whitespace:
+            case Whitespace:
                 return !Character.isWhitespace(ch);
         }
 
@@ -199,13 +199,13 @@ public class WrapText {
         char ch)
     {
         switch (policy) {
-            case WTP_NoWrap:
+            case NoWrap:
                 return false;
 
-            case WTP_Sentence:
+            case Sentence:
                 return Character.isWhitespace(ch);
 
-            case WTP_Whitespace:
+            case Whitespace:
                 return Character.isWhitespace(ch);
         }
 

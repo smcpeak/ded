@@ -14,6 +14,7 @@ public class WrapTextTests implements StringMeasurer {
         t.testNoWrap();
         t.testWhitespaceWrap();
         t.testSentenceWrap();
+        t.testWrapTextPolicy();
     }
 
     @Override
@@ -54,13 +55,13 @@ public class WrapTextTests implements StringMeasurer {
     private void testNoWrap()
     {
         testWrapLine(
-            WrapTextPolicy.WTP_NoWrap, 5, 0,
+            WrapTextPolicy.NoWrap, 5, 0,
             "",
             "",
             this);
 
         testWrapLine(
-            WrapTextPolicy.WTP_NoWrap, 5, 0,
+            WrapTextPolicy.NoWrap, 5, 0,
             "a long line that would wrap normally",
             "a long line that would wrap normally",
             this);
@@ -72,7 +73,7 @@ public class WrapTextTests implements StringMeasurer {
         String origLine,
         String expect)
     {
-        testWrapLine(WrapTextPolicy.WTP_Whitespace, maxWidth,
+        testWrapLine(WrapTextPolicy.Whitespace, maxWidth,
                      indentSpaces, origLine, expect, this);
     }
 
@@ -153,7 +154,7 @@ public class WrapTextTests implements StringMeasurer {
         String origLine,
         String expect)
     {
-        testWrapLine(WrapTextPolicy.WTP_Sentence, maxWidth,
+        testWrapLine(WrapTextPolicy.Sentence, maxWidth,
                      indentSpaces, origLine, expect, this);
     }
 
@@ -178,6 +179,17 @@ public class WrapTextTests implements StringMeasurer {
         testSWrap(100, 2,
             "This is a sentence.  This is another: sort of.  What?  xy",
             "This is a sentence.\n  This is another:\n  sort of.\n  What?\n  xy");
+    }
+
+    private void testWrapTextPolicy()
+    {
+        assert(WrapTextPolicy.Whitespace.name()
+                   .equals("Whitespace"));
+        assert(WrapTextPolicy.Whitespace.toString()
+                   .equals("At whitespace"));
+        assert(WrapTextPolicy.fromString("Whitespace") ==
+                   WrapTextPolicy.Whitespace);
+        assert(WrapTextPolicy.fromString("blah blah") == null);
     }
 }
 

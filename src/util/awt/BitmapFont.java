@@ -11,6 +11,9 @@ import java.awt.image.BufferedImage;
 
 import java.util.HashMap;
 
+import util.StringMeasurer;
+
+
 /** Class to store and render a bitmap-based font.
   *
   * This class is an alternative (with different API) to java.awt.Font,
@@ -25,7 +28,7 @@ import java.util.HashMap;
   * careful measurements but I'd estimate just drawing text is 2-3x slower
   * with this class.  But, as my editor is still getting good frame
   * rates, for now I'm not spending more time trying to optimize it. */
-public class BitmapFont {
+public class BitmapFont implements StringMeasurer {
     // ---- types ---
     /** Class to carry multiple values out of the render routine. */
     private static class RenderMetrics {
@@ -196,6 +199,13 @@ public class BitmapFont {
     {
         RenderMetrics rm = drawOrMeasureString(null, str, 0,0);
         return rm.offsetSum.x;
+    }
+
+    @Override
+    public int substringWidth(String s, int start, int end)
+    {
+        // TODO: This is inefficient.
+        return stringWidth(s.substring(start, end));
     }
 
     /** Return a bounding rectangle for the pixels rendered for 'str',

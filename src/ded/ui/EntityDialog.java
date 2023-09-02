@@ -27,6 +27,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import util.Util;
+import util.WrapTextPolicy;
 import util.swing.ModalDialog;
 
 import ded.model.Diagram;
@@ -72,6 +73,8 @@ public class EntityDialog extends ModalDialog
     private JTextField imageFileNameText;
     private JComboBox<ImageFillStyle> imageFillStyleChooser;
     private JTextField objectGraphNodeID;
+    private JComboBox<WrapTextPolicy> m_wrapTextPolicyChooser;
+    private JTextField m_wrapTextIndentText;
 
     // -------------- methods ---------------
     public EntityDialog(Component documentParent, Diagram diagram, Entity entity)
@@ -84,6 +87,28 @@ public class EntityDialog extends ModalDialog
 
         // The outer vbox has the name, the column container, and the ok/cancel row:
         Box vb = ModalDialog.makeMarginVBox(this, ModalDialog.OUTER_MARGIN);
+
+        /* Used mnemonics:
+             a - Attributes
+             c - HTML anchor name
+             d - Indent
+             f - Fill color
+             g - Align
+             h - H
+             i - Image file name
+             l - Line color
+             m - Image fill style
+             n - Name
+             o - Object graph node ID
+             p - P
+             q - Q
+             r - Wrap text
+             s - Shape
+             t - Text color
+             w - W
+             x - X
+             y - Y
+        */
 
         // Name row
         {
@@ -154,7 +179,6 @@ public class EntityDialog extends ModalDialog
             shapeBox.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
 
             this.shapeFlagsButton = new JButton("Flags");
-            this.shapeFlagsButton.setMnemonic(KeyEvent.VK_G);
             this.shapeFlagsButton.addActionListener(new ActionListener() {
                 @Override public void actionPerformed(ActionEvent e) {
                     EntityDialog.this.openShapeFlagsDialog();
@@ -272,15 +296,18 @@ public class EntityDialog extends ModalDialog
       * edit box for the atributes, and put it into 'vb'. */
     public void makeLeftColumn(Box vb)
     {
-        Box attrBox = ModalDialog.makeHBox(vb);
-
-        JLabel lbl = new JLabel("Attributes:");
-        lbl.setDisplayedMnemonic('a');
-        attrBox.add(lbl);
-        attrBox.add(Box.createHorizontalGlue());
-
         this.attributeText = new JTextArea(this.entity.attributes);
-        lbl.setLabelFor(this.attributeText);
+
+        {
+            Box attrBox = ModalDialog.makeHBox(vb);
+
+            JLabel lbl = new JLabel("Attributes:");
+            lbl.setDisplayedMnemonic('a');
+            lbl.setLabelFor(this.attributeText);
+
+            attrBox.add(lbl);
+            attrBox.add(Box.createHorizontalGlue());
+        }
 
         // Tab and shift-tab should move the focus, not insert characters.
         disableTabInTextArea(this.attributeText);
@@ -293,6 +320,22 @@ public class EntityDialog extends ModalDialog
 
         vb.add(scroll);
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+
+        Box hb = ModalDialog.makeHBox(vb);
+
+        m_wrapTextPolicyChooser = ModalDialog.makeEnumChooser(
+            hb, "Wrap text:", 'r', WrapTextPolicy.class,
+            this.entity.m_attributesWrapTextPolicy);
+        m_wrapTextPolicyChooser.addItemListener(this);
+
+        hb.add(ModalDialog.makeHCPadStrut());
+
+        m_wrapTextIndentText = ModalDialog.makeLineEditWithHelp(
+            hb, "Indent", 'd',
+            ""+this.entity.m_attributesWrapTextIndentSpaces,
+            this,
+            Util.readResourceString_joinAdjacentLines(
+                    "/resources/helptext/EntityDialog-wrapIndent.txt"));
     }
 
     /** Make a color chooser dropdown, add it to 'vb', and return it.
@@ -388,7 +431,7 @@ public class EntityDialog extends ModalDialog
         // Parse/validate all the fields first, including casting
         // objects from JComboBox to their expected type, so that
         // if there is a problem, we will bail before actually
-        // modifying this.entity;
+        // modifying 'this.entity'.
 
         TextAlign nameAlign = (TextAlign)this.nameAlignChooser.getSelectedItem();
         EntityShape shape = (EntityShape)this.shapeChooser.getSelectedItem();
@@ -426,7 +469,37 @@ public class EntityDialog extends ModalDialog
         String lineColor = (String)this.lineColorChooser.getSelectedItem();
         String textColor = (String)this.textColorChooser.getSelectedItem();
 
-        ImageFillStyle imageFillStyle = (ImageFillStyle)this.imageFillStyleChooser.getSelectedItem();
+        ImageFillStyle imageFillStyle =
+            (ImageFillStyle)this.imageFillStyleChooser.getSelectedItem();
+
+        WrapTextPolicy wrapTextPolicy =
+            (WrapTextPolicy)m_wrapTextPolicyChooser.getSelectedItem();
+
+        int indentSpaces = 0;
+        if (wrapTextPolicy != WrapTextPolicy.NoWrap) {
+            try {
+                indentSpaces =
+                    Integer.valueOf(m_wrapTextIndentText.getText());
+            }
+            catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this,
+                    "The Indent value is not a valid integer.",
+                    "Input Validation Error",
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (indentSpaces < 0) {
+                JOptionPane.showMessageDialog(this,
+                    "The Indent value must be non-negative.",
+                    "Input Validation Error",
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
+        else {
+            // For NoWrap, we reset the indent spaces to 0.
+        }
 
         // Make sure the shape flags are appropriate for the chosen shape.
         this.updateWorkingFlagsBaseShape(shape);
@@ -452,6 +525,8 @@ public class EntityDialog extends ModalDialog
         this.entity.imageFileName = this.imageFileNameText.getText();
         this.entity.imageFillStyle = imageFillStyle;
         this.entity.objectGraphNodeID = this.objectGraphNodeID.getText();
+        this.entity.m_attributesWrapTextPolicy = wrapTextPolicy;
+        this.entity.m_attributesWrapTextIndentSpaces = indentSpaces;
 
         // Not completely general at this time.
         if (this.entity.shape.numParams == 2) {
@@ -463,7 +538,7 @@ public class EntityDialog extends ModalDialog
         super.okPressed();
     }
 
-    /** React to the shape dropdown being changed. */
+    /** React to any dropdown being changed. */
     @Override
     public void itemStateChanged(ItemEvent e)
     {
@@ -512,6 +587,10 @@ public class EntityDialog extends ModalDialog
 
         // Enable or disable shape flags button.
         this.shapeFlagsButton.setEnabled(!ShapeFlag.allFlagsForShape(shape).isEmpty());
+
+        // Enable or disable the indent spaces text field.
+        WrapTextPolicy wtp = (WrapTextPolicy)m_wrapTextPolicyChooser.getSelectedItem();
+        m_wrapTextIndentText.setEnabled(wtp != WrapTextPolicy.NoWrap);
     }
 
     /** Show the edit dialog for Entity, waiting until the user closes the dialog
