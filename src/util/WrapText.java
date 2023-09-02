@@ -20,6 +20,9 @@ public class WrapText {
         The output is the same as 'origText', except that some newlines
         may have been inserted and some non-newline whitespace removed.
 
+        If 'indentSpaces' is not zero, then when a line is broken, that
+        many spaces are also added at the start of the new line.
+
         If there are not enough places to break the text, the output
         will have lines longer than 'maxWidth'.
 
@@ -29,6 +32,7 @@ public class WrapText {
     public static String wrapText(
         WrapTextPolicy policy,
         int maxWidth,
+        int indentSpaces,
         String origText,
         StringMeasurer measurer)
     {
@@ -40,7 +44,7 @@ public class WrapText {
 
         List<String> wrappedLines = new ArrayList<String>();
         for (String origLine : origLines) {
-            wrappedLines.add(wrapLine(policy, maxWidth,
+            wrappedLines.add(wrapLine(policy, maxWidth, indentSpaces,
                                       origLine, measurer));
         }
 
@@ -51,6 +55,7 @@ public class WrapText {
     public static String wrapLine(
         WrapTextPolicy policy,
         int maxWidth,
+        int indentSpaces,
         String origLine,
         StringMeasurer measurer)
     {
@@ -61,9 +66,18 @@ public class WrapText {
             return origLine;
         }
 
+        // Number of pixels required for the indented lines.  This is
+        // set to a nonzero value after we add the first line break.
+        int indentWidth = 0;
+
+        // The string for 'indentSpaces'.
+        String indentString = StringUtil.repeatString(" ", indentSpaces);
+
+        // Accumulator for the output.
         StringBuilder sb = new StringBuilder();
 
-        // The start of the text we need to fit onto the next line.
+        // The index of the start of the text we need to fit onto the
+        // next line.
         int curStart = 0;
 
         // Outer loop to consume the entire line.
@@ -77,7 +91,7 @@ public class WrapText {
                 // Find the next place we could break the line.
                 int newSplit = nextSplit(policy, origLine, curSplit+1);
                 if (measurer.substringWidth(origLine, curStart, newSplit)
-                        <= maxWidth) {
+                        + indentWidth <= maxWidth) {
                     // Breaking here would stay under the limit, so this
                     // becomes our new best candidate.
                     curSplit = newSplit;
@@ -107,6 +121,14 @@ public class WrapText {
                 // There is still more text, so insert a newline to
                 // actually break the line.
                 sb.append('\n');
+
+                if (indentSpaces > 0) {
+                    sb.append(indentString);
+                    if (indentWidth == 0) {
+                        indentWidth = measurer.substringWidth(
+                            indentString, 0, indentSpaces);
+                    }
+                }
             }
         }
 

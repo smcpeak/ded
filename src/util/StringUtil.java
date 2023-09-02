@@ -105,14 +105,20 @@ public class StringUtil {
         return english;
     }
 
-    /** Return a string with n*2 spaces. */
-    public static String indent(int n)
+    /** Return 's' repeated 'n' times. */
+    public static String repeatString(String s, int n)
     {
         StringBuilder sb = new StringBuilder();
         for (int i=0; i<n; i++) {
-            sb.append("  ");
+            sb.append(s);
         }
         return sb.toString();
+    }
+
+    /** Return a string with n*2 spaces. */
+    public static String indent(int n)
+    {
+        return repeatString("  ", n);
     }
 
     /** Parse 'input' as a 32-bit signed decimal integer.  Throw a
