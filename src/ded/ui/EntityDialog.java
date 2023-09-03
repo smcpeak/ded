@@ -324,7 +324,7 @@ public class EntityDialog extends ModalDialog
         Box hb = ModalDialog.makeHBox(vb);
 
         m_wrapTextPolicyChooser = ModalDialog.makeEnumChooser(
-            hb, "Wrap text:", 'r', WrapTextPolicy.class,
+            hb, "Wrap text", 'r', WrapTextPolicy.class,
             this.entity.m_attributesWrapTextPolicy);
         m_wrapTextPolicyChooser.addItemListener(this);
 
