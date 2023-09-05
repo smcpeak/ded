@@ -11,12 +11,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import util.FlattenInputStream;
+import util.StringUtil;
 import util.Util;
 import util.WrapTextPolicy;
 import util.XParse;
@@ -236,6 +238,35 @@ public class Entity implements JSONable {
     public boolean hasObjectGraphNodeID()
     {
         return !this.objectGraphNodeID.isEmpty();
+    }
+
+    /** If this entity is associated with a node in 'graph', return it.
+        Otherwise return null. */
+    public ObjectGraphNode getObjectGraphNode(ObjectGraph graph)
+    {
+        return graph.getOptNode(this.objectGraphNodeID);
+    }
+
+    /** Return a string containing some identifying characteristics of
+        this entity, for use in a user-facing message. */
+    public String identifyingCharacteristicsString()
+    {
+        List<String> characteristics = new ArrayList<String>();
+
+        if (!this.name.isEmpty()) {
+            characteristics.add("name=" +
+                StringUtil.doubleQuote(this.name));
+        }
+
+        if (!this.objectGraphNodeID.isEmpty()) {
+            characteristics.add("ID=" +
+                StringUtil.doubleQuote(this.objectGraphNodeID));
+        }
+
+        characteristics.add("x=" + this.loc.x);
+        characteristics.add("y=" + this.loc.y);
+
+        return "{ " + String.join(", ", characteristics) + " }";
     }
 
     // ------------ serialization ------------

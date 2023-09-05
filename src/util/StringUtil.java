@@ -3,6 +3,8 @@
 
 package util;
 
+import java.util.Collection;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -261,6 +263,23 @@ public class StringUtil {
         else {
             return s+toAppend;
         }
+    }
+
+    /** Return a string built by appending 'terminator' to all of the
+        elements in 'coll', in its natural iteration order, and
+        concatenating the result. */
+    public static String joinWithTerminators(
+        String terminator,
+        Collection<String> coll)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        for (String s : coll) {
+            sb.append(s);
+            sb.append(terminator);
+        }
+
+        return sb.toString();
     }
 }
 

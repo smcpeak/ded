@@ -2,7 +2,9 @@
 
 JAVA_FILES := $(shell find src -name '*.java')
 
-all:
+all: dist/ded.jar
+
+dist/ded.jar: $(JAVA_FILES)
 	rm -rf bin
 	mkdir -p bin
 	javac -sourcepath src -d bin $(JAVA_FILES)
@@ -13,11 +15,12 @@ all:
 	mkdir -p dist
 	cd bin && jar cfm ../dist/ded.jar ../src/MANIFEST.MF *
 
+.PHONY: clean all check
 clean:
-	rm -rf bin dist
+	rm -rf bin dist out
 
 # Unit tests that do not require a GUI.
-check:
+check: dist/ded.jar check-graphs
 	java -cp bin -ea util.awt.BDFParser
 	java -cp bin -ea ded.model.SerializationTests
 	java -cp bin -ea ded.model.SerializationTests tests/*.ded
@@ -29,6 +32,25 @@ check:
 	java -cp bin -ea util.WrapTextTests
 	java -cp bin -ea util.StringUtilTests
 	make -C tests/image-map check
+
+
+# ---- Tests using --check-graph ----
+.PHONY: check-graphs
+check-graphs: out/check-graph.ded.cg.ok
+check-graphs: out/objgraph.ded.cg.ok
+
+out/%.ded.cg.ok: dist/ded.jar tests/%.ded
+	@mkdir -p $(dir $@)
+	@#
+	@# Check the graph in $*.ded.
+	java -cp bin -ea ded.Ded --check-graph tests/$*.ded > out/$*.ded.cg
+	@#
+	@# Compare to what we expect.
+	diff -u tests/$*.ded.cg.exp out/$*.ded.cg
+	@#
+	@# Record the test as successful.
+	touch $@
+
 
 # GUI tests.  These require Abbot:
 #

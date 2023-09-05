@@ -1,0 +1,4 @@
+Entity { name="$(graphNodeID)", ID="bad_id", x=20, y=280 } has an invalid object graph ID.
+Relation "badrel" from entity { name="$(graphNodeID)", ID="n1", x=25, y=105 } does not correspond to any relation in the object graph.
+Relation "succ" from entity { name="$(graphNodeID)", ID="n1", x=25, y=105 } is not connected to any entity, but is expected to be connected to an entity with ID "n2".
+Relation "succ" from entity { name="$(graphNodeID)", ID="n1", x=25, y=105 } is connected to entity { name="$(graphNodeID)", ID="n5", x=260, y=135 }, but is expected to be connected to an entity with ID "n2".

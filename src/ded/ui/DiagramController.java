@@ -46,6 +46,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -2506,6 +2507,31 @@ public class DiagramController extends JPanel
         if (ObjectGraphSizesDialog.exec(this, this.diagram)) {
             this.diagramChanged("Edit object graph sizes");
         }
+    }
+
+    /** Check the relations in the diagram against the pointers in the
+        graph, and report inconsistencies. */
+    public void checkObjectGraphLinks()
+    {
+        List<String> issues = this.diagram.checkObjectGraphLinks();
+
+        String msg;
+        if (issues.isEmpty()) {
+            msg = "No issues detected.";
+        }
+        else {
+            final int limit = 20;
+            if (issues.size() > limit) {
+                // Avoid overwhelming the dialog box.
+                issues = issues.subList(0, limit);
+                issues.add(fmt(
+                    "(More than %d issues detected.  Truncating to %d.)",
+                    limit, limit));
+            }
+            msg = String.join("\n", issues);
+        }
+
+        informationMessageBox("Object Graph Link Analysis", msg);
     }
 
     /** Log the given one-line message.  A newline will be added after

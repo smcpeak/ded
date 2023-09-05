@@ -3,6 +3,7 @@ in
 cov
 dist
 data-coverity
+out
 personal-make-cmd.sh
 tests/image-map/output.html
 *.bak

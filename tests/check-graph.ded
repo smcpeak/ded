@@ -1,0 +1,114 @@
+{
+  "drawFileName": true,
+  "entities": [
+    {
+      "attributes": "$(graphNodeShowFields)\n",
+      "loc": {
+        "x": 25,
+        "y": 105
+      },
+      "name": "$(graphNodeID)",
+      "objectGraphNodeID": "n1",
+      "size": {
+        "h": 110,
+        "w": 150
+      }
+    },
+    {
+      "attributes": "$(graphNodeShowFields)\n",
+      "loc": {
+        "x": 20,
+        "y": 280
+      },
+      "name": "$(graphNodeID)",
+      "objectGraphNodeID": "bad_id",
+      "size": {
+        "h": 50,
+        "w": 335
+      }
+    },
+    {
+      "loc": {
+        "x": 0,
+        "y": 15
+      },
+      "name": "This is meant for testing the --check-graph option.",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 295
+      }
+    },
+    {
+      "loc": {
+        "x": 50,
+        "y": 45
+      },
+      "size": {
+        "h": 30,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 260,
+        "y": 135
+      },
+      "name": "$(graphNodeID)",
+      "objectGraphNodeID": "n5",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    }
+  ],
+  "inheritances": [],
+  "objectGraph": {
+    "n1": {
+      "anotherAttrib": 123,
+      "notHere": {"ptr": "null"},
+      "succ": {"ptr": "n2"},
+      "title": "one"
+    },
+    "n2": {
+      "color": "green",
+      "pred": {"ptr": "n1"},
+      "to3": {"ptr": "n3"}
+    },
+    "n3": {"name": "Name of n3"},
+    "n4": {"x": "ecks"},
+    "n5": {}
+  },
+  "objectGraphConfig": {
+    "newNodeAttributes": null,
+    "newNodeName": null,
+    "showFields": []
+  },
+  "relations": [
+    {
+      "end": {"entityRef": 3},
+      "label": "badrel",
+      "start": {"entityRef": 0}
+    },
+    {
+      "end": {"pt": {
+        "x": 55,
+        "y": 260
+      }},
+      "label": "succ",
+      "start": {"entityRef": 0}
+    },
+    {
+      "end": {"entityRef": 4},
+      "label": "succ",
+      "start": {"entityRef": 0}
+    }
+  ],
+  "type": "Diagram Editor Diagram",
+  "version": 29,
+  "windowSize": {
+    "h": 352,
+    "w": 377
+  }
+}

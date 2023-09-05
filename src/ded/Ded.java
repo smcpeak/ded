@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 import javax.swing.AbstractAction;
@@ -38,6 +39,7 @@ import util.awt.BitmapFont;
 import util.awt.ResourceImageCache;
 import util.swing.MenuAction;
 import util.swing.SwingUtil;
+import util.StringUtil;
 import util.Util;
 
 import ded.model.Diagram;
@@ -346,7 +348,7 @@ public class Ded extends JFrame implements WindowListener {
         m.setName("diagram");
         m.setMnemonic(KeyEvent.VK_D);
 
-        // Used mnemonics: bcfgioprsx
+        // Used mnemonics: bcfgiloprsx
 
         this.drawFileNameCheckbox =
             new JCheckBoxMenuItem("Draw file name in upper-left corner", true);
@@ -399,6 +401,12 @@ public class Ded extends JFrame implements WindowListener {
         m.add(new MenuAction("Object graph sizes...", KeyEvent.VK_S) {
             public void actionPerformed(ActionEvent e) {
                 Ded.this.diagramController.editObjectGraphSizes();
+            }
+        });
+
+        m.add(new MenuAction("Check object graph links...", KeyEvent.VK_L) {
+            public void actionPerformed(ActionEvent e) {
+                Ded.this.diagramController.checkObjectGraphLinks();
             }
         });
 
@@ -609,8 +617,32 @@ public class Ded extends JFrame implements WindowListener {
         }
     }
 
+    /** Implement the --check-graph option, which prints out the report
+        of issues with the correspondence between the diagram and the
+        graph. */
+    private static void checkGraph(String fname)
+    {
+        try {
+            Diagram diagram = Diagram.readFromFile(fname);
+            List<String> issues = diagram.checkObjectGraphLinks();
+            System.out.print(StringUtil.joinWithTerminators("\n", issues));
+        }
+        catch (Exception e) {
+            System.err.println("error: " + Util.getExceptionMessage(e));
+            System.exit(2);
+        }
+    }
+
+    /** Diagram editor program entry point. */
     public static void main(final String[] args)
     {
+        if (args.length >= 2 &&
+            args[0].equals("--check-graph"))
+        {
+            checkGraph(args[1]);
+            return;
+        }
+
         // Use the Nimbus L+F.
         try {
             for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {

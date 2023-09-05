@@ -1,0 +1,1 @@
+Entity { name="$(graphNodeID)", ID="bad_id", x=70, y=340 } has an invalid object graph ID.

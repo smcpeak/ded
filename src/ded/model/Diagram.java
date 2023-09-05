@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -37,6 +38,9 @@ import util.XParse;
 import util.awt.AWTJSONUtil;
 import util.json.JSONUtil;
 import util.json.JSONable;
+
+import static util.StringUtil.fmt;
+
 
 /** Complete diagram. */
 public class Diagram implements JSONable {
@@ -368,6 +372,89 @@ public class Diagram implements JSONable {
     public ObjectGraphNode getGraphNode(String searchID)
     {
         return this.objectGraph.getOptNode(searchID);
+    }
+
+    /** Check the entities+relations versus graph nodes+pointers, and
+        report any inconsistencies. */
+    public List<String> checkObjectGraphLinks()
+    {
+        List<String> issues = new ArrayList<String>();
+
+        // Report entities with invalid IDs.
+        for (Entity entity : this.entities) {
+            if (!entity.hasObjectGraphNodeID()) {
+                continue;
+            }
+
+            if (entity.getObjectGraphNode(this.objectGraph) == null) {
+                // The ID will be included among the identifying
+                // characteristics.
+                issues.add(fmt(
+                    "Entity %s has an invalid object graph ID.",
+                    entity.identifyingCharacteristicsString()));
+            }
+        }
+
+        // Report relations where the start entity is associated with a
+        // graph node, and the relation has a name, but it does not
+        // correspond to a pointer to the end entity's node.
+        for (Relation relation : this.relations) {
+            if (relation.start.entity == null) {
+                continue;
+            }
+            String startID = relation.start.getObjectGraphNodeID();
+            if (startID.isEmpty()) {
+                continue;
+            }
+
+            ObjectGraphNode startNode =
+                this.objectGraph.getOptNode(startID);
+            if (startNode == null) {
+                // The invalid ID has already been reported above.
+                continue;
+            }
+
+            if (relation.label.isEmpty()) {
+                continue;
+            }
+            ObjectGraphNode.Ptr expectEndPtr =
+                startNode.m_pointers.get(relation.label);
+            if (expectEndPtr == null) {
+                issues.add(fmt(
+                    "Relation %s from entity %s does not correspond "+
+                    "to any relation in the object graph.",
+                    StringUtil.doubleQuote(relation.label),
+                    relation.start.entity.identifyingCharacteristicsString()));
+                continue;
+            }
+            String expectEndID = expectEndPtr.m_ptr;
+
+            if (relation.end.entity == null) {
+                issues.add(fmt(
+                    "Relation %s from entity %s is not connected to "+
+                    "any entity, but is expected to be connected to "+
+                    "an entity with ID %s.",
+                    StringUtil.doubleQuote(relation.label),
+                    relation.start.entity.identifyingCharacteristicsString(),
+                    StringUtil.doubleQuote(expectEndID)));
+                continue;
+            }
+
+            String actualEndID = relation.end.getObjectGraphNodeID();
+            if (!actualEndID.equals(expectEndID)) {
+                issues.add(fmt(
+                    "Relation %s from entity %s is connected to "+
+                    "entity %s, but is expected to be connected to "+
+                    "an entity with ID %s.",
+                    StringUtil.doubleQuote(relation.label),
+                    relation.start.entity.identifyingCharacteristicsString(),
+                    relation.end.entity.identifyingCharacteristicsString(),
+                    StringUtil.doubleQuote(expectEndID)));
+                continue;
+            }
+        }
+
+        return issues;
     }
 
     // ------------------ serialization --------------------
