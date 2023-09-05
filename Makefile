@@ -22,6 +22,7 @@ clean:
 # Unit tests that do not require a GUI.
 check: dist/ded.jar check-graphs
 	java -cp bin -ea util.awt.BDFParser
+	java -cp bin -ea ded.model.DiagramTests
 	java -cp bin -ea ded.model.SerializationTests
 	java -cp bin -ea ded.model.SerializationTests tests/*.ded
 	java -cp bin -ea ded.model.SerializationTests tests/*.er

@@ -1045,7 +1045,7 @@ public class EntityController extends Controller
     {
         final EntityController ths = this;
 
-        // Used mnemonic letters: afglnpstx
+        // Used mnemonic letters: afglnopstx
 
         JMenu fillColorMenu = new JMenu("Set fill color");
         fillColorMenu.setMnemonic(KeyEvent.VK_F);
@@ -1151,6 +1151,17 @@ public class EntityController extends Controller
             showNodeDetailsAction.setEnabled(false);
         }
         menu.add(showNodeDetailsAction);
+
+        MenuAction fixNeighborsAction =
+            new MenuAction("Fix object graph neighbors", KeyEvent.VK_O) {
+                public void actionPerformed(ActionEvent e) {
+                    ths.fixObjectGraphNeighbors();
+                }
+            };
+        if (!this.canFixObjectGraphNeighbors()) {
+            fixNeighborsAction.setEnabled(false);
+        }
+        menu.add(fixNeighborsAction);
 
         menu.add(new AbstractAction("Set anchor name to entity name") {
             public void actionPerformed(ActionEvent e) {
@@ -1724,6 +1735,28 @@ public class EntityController extends Controller
         }
 
         return String.join("\n", lines);
+    }
+
+    /** If this entity corresponds to an object graph node, and is the
+        start point of any relations whose end point has a node ID but
+        the ID is wrong, fix the IDs. */
+    private void fixObjectGraphNeighbors()
+    {
+        int ct = this.diagramController.diagram.
+            fixObjectGraphEntityNeighbors(this.entity);
+        if (ct > 0) {
+            this.diagramController.diagramChanged(fmt(
+                "Fixed %d neighbors of entity with graph node ID %s",
+                ct,
+                StringUtil.doubleQuote(this.entity.objectGraphNodeID)));
+        }
+    }
+
+    /** Return true if any neighbors need fixing. */
+    private boolean canFixObjectGraphNeighbors()
+    {
+        return this.diagramController.diagram.
+            canFixObjectGraphEntityNeighbors(this.entity);
     }
 }
 

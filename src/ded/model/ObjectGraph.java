@@ -46,6 +46,12 @@ public class ObjectGraph implements JSONable {
         return n;
     }
 
+    /** Add 'node' to the graph. */
+    public void addNode(ObjectGraphNode node)
+    {
+        m_nodes.put(node.m_id, node);
+    }
+
     public void selfCheck()
     {
         for (Map.Entry<String, ObjectGraphNode> kv : m_nodes.entrySet()) {

@@ -37,6 +37,12 @@ public class ObjectGraphNode implements JSONable {
         // what is in the referred object.
         public String m_preview;
 
+        public Ptr(String ptr)
+        {
+            this.m_ptr = ptr;
+            this.m_preview = null;
+        }
+
         public Ptr(String ptr, String preview)
         {
             this.m_ptr = ptr;
@@ -183,6 +189,26 @@ public class ObjectGraphNode implements JSONable {
 
             return sb.toString();
         }
+    }
+
+    /** If 'key' is the name of a pointer, return the ID of the thing it
+        points at.  Otherwise return null. */
+    public String getPointerTarget(String key)
+    {
+        Ptr ptr = m_pointers.get(key);
+        if (ptr == null) {
+            return null;
+        }
+        else {
+            return ptr.m_ptr;
+        }
+    }
+
+    /** Add a pointer from this node to 'id'. */
+    public void addPointerTarget(String key, String id)
+    {
+        Ptr ptr = new Ptr(id);
+        m_pointers.put(key, ptr);
     }
 
     public void selfCheck()

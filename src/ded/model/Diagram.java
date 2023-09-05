@@ -457,6 +457,76 @@ public class Diagram implements JSONable {
         return issues;
     }
 
+    /** If this entity corresponds to an object graph node, and is the
+        start point of any relations whose end point has a node ID but
+        the ID is wrong, fix the IDs.  Return the number of changes
+        made. */
+    public int fixObjectGraphEntityNeighbors(Entity entity)
+    {
+        return innerFixObjectGraphEntityNeighbors(
+                   entity, false /*dryRun*/);
+    }
+
+    /** Return true if any neighbors need fixing. */
+    public boolean canFixObjectGraphEntityNeighbors(Entity entity)
+    {
+        return innerFixObjectGraphEntityNeighbors(
+                   entity, true /*dryRun*/) > 0;
+    }
+
+    /** Return the number of relations of 'entity' that need fixing.  If
+        'dryRun' is false, then actually fix them. */
+    private int innerFixObjectGraphEntityNeighbors(
+        Entity entity,
+        boolean dryRun)
+    {
+        ObjectGraphNode node = entity.getObjectGraphNode(this.objectGraph);
+        if (node == null) {
+            return 0;
+        }
+
+        int numFixes = 0;
+
+        for (Relation relation : this.relations) {
+            // Restrict to relations where 'entity' is the start entity.
+            if (relation.start.entity != entity) {
+                continue;
+            }
+
+            // Restrict to relations that end on some graph node.
+            if (relation.end.entity == null) {
+                continue;
+            }
+            String actualEndID = relation.end.entity.objectGraphNodeID;
+            if (actualEndID.isEmpty()) {
+                continue;
+            }
+
+            // The relation must have a label.
+            if (relation.label.isEmpty()) {
+                continue;
+            }
+
+            // Get the correct end ID.
+            String expectEndID = node.getPointerTarget(relation.label);
+            if (expectEndID == null) {
+                continue;
+            }
+
+            if (expectEndID.equals(actualEndID)) {
+                continue;
+            }
+
+            ++numFixes;
+            if (!dryRun) {
+                // Change the target's ID to match.
+                relation.end.entity.objectGraphNodeID = expectEndID;
+            }
+        }
+
+        return numFixes;
+    }
+
     // ------------------ serialization --------------------
     @Override
     public JSONObject toJSON()
