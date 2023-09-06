@@ -179,6 +179,18 @@ public class ModalDialog extends JDialog {
         return makeHStrut(CONTROL_PADDING);
     }
 
+    /** Create a vertical strut that has no height. */
+    public static Component makeVStrut(int height)
+    {
+        return Box.createRigidArea(new Dimension(0, height));
+    }
+
+    /** Create a vertical control padding strut. */
+    public static Component makeVCPadStrut()
+    {
+        return makeVStrut(CONTROL_PADDING);
+    }
+
     /** Create a line edit control and associated label. */
     public static JTextField makeLineEdit(Container parent, String label, char mnemonic,
                                           String initialValue)
@@ -345,14 +357,14 @@ public class ModalDialog extends JDialog {
         return comboBox;
     }
 
-    // Arrange so 'textArea' will ignore Tab and Shift-Tab so they can
+    // Arrange so 'component' will ignore Tab and Shift-Tab so they can
     // be used to change the focused element.
-    public static void disableTabInTextArea(
-        JTextArea textArea)
+    public static void disableTabInComponent(
+        JComponent component)
     {
         // http://stackoverflow.com/questions/5042429/how-can-i-modify-the-behavior-of-the-tab-key-in-a-jtextarea
-        textArea.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
-        textArea.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
+        component.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+        component.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
     }
 
     /** Create a button that, when pressed, shows a help dialog with

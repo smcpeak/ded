@@ -57,7 +57,7 @@ public class EditJsonDialog extends ModalDialog {
         // pasting to or from, rather than a place to actually edit the
         // contents.
         m_jsonTextArea = new JTextArea(initialJsonText);
-        disableTabInTextArea(m_jsonTextArea);
+        disableTabInComponent(m_jsonTextArea);
 
         // Use a monospace font for the JSON.
         Font origFont = m_jsonTextArea.getFont();

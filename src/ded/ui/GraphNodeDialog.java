@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 
 import javax.swing.Box;

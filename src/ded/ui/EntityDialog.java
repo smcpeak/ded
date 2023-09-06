@@ -310,7 +310,7 @@ public class EntityDialog extends ModalDialog
         }
 
         // Tab and shift-tab should move the focus, not insert characters.
-        disableTabInTextArea(this.attributeText);
+        disableTabInComponent(this.attributeText);
 
         JScrollPane scroll = new JScrollPane(this.attributeText);
 

@@ -77,6 +77,7 @@ import ded.model.Diagram;
 import ded.model.Entity;
 import ded.model.EntityShape;
 import ded.model.Inheritance;
+import ded.model.ObjectGraphConfig;
 import ded.model.ObjectGraphNode;
 import ded.model.Relation;
 import ded.model.RelationEndpoint;
@@ -2493,6 +2494,12 @@ public class DiagramController extends JPanel
         }
     }
 
+    /** Show the add node dialog. */
+    public void addObjectGraphNode()
+    {
+        AddGraphNodeDialog.exec(this);
+    }
+
     /** Show the object graph configuration dialog. */
     public void editObjectGraphConfig()
     {
@@ -2830,15 +2837,18 @@ public class DiagramController extends JPanel
         return this.diagram.getGraphNode(id);
     }
 
+    /** Get the relevant graph configuration. */
+    private ObjectGraphConfig graphConfig()
+    {
+        return this.diagram.m_objectGraphConfig;
+    }
+
     /** If there is already an entity for 'id', find and return its
       * controller.  Otherwise, make a new entity and controller,
-      * setting it to have 'newEntityLoc', etc., and return the
-      * controller. */
+      * and return the controller. */
     public EntityController findOrCreateEntityControllerWithGraphID(
         String id,
-        Point newEntityLoc,
-        String newEntityName,
-        String newEntityAttributes)
+        Point newEntityLoc)
     {
         for (Controller c : this.controllers) {
             if (c instanceof EntityController) {
@@ -2849,10 +2859,19 @@ public class DiagramController extends JPanel
             }
         }
 
+        return createEntityControllerWithGraphID(id, newEntityLoc);
+    }
+
+    /** Make a new entity for graph node 'id', and its controller,
+      * and return the controller. */
+    public EntityController createEntityControllerWithGraphID(
+        String id,
+        Point newEntityLoc)
+    {
         EntityController ec = EntityController.createEntityAt(this,
             newEntityLoc);
-        ec.entity.name = newEntityName;
-        ec.entity.attributes = newEntityAttributes;
+        ec.entity.name = graphConfig().getNewNodeName();
+        ec.entity.attributes = graphConfig().getNewNodeAttributes();
         ec.entity.objectGraphNodeID = id;
         this.diagramChanged(
             fmt("Create entity for node ID \"%1$s\" at (%2$d,%3$d)",
@@ -2980,6 +2999,14 @@ public class DiagramController extends JPanel
                 relations.add(r);
             }
         }
+    }
+
+    /** Return the point, in diagram coordinates, that is in the center
+        of the visible region. */
+    public Point getViewportCenter()
+    {
+        // Currently I do not have any scrolling capability.
+        return new Point(this.getWidth()/2, this.getHeight()/2);
     }
 }
 

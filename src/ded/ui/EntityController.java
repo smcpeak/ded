@@ -1643,9 +1643,7 @@ public class EntityController extends Controller
         EntityController toEntityController =
             this.diagramController.findOrCreateEntityControllerWithGraphID(
                 ptr.m_ptr,
-                targetLoc,
-                gConfig().getNewNodeName(),
-                gConfig().getNewNodeAttributes());
+                targetLoc);
 
         this.diagramController.findOrCreateRelationControllerFromToLabel(
             this.entity,

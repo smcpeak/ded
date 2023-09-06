@@ -1,0 +1,8 @@
+The table lists all of the node IDs in the currently loaded graph.  A
+graph can be loaded with "Diagram -> Edit object graph ...".
+
+The Count column indicates the number of existing entities that have the
+corresponding node ID.
+
+To create an entity corresponding to a node, select the row containing
+the ID and press Ok, or double-click the row.

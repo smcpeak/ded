@@ -6,6 +6,7 @@ package ded.model;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -50,6 +51,12 @@ public class ObjectGraph implements JSONable {
     public void addNode(ObjectGraphNode node)
     {
         m_nodes.put(node.m_id, node);
+    }
+
+    /** Return the set of node IDs. */
+    public Set<String> idSet()
+    {
+        return m_nodes.keySet();
     }
 
     public void selfCheck()
