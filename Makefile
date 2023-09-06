@@ -1,10 +1,11 @@
 # ded/Makefile
 
 JAVA_FILES := $(shell find src -name '*.java')
+RESOURCE_FILES := $(shell find resources -type f)
 
 all: dist/ded.jar
 
-dist/ded.jar: $(JAVA_FILES)
+dist/ded.jar: $(JAVA_FILES) $(RESOURCE_FILES)
 	rm -rf bin
 	mkdir -p bin
 	javac -sourcepath src -d bin $(JAVA_FILES)
