@@ -2,42 +2,29 @@
   "drawFileName": true,
   "entities": [
     {
-      "attributes": "$(graphNodeShowFields)\n",
+      "attributes": "$(graphNodeShowFieldsAttrs)\n\n$(graphNodeShowFieldsPtrs)\n",
       "loc": {
-        "x": 100,
-        "y": 115
+        "x": 25,
+        "y": 30
       },
       "name": "$(graphNodeID)",
       "objectGraphNodeID": "n1",
       "size": {
-        "h": 90,
-        "w": 150
+        "h": 110,
+        "w": 125
       }
     },
     {
-      "attributes": "$(graphNodeShowFields)\n",
+      "attributes": "$(graphNodeShowFieldsAttrs)\n\n$(graphNodeShowFieldsPtrs)\n",
       "loc": {
-        "x": 70,
-        "y": 340
+        "x": 200,
+        "y": 60
       },
       "name": "$(graphNodeID)",
-      "objectGraphNodeID": "bad_id",
+      "objectGraphNodeID": "n2a",
       "size": {
-        "h": 50,
-        "w": 380
-      }
-    },
-    {
-      "attributes": "x: $(graphNode.x)\n",
-      "loc": {
-        "x": 70,
-        "y": 405
-      },
-      "name": "$(graphNode.badAttr)",
-      "objectGraphNodeID": "n4",
-      "size": {
-        "h": 55,
-        "w": 190
+        "h": 95,
+        "w": 135
       }
     }
   ],
@@ -45,11 +32,12 @@
   "objectGraph": {
     "n1": {
       "anotherAttrib": 123,
+      "moreInformation": 7,
       "notHere": {"ptr": "null"},
-      "succ": {"ptr": "n2"},
+      "succ": {"ptr": "n2a"},
       "title": "one"
     },
-    "n2": {
+    "n2a": {
       "color": "green",
       "pred": {"ptr": "n1"},
       "to3": {
@@ -63,13 +51,30 @@
   "objectGraphConfig": {
     "newNodeAttributes": null,
     "newNodeName": null,
-    "showFields": []
+    "showFields": [
+      "anotherAttrib",
+      "title",
+      "color",
+      "pred",
+      "to3"
+    ]
   },
-  "relations": [],
+  "relations": [
+    {
+      "end": {"entityRef": 1},
+      "label": "succ",
+      "start": {"entityRef": 0}
+    },
+    {
+      "end": {"entityRef": 0},
+      "label": "pred",
+      "start": {"entityRef": 1}
+    }
+  ],
   "type": "Diagram Editor Diagram",
   "version": 29,
   "windowSize": {
-    "h": 538,
-    "w": 546
+    "h": 266,
+    "w": 414
   }
 }

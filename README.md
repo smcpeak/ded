@@ -98,6 +98,13 @@ PNG being always the same means that just exporting again isn't going
 to introduce a spurious change.
 
 
+## Ability to import and create diagrams of arbitrary graphs
+
+The editor can semi-automatically create entities and relations that
+depict elements of an arbitrary graph structure.  See
+[Using ded to make diagrams of graphs](doc/diagrams-of-graphs.md).
+
+
 ## Hackable implementation
 
 The source code is fairly well organized and well commented.  You
