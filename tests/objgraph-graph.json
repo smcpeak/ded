@@ -1,0 +1,18 @@
+{
+  "n1": {
+    "anotherAttrib": 123,
+    "notHere": {"ptr": "null"},
+    "succ": {"ptr": "n2"},
+    "title": "one"
+  },
+  "n2": {
+    "color": "green",
+    "pred": {"ptr": "n1"},
+    "to3": {
+      "preview": "en three",
+      "ptr": "n3"
+    }
+  },
+  "n3": {"name": "Name of n3"},
+  "n4": {"x": "ecks"}
+}

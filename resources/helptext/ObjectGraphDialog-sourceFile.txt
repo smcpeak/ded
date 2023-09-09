@@ -1,0 +1,25 @@
+The "Source file" is an optional file name, interpreted as relative to
+the directory containing the DED file, containing JSON data with which
+to populate the text box in this dialog.
+
+Pressing the "Load" button reads that file, parses it as JSON, then
+compares to the JSON already in the box.  If it is different, the loaded
+data will replace what is in the box and a message box will say that new
+data was loaded.  Otherwise, the text will remain unchanged, and a
+message box will say so.  If the text in the box cannot be parsed as
+JSON, the "new data" message will also be printed.  (The idea is to make
+it easy to check if the data is different from what the box already
+contains.)
+
+Even after loading new graph data, if you press Cancel, the graph data
+from before opening the dialog will be retained.  (And even if you press
+OK, you can then still use Undo to recover the original graph.)
+
+The source file name entered here is saved as part of the diagram (when
+you press OK), regardless of whether it is used to load anything.
+
+The source file name is not used in any other way than described above,
+so it is fine if it sometimes does not exist or is different from the
+loaded graph data.  The diagram always maintains its own copy of the
+graph, which is written to the DED file (and the PNG) when the diagram
+is saved.

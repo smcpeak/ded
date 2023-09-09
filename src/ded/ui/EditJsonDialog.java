@@ -29,8 +29,12 @@ public class EditJsonDialog extends ModalDialog {
     // ---- data ----
     private static final long serialVersionUID = -5359211540205542816L;
 
+    // Vertical box containing the controls, exposed to subclasses so
+    // they can add additional controls.
+    protected Box m_primaryVBox;
+
     // Controls.
-    private JTextArea m_jsonTextArea;
+    protected JTextArea m_jsonTextArea;
 
     // ---- methods ----
     public EditJsonDialog(
@@ -51,6 +55,7 @@ public class EditJsonDialog extends ModalDialog {
         }
 
         Box vb = ModalDialog.makeMarginVBox(this, ModalDialog.OUTER_MARGIN);
+        m_primaryVBox = vb;
 
         // This is of course an extremely crude editing interface.  I
         // envision primarily using it as a vehicle for copying and
@@ -70,11 +75,12 @@ public class EditJsonDialog extends ModalDialog {
 
         vb.add(scroll);
 
-        vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
+        vb.add(ModalDialog.makeVCPadStrut());
 
         m_helpText = helpText;
 
-        this.finishBuildingDialog(vb);
+        // It is the caller's responsibility to call:
+        // this.finishBuildingDialog(m_primaryVBox);
     }
 
     @Override
@@ -88,10 +94,14 @@ public class EditJsonDialog extends ModalDialog {
             Object jsonValue = tokener.nextValue();
 
             if (jsonValue instanceof JSONObject) {
-                processEditedJSONObject((JSONObject)jsonValue);
+                if (!processEditedJSONObject((JSONObject)jsonValue)) {
+                    return;
+                }
             }
             else if (jsonValue instanceof JSONArray) {
-                processEditedJSONArray((JSONArray)jsonValue);
+                if (!processEditedJSONArray((JSONArray)jsonValue)) {
+                    return;
+                }
             }
             else {
                 throw new JSONException(
@@ -109,16 +119,27 @@ public class EditJsonDialog extends ModalDialog {
         super.okPressed();
     }
 
-    /** A subclass that uses JSON objects must override this. */
-    protected void processEditedJSONObject(JSONObject json)
+    /** A subclass that uses JSON objects must override this.  It is
+        called when the user presses OK, and the JSON text has been
+        validated as JSON.
+
+        This can throw JSONException to indicate that something in the
+        JSON is invalid.
+
+        If it returns false, it means there was something wrong with
+        something else in the dialog, so it should remain open. */
+    protected boolean processEditedJSONObject(JSONObject json)
         throws JSONException
     {
         throw new JSONException(
             "A JSON object (text starting with '{') is not valid here.");
     }
 
-    /** A subclass that uses JSON arrays must override this. */
-    protected void processEditedJSONArray(JSONArray json)
+    /** A subclass that uses JSON arrays must override this.
+
+        Like 'processEditedJSONObject', this returns false to indicate
+        an error that must be fixed before closing with OK. */
+    protected boolean processEditedJSONArray(JSONArray json)
         throws JSONException
     {
         throw new JSONException(

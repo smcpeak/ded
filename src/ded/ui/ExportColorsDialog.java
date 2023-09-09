@@ -35,14 +35,18 @@ public class ExportColorsDialog extends EditJsonDialog {
             Diagram.colorTableToJSON(diagram.namedColors));
 
         m_diagram = diagram;
+
+        this.finishBuildingDialog(m_primaryVBox);
     }
 
     @Override
-    protected void processEditedJSONArray(JSONArray json)
+    protected boolean processEditedJSONArray(JSONArray json)
         throws JSONException
     {
         m_diagram.namedColors =
             Diagram.parseColorTableFromJSON(json);
+
+        return true;
     }
 
     /** Show the dialog, waiting until the user closes the dialog

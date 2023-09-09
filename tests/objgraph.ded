@@ -65,9 +65,10 @@
     "newNodeName": null,
     "showFields": []
   },
+  "objectGraphSourceFile": "objgraph-graph.json",
   "relations": [],
   "type": "Diagram Editor Diagram",
-  "version": 29,
+  "version": 30,
   "windowSize": {
     "h": 538,
     "w": 546

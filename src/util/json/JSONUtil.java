@@ -7,11 +7,21 @@ import java.util.Collection;
 
 import java.util.zip.Deflater;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+
 import java.nio.charset.StandardCharsets;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
+
 
 /** Utilities for working with JSON objects. */
 public class JSONUtil {
@@ -44,9 +54,14 @@ public class JSONUtil {
     // I can't write 'collectionFromJSON' without reflection or some
     // factory classes (which I might decide to use at some point).
 
-    /** Return true if 'a' and 'b' are equal. */
+    /** Return true if 'a' and 'b' are equal.  This tolerates either
+        being null, and regards null as only equal to itself. */
     public static boolean equalJSONObjects(JSONObject a, JSONObject b)
     {
+        if (a == null || b == null) {
+            return a == b;
+        }
+
         // This is crude, but JSONObject does not have a proper 'equals'
         // method.  Fortunately, its serialization code alphabetizes
         // the keys, so that does not cause problems here.
@@ -115,6 +130,55 @@ public class JSONUtil {
         else {
             o.put(key, value);
         }
+    }
+
+    /** Read a JSON object from a file, given its name. */
+    public static JSONObject readObjectFromFileName(String fname)
+        throws IOException, JSONException
+    {
+        return readObjectFromFile(new File(fname));
+    }
+
+    /** Read a JSON object from a File object. */
+    public static JSONObject readObjectFromFile(File file)
+        throws IOException, JSONException
+    {
+        InputStream inputStream = null;
+        try {
+            inputStream = new FileInputStream(file);
+            return readObjectFromInputStream(inputStream);
+        }
+        finally {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+        }
+    }
+
+    /** Read a JSON object from an InputStream. */
+    public static JSONObject readObjectFromInputStream(InputStream inputStream)
+        throws IOException, JSONException
+    {
+        return readObjectFromReader(
+            new BufferedReader(
+                new InputStreamReader(inputStream, "UTF-8")));
+    }
+
+    /** Read a JSON object from a Reader. */
+    public static JSONObject readObjectFromReader(Reader r)
+        throws IOException, JSONException
+    {
+        return new JSONObject(new JSONTokener(r));
+    }
+
+    /** Read a JSON object from a String containing JSON.
+
+        This just calls 'new JSONObject(s)', but I am providing the
+        method for uniformity with the ones above. */
+    public static JSONObject readObjectFromString(String s)
+        throws JSONException
+    {
+        return new JSONObject(s);
     }
 }
 

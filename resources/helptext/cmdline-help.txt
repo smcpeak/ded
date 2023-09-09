@@ -1,0 +1,17 @@
+Usage: ded [options] [filename.ded]
+
+Without options, starts the diagram editor, initially showing the
+specified file if there is one, or an empty diagram otherwise.
+
+Options:
+
+  --help: Print this text.
+
+  --version: Print version.
+
+  --check-graph <file.ded>: Check the correspondence between the diagram
+  and the object graph.
+
+  --check-graph-source <file.ded>: Check the correspondence between the
+  object graph stored in the diagram and the object graph stored in the
+  file the diagram indicates is its graph source file.

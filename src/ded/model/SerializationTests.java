@@ -77,6 +77,8 @@ public class SerializationTests {
         r3.routingAlg = RoutingAlgorithm.RA_MANHATTAN_VERT;
         d.relations.add(r3);
 
+        d.m_objectGraphSourceFile = "ogsf";
+
         // Make sure it is all consistent.
         d.selfCheck();
 
@@ -91,6 +93,7 @@ public class SerializationTests {
 
         // Check for structural equality.
         assert(d2.equals(d));
+        assert(d2.m_objectGraphSourceFile.equals("ogsf"));
 
         // Serialize and check that for equality too.
         String ser2 = d2.toJSON().toString(2);

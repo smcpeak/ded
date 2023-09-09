@@ -9,6 +9,7 @@ import java.awt.Point;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -64,7 +65,7 @@ public class Diagram implements JSONable {
       * should include a bump--even though the old code might be
       * able to read the file without choking, the semantics would
       * not be preserved. */
-    public static final int currentFileVersion = 29;
+    public static final int currentFileVersion = 30;
 
     // ---------- public data ------------
     /** Size of window to display diagram.  Some elements might not fit
@@ -102,6 +103,15 @@ public class Diagram implements JSONable {
     /** Set of objects forming a graph that can be interactively
       * explored using the editor. */
     public ObjectGraph objectGraph;
+
+    /** If not empty, the name of a file, relative to the directory
+        containing the DED file, from which we can load or reload the
+        graph data in JSON format when requested.
+
+        Loading is done by 'ObjectGraphDialog'; here, we just carry the
+        name around.  Nothing outside that dialog cares whether the file
+        exists or agrees with what is in 'objectGraph'. */
+    public String m_objectGraphSourceFile = "";
 
     /** Graph interaction options. */
     public ObjectGraphConfig m_objectGraphConfig;
@@ -251,6 +261,7 @@ public class Diagram implements JSONable {
         this.backgroundColor = src.backgroundColor;
         this.namedColors = new LinkedHashMap<String,Color>(src.namedColors);
         this.objectGraph = new ObjectGraph(src.objectGraph);
+        this.m_objectGraphSourceFile = src.m_objectGraphSourceFile;
         this.m_objectGraphConfig = new ObjectGraphConfig(src.m_objectGraphConfig);
 
         // Make empty containers for the diagram elements.
@@ -527,6 +538,42 @@ public class Diagram implements JSONable {
         return numFixes;
     }
 
+    /** Check that the graph stored in the diagram agrees with the
+        specified graph source file. */
+    public void checkObjectGraphSourceCorrespondence(
+        List<String> issues, String fname)
+    {
+        if (m_objectGraphSourceFile.isEmpty()) {
+            issues.add("Object graph source file name is empty.");
+            return;
+        }
+
+        File fnameBase = new File(fname).getParentFile();
+        File sourceFile = Util.getFileRelativeTo(fnameBase,
+            m_objectGraphSourceFile);
+
+        JSONObject sourceGraphObj;
+        try {
+            sourceGraphObj = JSONUtil.readObjectFromFile(sourceFile);
+        }
+        catch (Exception e) {
+            issues.add(fmt(
+                "While reading \"%s\": %s\".",
+                sourceFile.toString(),
+                Util.getExceptionMessage(e)));
+            return;
+        }
+
+        JSONObject existingGraphObj = this.objectGraph.toJSON();
+        if (!JSONUtil.equalJSONObjects(sourceGraphObj, existingGraphObj)) {
+            issues.add(fmt(
+                "Graph loaded from \"%s\" differs from the one in \"%s\".",
+                sourceFile.toString(),
+                fname));
+            return;
+        }
+    }
+
     // ------------------ serialization --------------------
     @Override
     public JSONObject toJSON()
@@ -548,6 +595,11 @@ public class Diagram implements JSONable {
             }
 
             o.put("objectGraph", this.objectGraph.toJSON());
+
+            if (!m_objectGraphSourceFile.isEmpty()) {
+                o.put("objectGraphSourceFile", m_objectGraphSourceFile);
+            }
+
             o.put("objectGraphConfig", this.m_objectGraphConfig.toJSON());
 
             // Map from an entity to its position in the serialized
@@ -712,6 +764,11 @@ public class Diagram implements JSONable {
             this.m_objectGraphConfig = new ObjectGraphConfig();
         }
 
+        if (ver >= 30) {
+            m_objectGraphSourceFile =
+                o.optString("objectGraphSourceFile", "");
+        }
+
         if (ver >= 3) {
             this.drawFileName = o.getBoolean("drawFileName");
         }
@@ -811,37 +868,18 @@ public class Diagram implements JSONable {
         }
     }
 
-    /** Read a Diagram from a file, expect the JSON format only. */
+    /** Read a Diagram from a file, expecting the JSON format only. */
     public static Diagram readFromFile(String fname)
         throws Exception
     {
-        FileInputStream fis = new FileInputStream(fname);
-        try {
-            Reader r = new BufferedReader(new InputStreamReader(fis, "UTF-8"));
-            try {
-                return readFromReader(r);
-            }
-            finally {
-                r.close();
-                fis = null;
-            }
-        }
-        finally {
-            if (fis != null) {
-                fis.close();
-            }
-        }
+        return new Diagram(JSONUtil.readObjectFromFileName(fname));
     }
 
     /** Read Diagram JSON out of 'r'. */
     public static Diagram readFromReader(Reader r)
         throws Exception
     {
-        // Parse the raw characters into a JSON tree.
-        JSONObject obj = new JSONObject(new JSONTokener(r));
-
-        // Parse the JSON tree into a Diagram object graph.
-        return new Diagram(obj);
+        return new Diagram(JSONUtil.readObjectFromReader(r));
     }
 
     /** Serialize as a JSON string. */
@@ -865,17 +903,19 @@ public class Diagram implements JSONable {
     {
         // For compatibility with the C++ implementation, first attempt
         // to read it in the ER format.
+        //
+        // Exceptions thrown by this call will propagate out of this
+        // method, as they mean that the file *was* in the ER format but
+        // some other problem occurred (or the file could not be read at
+        // all, which is a problem no matter what format we think the
+        // file is).
         Diagram d = readFromERFile(fname);
         if (d != null) {
             return d;
         }
         else {
             // The file is not in the ER format.  Proceed with reading
-            // it as JSON.  Exceptions will propagate out of
-            // this method, as they indicate that the file *was* in the
-            // ER format but some other problem occurred (or the file
-            // could not be read at all, which is a problem no matter
-            // what format we think the file is).
+            // it as JSON.
         }
 
         return readFromFile(fname);
@@ -1032,6 +1072,7 @@ public class Diagram implements JSONable {
                    this.relations.equals(d.relations) &&
                    this.namedColors.equals(d.namedColors) &&
                    this.objectGraph.equals(d.objectGraph) &&
+                   this.m_objectGraphSourceFile.equals(d.m_objectGraphSourceFile) &&
                    this.m_objectGraphConfig.equals(d.m_objectGraphConfig) &&
                    true;
         }
@@ -1050,6 +1091,7 @@ public class Diagram implements JSONable {
         h = h*31 + Util.collectionHashCode(this.relations);
         h = h*31 + this.namedColors.hashCode();
         h = h*31 + this.objectGraph.hashCode();
+        h = h*31 + this.m_objectGraphSourceFile.hashCode();
         h = h*31 + this.m_objectGraphConfig.hashCode();
         return h;
     }

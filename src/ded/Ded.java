@@ -502,17 +502,23 @@ public class Ded extends JFrame implements WindowListener {
         this.diagramController.populateRedoAlternateMenu();
     }
 
-    private void showAboutBox()
+    /** Get the version string for this program. */
+    private static String getVersions()
     {
         String version =
             Util.readResourceString("/resources/version.txt").trim();
 
+        return "Program version: "+version+"\n"+
+               "Maximum file version: "+Diagram.currentFileVersion+"\n";
+    }
+
+    private void showAboutBox()
+    {
         JOptionPane.showMessageDialog(
             this,
             "Diagram Editor (DED)\n"+
                 "Copyright (c) 2012-2023 Scott McPeak\n"+
-                "Program version: "+version+"\n"+
-                "Maximum file version: "+Diagram.currentFileVersion+"\n"+
+                getVersions()+
                 "This software is made available under the terms of the BSD license:\n"+
                 "http://opensource.org/licenses/BSD-2-Clause\n"+
                 "\n"+
@@ -627,26 +633,69 @@ public class Ded extends JFrame implements WindowListener {
         of issues with the correspondence between the diagram and the
         graph. */
     private static void checkGraph(String fname)
+        throws Exception
     {
-        try {
-            Diagram diagram = Diagram.readFromFile(fname);
-            List<String> issues = diagram.checkObjectGraphLinks();
+        Diagram diagram = Diagram.readFromFile(fname);
+        List<String> issues = diagram.checkObjectGraphLinks();
+
+        // This does not exit(1) even when issues are found because my
+        // test infrastructure is, for the moment, too stupid to handle
+        // that.
+        System.out.print(StringUtil.joinWithTerminators("\n", issues));
+    }
+
+    /** If 'issues' is not empty, print it to stdout and exit(1). */
+    private static void printIssues(List<String> issues)
+    {
+        if (!issues.isEmpty()) {
             System.out.print(StringUtil.joinWithTerminators("\n", issues));
-        }
-        catch (Exception e) {
-            System.err.println("error: " + Util.getExceptionMessage(e));
-            System.exit(2);
+            System.exit(1);
         }
     }
+
+    /** Verify that the graph in 'fname' matches the one specified as
+        its source file. */
+    private static void checkGraphSource(String fname)
+        throws Exception
+    {
+        List<String> issues = new ArrayList<String>();
+        Diagram diagram = Diagram.readFromFile(fname);
+        diagram.checkObjectGraphSourceCorrespondence(issues, fname);
+        printIssues(issues);
+    }
+
 
     /** Diagram editor program entry point. */
     public static void main(final String[] args)
     {
-        if (args.length >= 2 &&
-            args[0].equals("--check-graph"))
-        {
-            checkGraph(args[1]);
-            return;
+        if (args.length >= 1) {
+            String opt = args[0];
+            try {
+                if (opt.equals("--help")) {
+                    System.out.print(Util.readResourceString(
+                        "/resources/helptext/cmdline-help.txt"));
+                    return;
+                }
+
+                if (opt.equals("--version")) {
+                    System.out.print(getVersions());
+                    return;
+                }
+
+                if (opt.equals("--check-graph")) {
+                    checkGraph(args[1]);
+                    return;
+                }
+
+                if (opt.equals("--check-graph-source")) {
+                    checkGraphSource(args[1]);
+                    return;
+                }
+            }
+            catch (Exception e) {
+                System.err.println("error: " + Util.getExceptionMessage(e));
+                System.exit(2);
+            }
         }
 
         // Use the Nimbus L+F.

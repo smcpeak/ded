@@ -2428,19 +2428,7 @@ public class DiagramController extends JPanel
       * is problem, log it and return null. */
     private Image innerGetImage(String imageFileName)
     {
-        // What directory will we interpret a relative name as relative to?
-        File relativeBase;
-        if (this.fileName.isEmpty()) {
-            // Use current working directory.
-            relativeBase = Util.getWorkingDirectoryFile();
-        }
-        else {
-            // Use the directory containing the diagram file.
-            relativeBase = new File(this.fileName).getParentFile();
-        }
-
-        // Combine the base with the specified file.
-        File imageFile = Util.getFileRelativeTo(relativeBase, imageFileName);
+        File imageFile = getRelativeFile(imageFileName);
 
         // Try to load the file.
         FileInputStream is = null;
@@ -2471,6 +2459,28 @@ public class DiagramController extends JPanel
         }
     }
 
+    /** Interpret 'fname' as a path relative to the location of the DED
+        file, and return a 'File' accordingly.
+
+        If there is no file name set for the DED file, then interpret
+        'fname' as relative to the current working directory. */
+    public File getRelativeFile(String fname)
+    {
+        // What directory will we interpret a relative name as relative to?
+        File relativeBase;
+        if (this.fileName.isEmpty()) {
+            // Use current working directory.
+            relativeBase = Util.getWorkingDirectoryFile();
+        }
+        else {
+            // Use the directory containing the diagram file.
+            relativeBase = new File(this.fileName).getParentFile();
+        }
+
+        // Combine the base with the specified file.
+        return Util.getFileRelativeTo(relativeBase, fname);
+    }
+
     /** Clear the image cache and redraw so we reload the images. */
     public void reloadEntityImages()
     {
@@ -2489,7 +2499,7 @@ public class DiagramController extends JPanel
     /** Show the object graph dialog. */
     public void editObjectGraph()
     {
-        if (ObjectGraphDialog.exec(this, this.diagram)) {
+        if (ObjectGraphDialog.exec(this)) {
             this.diagramChanged("Edit object graph");
         }
     }

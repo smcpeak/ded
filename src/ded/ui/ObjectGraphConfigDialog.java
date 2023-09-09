@@ -35,14 +35,18 @@ public class ObjectGraphConfigDialog extends EditJsonDialog {
             diagram.m_objectGraphConfig.toJSON());
 
         m_diagram = diagram;
+
+        this.finishBuildingDialog(m_primaryVBox);
     }
 
     @Override
-    protected void processEditedJSONObject(JSONObject json)
+    protected boolean processEditedJSONObject(JSONObject json)
         throws JSONException
     {
         m_diagram.m_objectGraphConfig =
             new ObjectGraphConfig(json);
+
+        return true;
     }
 
     /** Show the dialog, waiting until the user closes the dialog
