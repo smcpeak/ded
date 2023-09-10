@@ -1,9 +1,26 @@
 # ded/Makefile
 
+all: dist/ded.jar
+
 JAVA_FILES := $(shell find src -name '*.java')
 RESOURCE_FILES := $(shell find resources -type f)
 
-all: dist/ded.jar
+PYTHON3 := python3
+RUN_COMPARE_EXPECT := $(PYTHON3) ./run-compare-expect.py
+
+# Ensure the directory meant to hold the output file of a recipe exists.
+CREATE_OUTPUT_DIRECTORY = @mkdir -p $(dir $@)
+
+
+# Eliminate all implicit rules.
+.SUFFIXES:
+
+# Delete a target when its recipe fails.
+.DELETE_ON_ERROR:
+
+# Do not remove "intermediate" targets.
+.SECONDARY:
+
 
 dist/ded.jar: $(JAVA_FILES) $(RESOURCE_FILES)
 	rm -rf bin
@@ -21,7 +38,7 @@ clean:
 	rm -rf bin dist out
 
 # Unit tests that do not require a GUI.
-check: dist/ded.jar check-graphs
+check: dist/ded.jar
 	java -cp bin -ea util.awt.BDFParser
 	java -cp bin -ea ded.model.DiagramTests
 	java -cp bin -ea ded.model.SerializationTests
@@ -38,20 +55,34 @@ check: dist/ded.jar check-graphs
 
 # ---- Tests using --check-graph ----
 .PHONY: check-graphs
-check-graphs: out/check-graph.ded.cg.ok
-check-graphs: out/objgraph.ded.cg.ok
+check-graphs: out/check-graph.ded.cg
+check-graphs: out/check-graph-fixed.ded.cg
+check-graphs: out/objgraph.ded.cg
+check: check-graphs
 
-out/%.ded.cg.ok: dist/ded.jar tests/%.ded
-	@mkdir -p $(dir $@)
-	@#
-	@# Check the graph in $*.ded.
-	java -cp bin -ea ded.Ded --check-graph tests/$*.ded > out/$*.ded.cg
-	@#
-	@# Compare to what we expect.
-	diff -u tests/$*.ded.cg.exp out/$*.ded.cg
-	@#
-	@# Record the test as successful.
+out/%.ded.cg: dist/ded.jar tests/%.ded tests/%.ded.cg.exp
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(RUN_COMPARE_EXPECT) \
+	  --expect tests/$*.ded.cg.exp \
+	  --actual $@ \
+	  java -cp bin -ea ded.Ded --check-graph tests/$*.ded
+
+# Create an empty expected output if needed.
+tests/%.exp:
 	touch $@
+
+
+# ---- Tests using --check-graph-source ----
+.PHONY: check-graph-source
+check-graph-source: out/objgraph.ded.cgs
+check: check-graph-source
+
+out/%.ded.cgs: dist/ded.jar tests/%.ded tests/%.ded.cgs.exp
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(RUN_COMPARE_EXPECT) \
+	  --expect tests/$*.ded.cgs.exp \
+	  --actual $@ \
+	  java -cp bin -ea ded.Ded --check-graph-source tests/$*.ded
 
 
 # GUI tests.  These require Abbot:

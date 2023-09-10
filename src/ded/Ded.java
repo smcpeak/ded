@@ -636,12 +636,7 @@ public class Ded extends JFrame implements WindowListener {
         throws Exception
     {
         Diagram diagram = Diagram.readFromFile(fname);
-        List<String> issues = diagram.checkObjectGraphLinks();
-
-        // This does not exit(1) even when issues are found because my
-        // test infrastructure is, for the moment, too stupid to handle
-        // that.
-        System.out.print(StringUtil.joinWithTerminators("\n", issues));
+        printIssues(diagram.checkObjectGraphLinks());
     }
 
     /** If 'issues' is not empty, print it to stdout and exit(1). */

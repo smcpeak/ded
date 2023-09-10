@@ -1,0 +1,92 @@
+{
+  "drawFileName": true,
+  "entities": [
+    {
+      "attributes": "$(graphNodeShowFields)\n",
+      "loc": {
+        "x": 25,
+        "y": 105
+      },
+      "name": "$(graphNodeID)",
+      "objectGraphNodeID": "n1",
+      "size": {
+        "h": 110,
+        "w": 150
+      }
+    },
+    {
+      "loc": {
+        "x": 0,
+        "y": 15
+      },
+      "name": "--check-graph option should report no issues.",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 270
+      }
+    },
+    {
+      "loc": {
+        "x": 260,
+        "y": 135
+      },
+      "name": "$(graphNodeID)",
+      "objectGraphNodeID": "n2",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    }
+  ],
+  "inheritances": [],
+  "objectGraph": {
+    "n1": {
+      "anotherAttrib": 123,
+      "notHere": {"ptr": "null"},
+      "succ": {"ptr": "n2"},
+      "title": "one"
+    },
+    "n2": {
+      "color": "green",
+      "pred": {"ptr": "n1"},
+      "to3": {"ptr": "n3"}
+    },
+    "n3": {"name": "Name of n3"},
+    "n4": {"x": "ecks"},
+    "n5": {}
+  },
+  "objectGraphConfig": {
+    "newNodeAttributes": null,
+    "newNodeName": null,
+    "showFields": []
+  },
+  "relations": [
+    {
+      "end": {"entityRef": 2},
+      "label": "succ",
+      "start": {"entityRef": 0}
+    },
+    {
+      "controlPts": [{
+        "x": 160,
+        "y": 240
+      }],
+      "dashStructure": [
+        1,
+        2
+      ],
+      "end": {"entityRef": 2},
+      "label": "Excluded",
+      "routingAlg": "RA_MANHATTAN_VERT",
+      "start": {"entityRef": 0}
+    }
+  ],
+  "type": "Diagram Editor Diagram",
+  "version": 30,
+  "windowSize": {
+    "h": 352,
+    "w": 377
+  }
+}
