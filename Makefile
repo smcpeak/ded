@@ -99,22 +99,6 @@ out/%.ded.cgb: dist/ded.jar tests/%.ded tests/%.ded.cgb.exp
 	    --check-graph-source tests/$*.ded
 
 
-# GUI tests.  These require Abbot:
-#
-#   http://abbot.sourceforge.net/doc/overview.shtml
-#
-# Download and unpack it.  Then create a script in your $PATH
-# called "run-abbot-test" with the line:
-#
-#   exec java -cp $ABBOT/lib/costello.jar junit.extensions.abbot.ScriptTestSuite "$@"
-#
-# where $ABBOT is where you unpacked Abbot.
-#
-# TODO: This test hasn't been maintained in a while and probably does
-# not work.  Remove it.
-uicheck:
-	run-abbot-test tests/abbot/*.xml
-
 # ------------------- Coverity -----------------
 PREV_ROOT := $(HOME)/enc/prevent-current/objs/linux64/root
 PREV_CONFIG := cov/config/coverity_config.xml

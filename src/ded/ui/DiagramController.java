@@ -126,14 +126,7 @@ public class DiagramController extends JPanel
         "\n"+
         "See menu bar for commands without keybindings.";
 
-    /** The existence and value of this field tells (via reflection)
-      * Abbot, a GUI test tool, that it should record low-level mouse
-      * events rather than converting them into "click" or "drag"
-      * events. */
-    public static String abbotRecorderClassName = "NoClickComponent";
-
-    /** When true, turn on some extra diagnostics related to debugging
-      * a problem with Abbot where it interferes with normal focus. */
+    /** When true, turn on some extra diagnostics related to focus. */
     public static final boolean debugFocus = false;
 
     /** Print some debug tracing for 'recomputeGraphEdges'. */
@@ -566,15 +559,6 @@ public class DiagramController extends JPanel
         });
     }
 
-    /** This method is passed some of the input events.  I'm using it
-      * as a convenient instrumentation point while experimenting with
-      * and fixing bugs in Abbot.  In production usage, it should do
-      * nothing. */
-    private void eventReceived(AWTEvent e)
-    {
-        //System.out.println(e.toString());
-    }
-
     /** Return e.getPoint(), except snapped to SNAP_DIST if shift not held. */
     public Point getSnappedPoint(MouseEvent e)
     {
@@ -591,8 +575,6 @@ public class DiagramController extends JPanel
     @Override
     public void mousePressed(MouseEvent e)
     {
-        this.eventReceived(e);
-
         switch (this.mode) {
             case DCM_SELECT: {
                 // Clicked a controller?
@@ -673,8 +655,6 @@ public class DiagramController extends JPanel
     @Override
     public void mouseDragged(MouseEvent e)
     {
-        this.eventReceived(e);
-
         if (this.mode == Mode.DCM_DRAGGING) {
             this.selfCheck();
 
@@ -725,8 +705,6 @@ public class DiagramController extends JPanel
     @Override
     public void mouseReleased(MouseEvent e)
     {
-        this.eventReceived(e);
-
         // Click+drag should only be initiated with left mouse button, so ignore
         // release of others.
         if (!SwingUtilities.isLeftMouseButton(e)) {
@@ -745,8 +723,6 @@ public class DiagramController extends JPanel
     @Override
     public void mouseClicked(MouseEvent e)
     {
-        this.eventReceived(e);
-
         // Double-click on control to edit it.
         if (SwingUtilities.isLeftMouseButton(e) && (e.getClickCount() == 2)) {
             Controller c = this.hitTest(e.getPoint(), null);
@@ -762,8 +738,6 @@ public class DiagramController extends JPanel
 
     // MouseMotionListener events I do not care about.
     @Override public void mouseMoved(MouseEvent e) {
-        this.eventReceived(e);
-
         // Keep the focus display up to date if desired.
         if (debugFocus && e.getX() < 10) {
             this.repaint();
@@ -773,8 +747,6 @@ public class DiagramController extends JPanel
     @Override
     public void keyPressed(KeyEvent e)
     {
-        this.eventReceived(e);
-
         // Note: Some of the key bindings shown in the help dialog
         // have been moved to the menu created in Ded.java.
 

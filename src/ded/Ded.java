@@ -540,14 +540,11 @@ public class Ded extends JFrame implements WindowListener {
         // I manually shut down the JVM.  I hate that delay, so I do
         // this even though it is considered bad form in Java.
         //
+        // On OpenJDK, without this exit call, the process does not exit
+        // at all.
+        //
         // If/when I add support for editing multiple documents in
         // one process, I'll have to make the logic here smarter.
-        //
-        // This causes Abbot to stack overflow, so I disabled it.
-        //
-        // But I'm not using Abbot anymore, and on OpenJDK, without
-        // this exit call, the process does not exit, so I've put
-        // this back in.
         System.exit(0);
     }
 
@@ -577,57 +574,13 @@ public class Ded extends JFrame implements WindowListener {
         this.diagramController.logDisplayScaling();
     }
 
-    // WindowListener events I do not care about.
+    // WindowListener events I do not care about.  (I can't just extend
+    // WindowAdapter because I'm already extending JFrame.)
     @Override public void windowClosed(WindowEvent e) {}
     @Override public void windowIconified(WindowEvent e) {}
     @Override public void windowDeiconified(WindowEvent e) {}
     @Override public void windowActivated(WindowEvent e) {}
     @Override public void windowDeactivated(WindowEvent e) {}
-
-    /** Check that the current diagram is equivalent to the diagram
-      * in the named file.  This is meant to be called from Abbot for
-      * UI testing.  If the diagrams do not match, throws. */
-    public static void checkDiagram(String correctFname)
-        throws Exception
-    {
-        // Search for a Ded window.  (I cannot figure out how to pass
-        // a reference to a Component from Abbot, even though it seems
-        // to have that capability.)
-        Frame[] frames = Frame.getFrames();
-        for (Frame f : frames) {
-            if (f instanceof Ded) {
-                Ded ded = (Ded)f;
-                ded.innerCheckDiagram(correctFname);
-                return;
-            }
-        }
-
-        throw new RuntimeException("could not find Ded window");
-    }
-
-    /** Non-static helper for 'checkDiagram'. */
-    private void innerCheckDiagram(String correctFname)
-        throws Exception
-    {
-        // First, load the "correct" diagram.
-        Diagram correctDiagram = Diagram.readFromFile(correctFname);
-
-        // Check that it equals() the one we're editing.
-        if (!correctDiagram.equals(this.diagramController.diagram)) {
-            throw new RuntimeException(
-                "current and correct diagrams are not equals()");
-        }
-
-        // Paranoia about equals() being incomplete: serialize both to
-        // the current JSON format ('correctFname' might be an older
-        // version) and compare that.
-        String correctJSON = correctDiagram.toString();
-        String currentJSON = this.diagramController.diagram.toString();
-        if (!correctJSON.equals(currentJSON)) {
-            throw new RuntimeException(
-                "equals() was true but JSON strings are not equal!");
-        }
-    }
 
     /** Implement the --check-graph option, which prints out the report
         of issues with the correspondence between the diagram and the
