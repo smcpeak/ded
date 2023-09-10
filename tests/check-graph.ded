@@ -103,10 +103,24 @@
       "end": {"entityRef": 4},
       "label": "succ",
       "start": {"entityRef": 0}
+    },
+    {
+      "controlPts": [{
+        "x": 160,
+        "y": 240
+      }],
+      "dashStructure": [
+        1,
+        2
+      ],
+      "end": {"entityRef": 4},
+      "label": "Excluded",
+      "routingAlg": "RA_MANHATTAN_VERT",
+      "start": {"entityRef": 0}
     }
   ],
   "type": "Diagram Editor Diagram",
-  "version": 29,
+  "version": 30,
   "windowSize": {
     "h": 352,
     "w": 377

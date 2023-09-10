@@ -407,8 +407,9 @@ public class Diagram implements JSONable {
         }
 
         // Report relations where the start entity is associated with a
-        // graph node, and the relation has a name, but it does not
-        // correspond to a pointer to the end entity's node.
+        // graph node, and the relation has a name and uses a solid
+        // line, but it does not correspond to a pointer to the end
+        // entity's node.
         for (Relation relation : this.relations) {
             if (relation.start.entity == null) {
                 continue;
@@ -422,6 +423,13 @@ public class Diagram implements JSONable {
                 this.objectGraph.getOptNode(startID);
             if (startNode == null) {
                 // The invalid ID has already been reported above.
+                continue;
+            }
+
+            if (!relation.dashStructure.isEmpty()) {
+                // Regard a non-solid relation line as representing some
+                // more abstract notion, and hence excluded from the
+                // graph link checking.
                 continue;
             }
 
