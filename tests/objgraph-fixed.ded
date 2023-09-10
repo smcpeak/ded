@@ -1,0 +1,63 @@
+{
+  "drawFileName": true,
+  "entities": [
+    {
+      "attributes": "$(graphNodeShowFields)\n",
+      "loc": {
+        "x": 100,
+        "y": 115
+      },
+      "name": "$(graphNodeID)",
+      "objectGraphNodeID": "n1",
+      "size": {
+        "h": 90,
+        "w": 150
+      }
+    },
+    {
+      "attributes": "x: $(graphNode.x)\n",
+      "loc": {
+        "x": 70,
+        "y": 405
+      },
+      "name": "$(graphNode.badAttr)",
+      "objectGraphNodeID": "n4",
+      "size": {
+        "h": 55,
+        "w": 190
+      }
+    }
+  ],
+  "inheritances": [],
+  "objectGraph": {
+    "n1": {
+      "anotherAttrib": 123,
+      "notHere": {"ptr": "null"},
+      "succ": {"ptr": "n2"},
+      "title": "one"
+    },
+    "n2": {
+      "color": "green",
+      "pred": {"ptr": "n1"},
+      "to3": {
+        "preview": "en three",
+        "ptr": "n3"
+      }
+    },
+    "n3": {"name": "Name of n3"},
+    "n4": {"x": "ecks"}
+  },
+  "objectGraphConfig": {
+    "newNodeAttributes": null,
+    "newNodeName": null,
+    "showFields": []
+  },
+  "objectGraphSourceFile": "objgraph-graph.json",
+  "relations": [],
+  "type": "Diagram Editor Diagram",
+  "version": 30,
+  "windowSize": {
+    "h": 538,
+    "w": 546
+  }
+}

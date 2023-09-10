@@ -5,13 +5,17 @@ specified file if there is one, or an empty diagram otherwise.
 
 Options:
 
-  --help: Print this text.
+  --help: Print this text and stop.
 
-  --version: Print version.
+  --version: Print version and stop.
 
-  --check-graph <file.ded>: Check the correspondence between the diagram
-  and the object graph.
+  --check-graph: Check the correspondence between the diagram and the
+  object graph.
 
-  --check-graph-source <file.ded>: Check the correspondence between the
-  object graph stored in the diagram and the object graph stored in the
-  file the diagram indicates is its graph source file.
+  --check-graph-source: Check the correspondence between the object
+  graph stored in the diagram and the object graph stored in the file
+  the diagram indicates is its graph source file.
+
+Both --check-graph and --check-graph-source require that a file name be
+passed, and cause the program to stop without opening the editor GUI.
+They can be used simultaneously.

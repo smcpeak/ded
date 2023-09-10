@@ -503,7 +503,7 @@ public class Ded extends JFrame implements WindowListener {
     }
 
     /** Get the version string for this program. */
-    private static String getVersions()
+    public static String getVersions()
     {
         String version =
             Util.readResourceString("/resources/version.txt").trim();
@@ -663,34 +663,37 @@ public class Ded extends JFrame implements WindowListener {
     /** Diagram editor program entry point. */
     public static void main(final String[] args)
     {
-        if (args.length >= 1) {
-            String opt = args[0];
-            try {
-                if (opt.equals("--help")) {
-                    System.out.print(Util.readResourceString(
-                        "/resources/helptext/cmdline-help.txt"));
-                    return;
-                }
+        // Parse the command line.
+        DedCmdLine cmdLine = null;
+        try {
+            cmdLine = new DedCmdLine(args);
 
-                if (opt.equals("--version")) {
-                    System.out.print(getVersions());
-                    return;
-                }
-
-                if (opt.equals("--check-graph")) {
-                    checkGraph(args[1]);
-                    return;
-                }
-
-                if (opt.equals("--check-graph-source")) {
-                    checkGraphSource(args[1]);
-                    return;
-                }
+            // Handle --check-graph and --check-graph-source.
+            if (cmdLine.m_checkGraph) {
+                checkGraph(cmdLine.m_diagramFname);
             }
-            catch (Exception e) {
-                System.err.println("error: " + Util.getExceptionMessage(e));
-                System.exit(2);
+            if (cmdLine.m_checkGraphSource) {
+                checkGraphSource(cmdLine.m_diagramFname);
             }
+            if (cmdLine.hasCheckGraphOption()) {
+                // Stop after processing those options.
+                return;
+            }
+        }
+        catch (Exception e) {
+            System.err.println("error: " + Util.getExceptionMessage(e));
+            System.exit(2);
+        }
+
+        // Catch the common case of a file that does not exist early,
+        // before starting the GUI.
+        if (cmdLine.m_diagramFname != null &&
+            !Util.filenameExists(cmdLine.m_diagramFname))
+        {
+            System.err.println(fmt(
+                "File does not exist: %s",
+                cmdLine.m_diagramFname));
+            System.exit(2);
         }
 
         // Use the Nimbus L+F.
@@ -735,14 +738,15 @@ public class Ded extends JFrame implements WindowListener {
         });
 
         // Kick off the Swing app.
+        final String diagramFname = cmdLine.m_diagramFname;
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 Ded ded = new Ded();
                 ded.setName("ded");
 
                 // Open specified file if any.
-                if (args.length >= 1) {
-                    ded.diagramController.loadFromNamedFile(args[0]);
+                if (diagramFname != null) {
+                    ded.diagramController.loadFromNamedFile(diagramFname);
                 }
 
                 // Center the window initially.

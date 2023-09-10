@@ -263,6 +263,14 @@ public class Util {
         }
         return true;
     }
+
+    /** True if 'fname' exists.  Beware it could be a directory or a
+        special file. */
+    public static boolean filenameExists(String fname)
+    {
+        File f = new File(fname);
+        return f.exists();
+    }
 }
 
 // EOF

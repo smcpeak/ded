@@ -85,6 +85,20 @@ out/%.ded.cgs: dist/ded.jar tests/%.ded tests/%.ded.cgs.exp
 	  java -cp bin -ea ded.Ded --check-graph-source tests/$*.ded
 
 
+# ---- Tests using both --check-source and --check-graph-source ----
+.PHONY: check-graph-both
+check-graph-both: out/objgraph-fixed.ded.cgb
+check: check-graph-both
+
+out/%.ded.cgb: dist/ded.jar tests/%.ded tests/%.ded.cgb.exp
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(RUN_COMPARE_EXPECT) \
+	  --expect tests/$*.ded.cgb.exp \
+	  --actual $@ \
+	  java -cp bin -ea ded.Ded --check-graph \
+	    --check-graph-source tests/$*.ded
+
+
 # GUI tests.  These require Abbot:
 #
 #   http://abbot.sourceforge.net/doc/overview.shtml
