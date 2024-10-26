@@ -19,7 +19,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
 import ded.model.Diagram;
-import ded.model.TextAlign;
+import ded.model.HTextAlign;
 
 import util.awt.GeomUtil;
 import util.swing.MenuAction;
@@ -291,7 +291,7 @@ public abstract class Controller {
     /** Update this element's name text align if it has one.
       * This does *not* change the alignment of the attribute
       * text of an Entity. */
-    public void setNameTextAlign(TextAlign align)
+    public void setNameHTextAlign(HTextAlign align)
     {}
 }
 

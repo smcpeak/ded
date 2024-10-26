@@ -46,7 +46,7 @@ public class Entity implements JSONable {
     public static final String defaultTextColor = "Black";
 
     /** Default name text alignment. */
-    public static final TextAlign defaultNameAlign = TextAlign.TA_CENTER;
+    public static final HTextAlign defaultNameAlign = HTextAlign.TA_CENTER;
 
     /** Default image fill style. */
     public static final ImageFillStyle defaultImageFillStyle = ImageFillStyle.IFS_UPPER_LEFT;
@@ -75,7 +75,7 @@ public class Entity implements JSONable {
     public String name = "";
 
     /** How to align the name. */
-    public TextAlign nameAlign = defaultNameAlign;
+    public HTextAlign nameAlign = defaultNameAlign;
 
     /** Attributes as free text with newlines. */
     public String attributes = "";
@@ -355,7 +355,7 @@ public class Entity implements JSONable {
 
         this.name = o.optString("name", "");
         if (o.has("nameAlign")) {
-            this.nameAlign = TextAlign.valueOf(TextAlign.class, o.getString("nameAlign"));
+            this.nameAlign = HTextAlign.valueOf(HTextAlign.class, o.getString("nameAlign"));
         }
 
         this.attributes = o.optString("attributes", "");

@@ -46,7 +46,7 @@ import ded.model.ImageFillStyle;
 import ded.model.ObjectGraphConfig;
 import ded.model.ObjectGraphNode;
 import ded.model.ShapeFlag;
-import ded.model.TextAlign;
+import ded.model.HTextAlign;
 
 import static util.StringUtil.fmt;
 
@@ -314,7 +314,7 @@ public class EntityController extends Controller
     }
 
     /** Draw 'str' in 'r', centered vertically, and horizontally aligned per 'align'. */
-    public void drawAlignedText(Graphics g0, Rectangle r, String str, TextAlign align)
+    public void drawAlignedText(Graphics g0, Rectangle r, String str, HTextAlign align)
     {
         Graphics g = g0.create();
         g.setClip(r);
@@ -1093,10 +1093,10 @@ public class EntityController extends Controller
 
         JMenu textAlignMenu = new JMenu("Set name text alignment");
         textAlignMenu.setMnemonic(KeyEvent.VK_X);
-        for (final TextAlign align : EnumSet.allOf(TextAlign.class)) {
+        for (final HTextAlign align : EnumSet.allOf(HTextAlign.class)) {
             textAlignMenu.add(new AbstractAction(align.toString()) {
                 public void actionPerformed(ActionEvent e) {
-                    ths.diagramController.setSelectedElementsNameTextAlign(align);
+                    ths.diagramController.setSelectedElementsNameHTextAlign(align);
                 }
             });
         }
@@ -1190,7 +1190,7 @@ public class EntityController extends Controller
     }
 
     @Override
-    public void setNameTextAlign(TextAlign align)
+    public void setNameHTextAlign(HTextAlign align)
     {
         this.entity.nameAlign = align;
     }

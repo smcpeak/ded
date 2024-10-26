@@ -81,7 +81,7 @@ import ded.model.ObjectGraphConfig;
 import ded.model.ObjectGraphNode;
 import ded.model.Relation;
 import ded.model.RelationEndpoint;
-import ded.model.TextAlign;
+import ded.model.HTextAlign;
 import ded.model.UndoHistory;
 import ded.model.UndoHistoryLimit;
 
@@ -2215,10 +2215,10 @@ public class DiagramController extends JPanel
     }
 
     /** Change the selected elements' text alignment. */
-    public void setSelectedElementsNameTextAlign(TextAlign newAlign)
+    public void setSelectedElementsNameHTextAlign(HTextAlign newAlign)
     {
         for (Controller c : this.getSelectionSet()) {
-            c.setNameTextAlign(newAlign);
+            c.setNameHTextAlign(newAlign);
         }
         this.diagramChanged(fmt("Set text align to \"%1$s\"", newAlign));
     }

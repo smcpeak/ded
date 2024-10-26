@@ -35,7 +35,7 @@ import ded.model.Entity;
 import ded.model.EntityShape;
 import ded.model.ImageFillStyle;
 import ded.model.ShapeFlag;
-import ded.model.TextAlign;
+import ded.model.HTextAlign;
 
 /** Dialog box to edit an Entity. */
 public class EntityDialog extends ModalDialog
@@ -59,7 +59,7 @@ public class EntityDialog extends ModalDialog
 
     // Controls.
     private JTextField nameText;
-    private JComboBox<TextAlign> nameAlignChooser;
+    private JComboBox<HTextAlign> nameAlignChooser;
     private JTextArea attributeText;
     private JComboBox<EntityShape> shapeChooser;
     private JButton shapeFlagsButton;
@@ -122,7 +122,7 @@ public class EntityDialog extends ModalDialog
                 nameRowHb,
                 "Align",
                 'g',
-                TextAlign.class,
+                HTextAlign.class,
                 this.entity.nameAlign);
         }
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
@@ -433,7 +433,7 @@ public class EntityDialog extends ModalDialog
         // if there is a problem, we will bail before actually
         // modifying 'this.entity'.
 
-        TextAlign nameAlign = (TextAlign)this.nameAlignChooser.getSelectedItem();
+        HTextAlign nameAlign = (HTextAlign)this.nameAlignChooser.getSelectedItem();
         EntityShape shape = (EntityShape)this.shapeChooser.getSelectedItem();
 
         int x, y, w, h, p=0, q=0;
