@@ -42,11 +42,12 @@ import util.swing.MenuDelegate;
 import ded.model.Diagram;
 import ded.model.Entity;
 import ded.model.EntityShape;
+import ded.model.HTextAlign;
 import ded.model.ImageFillStyle;
 import ded.model.ObjectGraphConfig;
 import ded.model.ObjectGraphNode;
 import ded.model.ShapeFlag;
-import ded.model.HTextAlign;
+import ded.model.VTextAlign;
 
 import static util.StringUtil.fmt;
 
@@ -70,6 +71,14 @@ public class EntityController extends Controller
 
     /** Distance between entity box sides and the attribute text. */
     public static final int entityAttributeMargin = 5;
+
+    /** Distance between left edge of entity and start of its label, for
+      * left-aligned text. */
+    public static final int horizMargin = 4;
+
+    /** Distance between top edge of entity and top of its label text,
+      * for top-aligned text. */
+    public static final int vertMargin = 4;
 
     /** Minimum side size for an entity when resizing using the handles.
       * Note that a smaller entity can be made by using the edit dialog. */
@@ -313,25 +322,45 @@ public class EntityController extends Controller
         }
     }
 
-    /** Draw 'str' in 'r', centered vertically, and horizontally aligned per 'align'. */
-    public void drawAlignedText(Graphics g0, Rectangle r, String str, HTextAlign align)
+    /** Draw `str` in `r`, aligned per `halign` and `valign`. */
+    public void drawAlignedText(
+        Graphics g0,
+        Rectangle r,
+        String str,
+        HTextAlign halign,
+        VTextAlign valign)
     {
         Graphics g = g0.create();
         g.setClip(r);
 
         Point center = GeomUtil.getCenter(r);
-
-        // Go to 'p', then add a/2 to get to the baseline.
-        // I ignore the descent because it looks better to center without
-        // regard to descenders.
         BitmapFont bitmapFont = this.diagramController.getDiagramFont();
-        int baseY = center.y + bitmapFont.getAscent()/2;
+
+        // Compute y coordinate of text baseline, depending on vertical
+        // alignment.
+        int baseY = 0;
+        switch (valign) {
+            case VTA_TOP:
+                baseY = r.y + bitmapFont.getMaxAscent() + vertMargin;
+                break;
+
+            case VTA_CENTER:
+                // Go to the center, then add a/2 to get to the
+                // baseline.  I ignore the descent because it looks
+                // better to center without regard to descenders.
+                baseY = center.y + bitmapFont.getAscent()/2;
+                break;
+
+            case VTA_BOTTOM:
+                baseY = r.y + r.height - bitmapFont.getDescent() - vertMargin;
+                break;
+        }
 
         // Compute x coordinate based on horizontal alignment.
         int baseX = 0;
-        switch (align) {
+        switch (halign) {
             case TA_LEFT:
-                baseX = r.x + 4;
+                baseX = r.x + horizMargin;
                 break;
 
             case TA_CENTER:
@@ -339,7 +368,7 @@ public class EntityController extends Controller
                 break;
 
             case TA_RIGHT:
-                baseX = r.x + r.width - 4 - bitmapFont.stringWidth(str);
+                baseX = r.x + r.width - horizMargin - bitmapFont.stringWidth(str);
                 break;
         }
 
@@ -478,9 +507,11 @@ public class EntityController extends Controller
         else if (entityAttributes.isEmpty() &&
                  this.entity.shape != EntityShape.ES_WINDOW)
         {
-            // Name is vertically and horizontally centered in the space.
+            // Name is aligned in the entire space.
             g.setColor(this.getTextColor());
-            drawAlignedText(g, r, entityName, this.entity.nameHAlign);
+            drawAlignedText(g, r, entityName,
+                            this.entity.nameHAlign,
+                            this.entity.nameVAlign);
         }
         else {
             // Name.
@@ -520,7 +551,9 @@ public class EntityController extends Controller
                 }
 
                 g.setColor(this.getTextColor());
-                drawAlignedText(g, nameRect, entityName, this.entity.nameHAlign);
+                drawAlignedText(g, nameRect, entityName,
+                                this.entity.nameHAlign,
+                                this.entity.nameVAlign);
             }
 
             // Attributes.
@@ -1006,7 +1039,8 @@ public class EntityController extends Controller
 
         g.setColor(this.getTextColor());
         drawAlignedText(g, labelArea, this.getEntityNameForDisplay(),
-                        this.entity.nameHAlign);
+                        this.entity.nameHAlign,
+                        this.entity.nameVAlign);
     }
 
     /** Return the rectangle describing this controller's bounds. */
@@ -1194,6 +1228,11 @@ public class EntityController extends Controller
     {
         this.entity.nameHAlign = align;
     }
+
+    // For the moment, I do not have `setNameVTextAlign`.  These methods
+    // are used to support changing the attribute of many elements at
+    // once via the context menu, bit it is a clumsy system and I do not
+    // expect to need to update many vertical alignments at once.
 
     /** Create a new entity at location 'p' in 'dc'.  This corresponds to
       * the user left-clicking on 'p' while in entity creation mode. */

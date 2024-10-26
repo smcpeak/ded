@@ -33,9 +33,10 @@ import util.swing.ModalDialog;
 import ded.model.Diagram;
 import ded.model.Entity;
 import ded.model.EntityShape;
+import ded.model.HTextAlign;
 import ded.model.ImageFillStyle;
 import ded.model.ShapeFlag;
-import ded.model.HTextAlign;
+import ded.model.VTextAlign;
 
 /** Dialog box to edit an Entity. */
 public class EntityDialog extends ModalDialog
@@ -60,6 +61,7 @@ public class EntityDialog extends ModalDialog
     // Controls.
     private JTextField nameText;
     private JComboBox<HTextAlign> nameHAlignChooser;
+    private JComboBox<VTextAlign> nameVAlignChooser;
     private JTextArea attributeText;
     private JComboBox<EntityShape> shapeChooser;
     private JButton shapeFlagsButton;
@@ -93,7 +95,7 @@ public class EntityDialog extends ModalDialog
              c - HTML anchor name
              d - Indent
              f - Fill color
-             g - Align
+             g - Horizontal alignment
              h - H
              i - Image file name
              l - Line color
@@ -105,6 +107,7 @@ public class EntityDialog extends ModalDialog
              r - Wrap text
              s - Shape
              t - Text color
+             v - Vertical alignment
              w - W
              x - X
              y - Y
@@ -120,10 +123,19 @@ public class EntityDialog extends ModalDialog
 
             this.nameHAlignChooser = ModalDialog.makeEnumChooser(
                 nameRowHb,
-                "Align",
+                "HAlign",
                 'g',
                 HTextAlign.class,
                 this.entity.nameHAlign);
+
+            nameRowHb.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING));
+
+            this.nameVAlignChooser = ModalDialog.makeEnumChooser(
+                nameRowHb,
+                "VAlign",
+                'v',
+                VTextAlign.class,
+                this.entity.nameVAlign);
         }
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
@@ -434,6 +446,7 @@ public class EntityDialog extends ModalDialog
         // modifying 'this.entity'.
 
         HTextAlign nameHAlign = (HTextAlign)this.nameHAlignChooser.getSelectedItem();
+        VTextAlign nameVAlign = (VTextAlign)this.nameVAlignChooser.getSelectedItem();
         EntityShape shape = (EntityShape)this.shapeChooser.getSelectedItem();
 
         int x, y, w, h, p=0, q=0;
@@ -507,6 +520,7 @@ public class EntityDialog extends ModalDialog
         // Update the entity.
         this.entity.name = this.nameText.getText();
         this.entity.nameHAlign = nameHAlign;
+        this.entity.nameVAlign = nameVAlign;
         this.entity.attributes = this.attributeText.getText();
         this.entity.shapeFlags = this.shapeFlagsWorkingCopy.clone();
         this.entity.setFillColor(fillColor);
