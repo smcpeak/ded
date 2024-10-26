@@ -539,12 +539,14 @@ public class DiagramController extends JPanel
         return null;
     }
 
-    /** Hit test restricted to Entities. */
-    private EntityController hitTestEntity(Point pt)
+    /** Hit test restricted to Entities that can be a relation
+      * endpoint. */
+    private EntityController hitTestEntityForRelation(Point pt)
     {
         return (EntityController)hitTest(pt, new ControllerFilter() {
             public boolean satisfies(Controller c) {
-                return c instanceof EntityController;
+                return (c instanceof EntityController) &&
+                       ((EntityController)c).canBeRelationEndpoint();
             }
         });
     }
@@ -2117,7 +2119,7 @@ public class DiagramController extends JPanel
     public RelationEndpoint getRelationEndpoint(Point pt)
     {
         // Entity?
-        EntityController ec = this.hitTestEntity(pt);
+        EntityController ec = this.hitTestEntityForRelation(pt);
         if (ec != null) {
             return new RelationEndpoint(ec.entity);
         }
@@ -2137,7 +2139,7 @@ public class DiagramController extends JPanel
     private void createInheritanceAt(Point point)
     {
         // Must be clicking on an entity.
-        EntityController parent = this.hitTestEntity(point);
+        EntityController parent = this.hitTestEntityForRelation(point);
         if (parent == null) {
             this.errorMessageBox(
                 "To create an inheritance, start by clicking "+

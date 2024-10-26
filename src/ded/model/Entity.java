@@ -275,6 +275,17 @@ public class Entity implements JSONable {
         return "{ " + String.join(", ", characteristics) + " }";
     }
 
+    /** Return true if we can treat this entity as a new relation
+      * endpoint. */
+    public boolean canBeRelationEndpoint()
+    {
+        if (this.shapeFlags.contains(ShapeFlag.SF_DISABLE_RELATIONS)) {
+            return false;
+        }
+
+        return true;
+    }
+
     // ------------ serialization ------------
     @Override
     public JSONObject toJSON()

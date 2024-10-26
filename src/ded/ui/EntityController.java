@@ -1795,6 +1795,14 @@ public class EntityController extends Controller
         return this.diagramController.diagram.
             canFixObjectGraphEntityNeighbors(this.entity);
     }
+
+    /** Return true if the associated entity can be the endpoint of a
+      * relation we are creating or editing.  (It might already be the
+      * endpoint of a relation; that is irrelevant.) */
+    public boolean canBeRelationEndpoint()
+    {
+        return this.entity.canBeRelationEndpoint();
+    }
 }
 
 // EOF

@@ -9,6 +9,16 @@ import java.util.Iterator;
 /** Set of flags that influence shape display.  Each flag generally
   * influences only a small set of shapes. */
 public enum ShapeFlag {
+    // For Rectangle.  This flag means that the entity is not meant to
+    // participate in relations, so the UI will not treat it as a
+    // relation start or end node when a relation is being created or
+    // edited.  This is helpful for rectangles that exist simply to mark
+    // a sub-region of the diagram, since otherwise those regions make
+    // it hard to create relations within them.
+    SF_DISABLE_RELATIONS
+      ("Prevent relations (arrows) from attaching to this entity",
+                                                 false, EntityShape.ES_RECTANGLE),
+
     // For Window.
     SF_HAS_MAXIMIZE
       ("Has maximize button",                    true,  EntityShape.ES_WINDOW),

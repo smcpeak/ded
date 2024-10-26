@@ -1,0 +1,73 @@
+{
+  "drawFileName": true,
+  "entities": [
+    {
+      "fillColor": "Light Gray",
+      "lineColor": "Light Gray",
+      "loc": {
+        "x": 65,
+        "y": 55
+      },
+      "name": "Region",
+      "nameAlign": "TA_LEFT",
+      "nameVAlign": "VTA_TOP",
+      "shapeFlags": ["SF_DISABLE_RELATIONS"],
+      "size": {
+        "h": 170,
+        "w": 240
+      }
+    },
+    {
+      "loc": {
+        "x": 75,
+        "y": 110
+      },
+      "name": "A",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 195,
+        "y": 160
+      },
+      "name": "B",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 15,
+        "y": 20
+      },
+      "name": "Test non-relation-participating region feature",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 260
+      }
+    }
+  ],
+  "inheritances": [],
+  "objectGraph": {},
+  "objectGraphConfig": {
+    "newNodeAttributes": null,
+    "newNodeName": null,
+    "showFields": []
+  },
+  "relations": [{
+    "end": {"entityRef": 2},
+    "start": {"entityRef": 1}
+  }],
+  "type": "Diagram Editor Diagram",
+  "version": 32,
+  "windowSize": {
+    "h": 256,
+    "w": 333
+  }
+}

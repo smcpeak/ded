@@ -65,7 +65,7 @@ public class Diagram implements JSONable {
       * should include a bump--even though the old code might be
       * able to read the file without choking, the semantics would
       * not be preserved. */
-    public static final int currentFileVersion = 31;
+    public static final int currentFileVersion = 32;
 
     // ---------- public data ------------
     /** Size of window to display diagram.  Some elements might not fit
