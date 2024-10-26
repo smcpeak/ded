@@ -480,7 +480,7 @@ public class EntityController extends Controller
         {
             // Name is vertically and horizontally centered in the space.
             g.setColor(this.getTextColor());
-            drawAlignedText(g, r, entityName, this.entity.nameAlign);
+            drawAlignedText(g, r, entityName, this.entity.nameHAlign);
         }
         else {
             // Name.
@@ -520,7 +520,7 @@ public class EntityController extends Controller
                 }
 
                 g.setColor(this.getTextColor());
-                drawAlignedText(g, nameRect, entityName, this.entity.nameAlign);
+                drawAlignedText(g, nameRect, entityName, this.entity.nameHAlign);
             }
 
             // Attributes.
@@ -1006,7 +1006,7 @@ public class EntityController extends Controller
 
         g.setColor(this.getTextColor());
         drawAlignedText(g, labelArea, this.getEntityNameForDisplay(),
-                        this.entity.nameAlign);
+                        this.entity.nameHAlign);
     }
 
     /** Return the rectangle describing this controller's bounds. */
@@ -1192,7 +1192,7 @@ public class EntityController extends Controller
     @Override
     public void setNameHTextAlign(HTextAlign align)
     {
-        this.entity.nameAlign = align;
+        this.entity.nameHAlign = align;
     }
 
     /** Create a new entity at location 'p' in 'dc'.  This corresponds to

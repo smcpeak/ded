@@ -1,0 +1,248 @@
+{
+  "drawFileName": true,
+  "entities": [
+    {
+      "loc": {
+        "x": 160,
+        "y": 90
+      },
+      "name": "Center",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "attributes": "w/attrs\n",
+      "loc": {
+        "x": 35,
+        "y": 165
+      },
+      "name": "Left",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 290,
+        "y": 90
+      },
+      "name": "Right",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 35,
+        "y": 90
+      },
+      "name": "Left",
+      "nameAlign": "TA_LEFT",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "attributes": "w/attrs\n",
+      "loc": {
+        "x": 160,
+        "y": 165
+      },
+      "name": "Center",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "attributes": "w/attrs\n",
+      "loc": {
+        "x": 290,
+        "y": 165
+      },
+      "name": "Right",
+      "nameAlign": "TA_RIGHT",
+      "size": {
+        "h": 50,
+        "w": 100
+      }
+    },
+    {
+      "loc": {
+        "x": 35,
+        "y": 240
+      },
+      "name": "Left",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_WINDOW",
+      "shapeFlags": [
+        "SF_HAS_MAXIMIZE",
+        "SF_HAS_MINIMIZE",
+        "SF_HAS_CLOSE",
+        "SF_HAS_WINDOW_OPS"
+      ],
+      "shapeParams": [
+        150,
+        200
+      ],
+      "size": {
+        "h": 205,
+        "w": 165
+      }
+    },
+    {
+      "loc": {
+        "x": 225,
+        "y": 240
+      },
+      "name": "Center",
+      "shape": "ES_WINDOW",
+      "shapeFlags": [
+        "SF_HAS_MAXIMIZE",
+        "SF_HAS_MINIMIZE",
+        "SF_HAS_CLOSE",
+        "SF_HAS_WINDOW_OPS"
+      ],
+      "shapeParams": [
+        50,
+        25
+      ],
+      "size": {
+        "h": 90,
+        "w": 165
+      }
+    },
+    {
+      "loc": {
+        "x": 415,
+        "y": 240
+      },
+      "name": "Right",
+      "nameAlign": "TA_RIGHT",
+      "shape": "ES_WINDOW",
+      "shapeFlags": [
+        "SF_HAS_MAXIMIZE",
+        "SF_HAS_MINIMIZE",
+        "SF_HAS_CLOSE",
+        "SF_HAS_WINDOW_OPS"
+      ],
+      "shapeParams": [
+        50,
+        25
+      ],
+      "size": {
+        "h": 90,
+        "w": 165
+      }
+    },
+    {
+      "loc": {
+        "x": 45,
+        "y": 270
+      },
+      "name": "Left",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_CHECK_BOX",
+      "size": {
+        "h": 20,
+        "w": 145
+      }
+    },
+    {
+      "loc": {
+        "x": 45,
+        "y": 295
+      },
+      "name": "Center",
+      "shape": "ES_CHECK_BOX",
+      "size": {
+        "h": 20,
+        "w": 145
+      }
+    },
+    {
+      "loc": {
+        "x": 45,
+        "y": 320
+      },
+      "name": "Right",
+      "nameAlign": "TA_RIGHT",
+      "shape": "ES_CHECK_BOX",
+      "size": {
+        "h": 20,
+        "w": 145
+      }
+    },
+    {
+      "loc": {
+        "x": 45,
+        "y": 360
+      },
+      "name": "Left",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_RADIO_BUTTON",
+      "size": {
+        "h": 20,
+        "w": 145
+      }
+    },
+    {
+      "loc": {
+        "x": 45,
+        "y": 385
+      },
+      "name": "Center",
+      "shape": "ES_RADIO_BUTTON",
+      "size": {
+        "h": 20,
+        "w": 145
+      }
+    },
+    {
+      "loc": {
+        "x": 45,
+        "y": 410
+      },
+      "name": "Right",
+      "nameAlign": "TA_RIGHT",
+      "shape": "ES_RADIO_BUTTON",
+      "size": {
+        "h": 20,
+        "w": 145
+      }
+    },
+    {
+      "loc": {
+        "x": 15,
+        "y": 20
+      },
+      "name": "Test horizontal text alignment",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 170
+      }
+    }
+  ],
+  "inheritances": [],
+  "objectGraph": {},
+  "objectGraphConfig": {
+    "newNodeAttributes": null,
+    "newNodeName": null,
+    "showFields": []
+  },
+  "relations": [],
+  "type": "Diagram Editor Diagram",
+  "version": 30,
+  "windowSize": {
+    "h": 498,
+    "w": 622
+  }
+}

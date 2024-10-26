@@ -59,7 +59,7 @@ public class EntityDialog extends ModalDialog
 
     // Controls.
     private JTextField nameText;
-    private JComboBox<HTextAlign> nameAlignChooser;
+    private JComboBox<HTextAlign> nameHAlignChooser;
     private JTextArea attributeText;
     private JComboBox<EntityShape> shapeChooser;
     private JButton shapeFlagsButton;
@@ -118,12 +118,12 @@ public class EntityDialog extends ModalDialog
 
             nameRowHb.add(Box.createHorizontalStrut(ModalDialog.CONTROL_PADDING*2));
 
-            this.nameAlignChooser = ModalDialog.makeEnumChooser(
+            this.nameHAlignChooser = ModalDialog.makeEnumChooser(
                 nameRowHb,
                 "Align",
                 'g',
                 HTextAlign.class,
-                this.entity.nameAlign);
+                this.entity.nameHAlign);
         }
         vb.add(Box.createVerticalStrut(ModalDialog.CONTROL_PADDING));
 
@@ -433,7 +433,7 @@ public class EntityDialog extends ModalDialog
         // if there is a problem, we will bail before actually
         // modifying 'this.entity'.
 
-        HTextAlign nameAlign = (HTextAlign)this.nameAlignChooser.getSelectedItem();
+        HTextAlign nameHAlign = (HTextAlign)this.nameHAlignChooser.getSelectedItem();
         EntityShape shape = (EntityShape)this.shapeChooser.getSelectedItem();
 
         int x, y, w, h, p=0, q=0;
@@ -506,7 +506,7 @@ public class EntityDialog extends ModalDialog
 
         // Update the entity.
         this.entity.name = this.nameText.getText();
-        this.entity.nameAlign = nameAlign;
+        this.entity.nameHAlign = nameHAlign;
         this.entity.attributes = this.attributeText.getText();
         this.entity.shapeFlags = this.shapeFlagsWorkingCopy.clone();
         this.entity.setFillColor(fillColor);
