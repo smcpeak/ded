@@ -22,13 +22,18 @@ case "$OS" in
     ;;
 esac
 
+# Force 2x scaling to avoid ugly 1.5 stretching on 4k monitor.
+#
+# TODO: Handle this properly within `ded`.
+extra_args="-Dsun.java2d.uiScale=2"
+
 # Use the JAR file if is there.
 jarfile="$instdir/dist/ded.jar"
 if [ -f "$jarfile" ]; then
   if $is_windows; then
     jarfile=`cygpath -w "$jarfile"`
   fi
-  exec java -ea -jar "$jarfile" "$@"
+  exec java $extra_args -ea -jar "$jarfile" "$@"
 fi
 
 # Pasting from clipboard fails on some JVMs with
@@ -41,7 +46,7 @@ if [ -d "$classpath" ]; then
   if $is_windows; then
     classpath=`cygpath -w "$classpath"`
   fi
-  exec java -classpath "$classpath" -ea ded.Ded $workaround "$@"
+  exec java $extra_args -classpath "$classpath" -ea ded.Ded $workaround "$@"
 else
   echo "Missing: $classpath or $jarfile"
   echo "Maybe the sources are not compiled?  Try running 'make'."
